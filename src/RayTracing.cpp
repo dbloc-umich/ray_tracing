@@ -17,20 +17,6 @@ Direction refracted(const Direction& in, const Direction& normal, double n1, dou
         return ortho*sine + sgn*normal*sqrt(1-sine*sine);
     }
     return Direction(nullptr);
-
-    /*
-    double r = n1/n2;
-    double c = fabs(normal.dot(in));
-    double rad = r*r*(1-c*c);
-    if (rad <= 1.0){
-        // Refracted
-        std::cout << "Refracted" << std::endl;
-        std::cout << "r=" << r << ", c=" << c << ", b=" << r*c - sqrt(1.0-rad) << std::endl;
-        return in*r + normal*(r*c - sqrt(1.0-rad)); // refracted
-    }
-    std::cout << "Reflected" << std::endl;
-    return in - 2*(normal.dot(in))*normal; // reflected
-    */
 }
 
 double intensity(const kDTree& tree, Point p, const Direction& dir, Shape* current, double initial){

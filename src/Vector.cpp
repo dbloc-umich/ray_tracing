@@ -43,13 +43,8 @@ Vector& Vector::operator*=(double d) noexcept{
     return *this;
 }
 
-Vector Vector::operator/(double d) const{
-    if (d == 0.0) throw std::domain_error("ERROR: Division by zero.");
-    return Vector(_dx*d, _dy*d, _dz*d);
-}
-
-Vector& Vector::operator/=(double d){
-    if (d == 0.0) throw std::domain_error("ERROR: Division by zero.");
+Vector Vector::operator/(double d) const noexcept{ return Vector(_dx/d, _dy/d, _dz/d); }
+Vector& Vector::operator/=(double d) noexcept{
     _dx /= d;
     _dy /= d;
     _dz /= d;
@@ -62,6 +57,8 @@ bool Vector::operator==(const Vector& other) const noexcept{
     bool z = fabs(_dz-other._dz) <= eps;
     return x && y && z;
 }
+
+Vector::operator bool() const noexcept{ return !(std::isnan(_dx) || std::isnan(_dy) || std::isnan(_dz)); }
 
 double Vector::dot(const Vector& other) const noexcept{ return _dx*other._dx + _dy*other._dy + _dz*other._dz; }
 double Vector::norm() const noexcept{ return sqrt(this->dot(*this)); }

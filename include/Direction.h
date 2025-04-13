@@ -5,7 +5,7 @@
 class Point;
 class Direction: public Vector{
     public:
-    explicit Direction(std::nullptr_t): Vector(0.0, 0.0, 0.0){}
+    explicit Direction(std::nullptr_t);
     Direction(double mu, double gamma);
     Direction(double dx, double dy, double dz);
     Direction(const Point& p1, const Point& p2);
@@ -15,7 +15,7 @@ class Direction: public Vector{
     void setY(double) noexcept = delete;
     void setZ(double) noexcept = delete;
 
-    double norm() const noexcept override{ return *this ? 1.0 : 0.0; }
+    double norm() const noexcept override;
 };
 
 #endif // DIRECTION_H

@@ -28,12 +28,12 @@ class Vector{
     Vector operator*(double d) const noexcept;
     Vector& operator*=(double d) noexcept;
 
-    Vector operator/(double d) const;
-    Vector& operator/=(double d);
+    Vector operator/(double d) const noexcept;
+    Vector& operator/=(double d) noexcept;
 
     bool operator==(const Vector& other) const noexcept;
     bool operator!=(const Vector& other) const noexcept{ return !(*this==other); }
-    explicit operator bool() const noexcept{ return _dx != 0.0 || _dy != 0.0 || _dz != 0.0; }
+    explicit operator bool() const noexcept;
 
     double dot(const Vector& other) const noexcept;
     virtual double norm() const noexcept;
@@ -49,6 +49,5 @@ class Vector{
 };
 
 inline Vector operator*(double d, const Vector& v) noexcept{ return v*d; }
-inline Vector operator/(double d, const Vector& v){ return v/d; }
 
 #endif // VECTOR_H
