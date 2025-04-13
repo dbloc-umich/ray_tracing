@@ -1,0 +1,10 @@
+*.d
+*.o
+*.exe
+*.aux
+*.fdb*
+*.fls
+*.log
+*.gz
+*.tex
+*.json
