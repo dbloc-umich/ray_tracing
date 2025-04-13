@@ -33,7 +33,7 @@ class Vector{
 
     bool operator==(const Vector& other) const noexcept;
     bool operator!=(const Vector& other) const noexcept{ return !(*this==other); }
-    explicit operator bool() const noexcept;
+    explicit operator bool() const noexcept{ return _dx != 0.0 || _dy != 0.0 || _dz != 0.0; }
 
     double dot(const Vector& other) const noexcept;
     virtual double norm() const noexcept;

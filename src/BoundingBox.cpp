@@ -41,7 +41,6 @@ BoundingBox::BoundingBox(NodeList& values):
                 x1 = std::max(x1, (*it)->xMax());
                 y1 = std::max(y1, (*it)->yMax());
                 z1 = std::max(z1, (*it)->zMax());
-                //(*it)->setParent(this);
                 _children.emplace_back(std::move(*it));
             }
         }
@@ -82,7 +81,6 @@ bool BoundingBox::contentsOverlap(const Shape& other) const noexcept{
 std::ostream& BoundingBox::print(std::ostream& os) const noexcept{
     printTabs(os, _level);
     Box::print(os);
-    //std::size_t sz = size();
     
     if (size() == 0) os << " is empty.";
     else{

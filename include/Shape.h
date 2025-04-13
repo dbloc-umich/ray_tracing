@@ -46,9 +46,5 @@ class Shape{
     virtual std::ostream& print(std::ostream& os) const noexcept = 0;
     static constexpr double eps = 1e-9;
     double _Sigma_t, _refrac;
-    //mutable BoundingBox* _parent;
-    //BoundingBox* parent() const noexcept{ return _parent; }
-    //void setParent(BoundingBox* parent) const;
-    //void setParent(const Node& parent) const noexcept{ _parent = parent.get(); } 
 };
 #endif // SHAPE_H
