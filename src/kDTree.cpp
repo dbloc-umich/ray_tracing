@@ -49,11 +49,11 @@ iterator medianNode(BoundingBox& bbox0, BoundingBox& bbox1, iterator begin, iter
             else if (axis == 'y') return a->yMin() < b->yMin();
             else return a->zMin() < b->zMin();
         };
-    const std::ptrdiff_t N = end-begin;
+    const auto N = end-begin;
     iterator median = begin+N/2;
     std::nth_element(begin, median, end, comp); // Find the median
     
-    // bbox1 now should encloses the upper half of the nodes in nodes, now partialy sorted about element number N/2-1
+    // bbox1 now should encloses the upper half of the nodes in nodes, now partialy sorted about element number N/2
     Point p = bbox0.lowerVertex();
     if (axis == 'x') p.setX((*median)->xMin() - eps);
     else if (axis == 'y') p.setY((*median)->yMin() - eps);
@@ -163,14 +163,14 @@ bool hasOverlappingContents(const Node& current){
     return false; // not a BoundingBox
 }
 
-Shape* nextExternalNode(BoxStack& stack, const Point& pos, const Direction& dir, Shape* currentNode, double& s){
+Shape* nextExternalNode(BoxStack& stack, const Point& pos, const Direction& dir, std::vector<Shape*>& visitedNodes, double& s){
     if (stack.empty()) return nullptr;
 
-    BoundingBox* box = stack.top();
+    BoundingBox* box = stack.top(); // stack.top() is always at least the parent of all nodes in visitedNodes
     std::size_t index = box->max_size();
     s = std::numeric_limits<double>::max();
     for (std::size_t i = 0; i < box->size(); i++){
-        if ((*box)[i].get() == currentNode) continue;
+        if (std::find(visitedNodes.cbegin(), visitedNodes.cend(), (*box)[i].get()) != visitedNodes.cend()) continue; // currently on a visited Node, will skip
         double dist = (*box)[i]->distanceToSurface(pos, dir);
         if (!std::isnan(dist)){
             Point nextPos = pos;
@@ -183,16 +183,26 @@ Shape* nextExternalNode(BoxStack& stack, const Point& pos, const Direction& dir,
     }
     
     if (index == box->max_size()){ // Can't find nearest neighbor at currentNode
-        currentNode = box;
-        stack.pop();
-        return nextExternalNode(stack, pos, dir, currentNode, s);
+        if (visitedNodes.size() == stack.top()->size()){
+            visitedNodes.clear();
+            visitedNodes.push_back(stack.top());
+            stack.pop();
+        }
+        else if (visitedNodes.size() > 1) visitedNodes.push_back(box);
+        else{
+            if (!dynamic_cast<BoundingBox*>(visitedNodes[0])){
+                stack.pop();
+                visitedNodes[0] = box;
+            }
+            else visitedNodes.push_back(box);
+        }
+        return nextExternalNode(stack, pos, dir, visitedNodes, s);
     }
     if (BoundingBox* subbox = dynamic_cast<BoundingBox*>((*box)[index].get())){ // Goes deeper into currentNode
         stack.push(subbox);
-        return nextExternalNode(stack, pos, dir, currentNode, s);
+        return nextExternalNode(stack, pos, dir, visitedNodes, s);
     }
-    // Found it
-    return (*box)[index].get();
+    return (*box)[index].get(); // Found it
 }
 }
 
@@ -234,7 +244,8 @@ Shape* kDTree::nextNode(const Point& pos, const Direction& dir, Shape* current, 
     if (_root && !std::isnan(_root->distanceToSurface(pos, dir))){
         BoxStack stack;
         stack.emplace(dynamic_cast<BoundingBox*>(_root.get()));
-        auto nextNode = nextExternalNode(stack, pos, dir, current, s);
+        std::vector<Shape*> visited{current};
+        auto nextNode = nextExternalNode(stack, pos, dir, visited, s);
         if (!nextNode) s = NAN;
         return nextNode;
     }

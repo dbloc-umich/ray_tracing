@@ -29,7 +29,7 @@ int main(){
             auto node = tree.nextNode(p, dir, nullptr, s);
             if (s == 0.0){
                 node = tree.nextNode(p, dir, node, s);
-                if (s == 0.0) cerr << "Cannot find the right node.";
+                if (s == 0.0) cerr << "Cannot find the right node." << endl;
             }
             if (node) cout << "p=" << p << ", dir=" << dir << ", s=" << s << ", next node=" << *node << endl;
         } catch(const exception& ex){
@@ -38,13 +38,18 @@ int main(){
     };
 
     // Test for a point outside of the entire Box
-    Point p(-4, 0, 0);
-    Direction dir(1, 0, 0);
-    test(p, dir);
+    {
+        Point p(-4, 0, 0);
+        Direction dir(1, 0, 0);
+        test(p, dir);
+    }
 
     // Test for a Point inside of the Box
-    p = Point(2, 0, 0);
-    test(p, dir);
+    {
+        Point p(3, 3, 0);
+        Direction dir(1, 0, 0);
+        test(p, dir);
+    }
 
     return 0;
 }

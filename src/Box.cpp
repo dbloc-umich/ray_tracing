@@ -78,9 +78,12 @@ bool Box::overlaps(const Shape& other) const noexcept{
 double Box::distanceToSurface(const Point& p, const Direction& dir) const noexcept{
     bool isOnSurface = surfaceContains(p);
     if (isOnSurface){ // point moving on a surface
-        if ((fabs(p.x()-xMin()) <= Shape::eps || fabs(p.x()-xMax()) <= Shape::eps) && dir.dx() == 0.0) return 0.0;
-        if ((fabs(p.y()-yMin()) <= Shape::eps || fabs(p.y()-yMax()) <= Shape::eps) && dir.dy() == 0.0) return 0.0;
-        if ((fabs(p.z()-zMin()) <= Shape::eps || fabs(p.z()-zMax()) <= Shape::eps) && dir.dz() == 0.0) return 0.0;
+        if (fabs(p.x()-xMin()) <= Shape::eps && dir.dx() <= 0.0) return 0.0;
+        if (fabs(p.x()-xMax()) <= Shape::eps && dir.dx() >= 0.0) return 0.0;
+        if (fabs(p.y()-yMin()) <= Shape::eps && dir.dy() <= 0.0) return 0.0;
+        if (fabs(p.y()-yMax()) <= Shape::eps && dir.dy() >= 0.0) return 0.0;
+        if (fabs(p.y()-zMin()) <= Shape::eps && dir.dz() <= 0.0) return 0.0;
+        if (fabs(p.y()-zMax()) <= Shape::eps && dir.dz() >= 0.0) return 0.0;
     }
     
     double d;
@@ -93,38 +96,50 @@ double Box::distanceToSurface(const Point& p, const Direction& dir) const noexce
     auto isValidDistZ = [&](double l) { return distZ(l) >= zMin() && distZ(l) <= zMax(); };
 
     if (dir.dx() != 0.0){
-        if (!isOnSurface || fabs(p.x()-xMin()) > Shape::eps){ // Point not on the xMin surface
-            d = (xMin()-p.x()) / dir.dx();
-            if (isValidDistY(d) && isValidDistZ(d)){ s = (d < s && d > 0) ? d : s; }
-        }
-        if (!isOnSurface || fabs(p.x()-xMax()) > Shape::eps){ // Point not on the xMax surface
-            d = (xMax()-p.x()) / dir.dx();
-            if (isValidDistY(d) && isValidDistZ(d)){ s = (d < s && d > 0) ? d : s; }
+        double dest = NAN;
+        if (p.x()-xMin() < -Shape::eps && dir.dx() > 0.0) dest = xMin(); // less than xMin
+        else if (fabs(p.x()-xMin()) <= Shape::eps && dir.dx() > 0.0) dest = xMax(); // on xMin
+        else if (p.x()-xMin() > Shape::eps && p.x()-xMax() < -Shape::eps) dest = dir.dx() > 0.0 ? xMax() : xMin(); // in between xMin and xMax
+        else if (fabs(p.x()-xMax()) <= Shape::eps && dir.dx() < 0.0) dest = xMin(); // on xMax
+        else if (p.x()-xMax() > Shape::eps && dir.dx() < 0.0) dest = xMax(); // greater than xMax
+
+        if (std::isnan(dest)) return NAN;
+        else{
+            d = (dest-p.x())/dir.dx();
+            if (isValidDistY(d) && isValidDistZ(d)){ s = (d < s) ? d : s; }
         }
     }
 
     if (dir.dy() != 0.0){
-        if (!isOnSurface || fabs(p.y()-yMin()) > Shape::eps){ // Point not on the yMin surface
-            d = (yMin()-p.y()) / dir.dy();
-            if (isValidDistZ(d) && isValidDistX(d)){ s = (d < s && d > 0) ? d : s; }
-        }
-        if (!isOnSurface || fabs(p.y()-yMax()) > Shape::eps){ // Point not on the yMax surface
-            d = (yMax()-p.y()) / dir.dy();
-            if (isValidDistZ(d) && isValidDistX(d)){ s = (d < s && d > 0) ? d : s; }
+        double dest = NAN;
+        if (p.y()-yMin() < -Shape::eps && dir.dy() > 0.0) dest = yMin(); // less than yMin
+        else if (fabs(p.y()-yMin()) <= Shape::eps && dir.dy() > 0.0) dest = yMax(); // on yMin
+        else if (p.y()-yMin() > Shape::eps && p.y()-xMax() < -Shape::eps) dest = dir.dy() > 0.0 ? yMax() : yMin(); // in between yMin and yMax
+        else if (fabs(p.y()-yMax()) <= Shape::eps && dir.dy() < 0.0) dest = yMin(); // on yMax
+        else if (p.y()-yMax() > Shape::eps && dir.dy() < 0.0) dest = yMax(); // greater than yMax
+
+        if (std::isnan(dest)) return NAN;
+        else{
+            d = (dest-p.y())/dir.dy();
+            if (isValidDistZ(d) && isValidDistX(d)){ s = (d < s) ? d : s; }
         }
     }
 
     if (dir.dz() != 0.0){
-        if (!isOnSurface || fabs(p.z()-zMin()) > Shape::eps){ // Point not on the zMin surface
-            d = (zMin()-p.z()) / dir.dz();
-            if (isValidDistX(d) && isValidDistY(d)){ s = (d < s && d > 0) ? d : s; }
-        }
-        if (!isOnSurface || fabs(p.z()-zMax()) > Shape::eps){ // Point not on the zMax surface
-            d = (zMax()-p.z()) / dir.dz();
-            if (isValidDistX(d) && isValidDistY(d)){ s = (d < s && d > 0) ? d : s; }
+        double dest = NAN;
+        if (p.z()-zMin() < -Shape::eps && dir.dz() > 0.0) dest = zMin(); // less than zMin
+        else if (fabs(p.z()-zMin()) <= Shape::eps && dir.dz() > 0.0) dest = zMax(); // on zMin
+        else if (p.z()-zMin() > Shape::eps && p.z()-zMax() < -Shape::eps) dest = dir.dz() > 0.0 ? zMax() : zMin(); // in between zMin and zMax
+        else if (fabs(p.z()-zMax()) <= Shape::eps && dir.dz() < 0.0) dest = zMin(); // on zMax
+        else if (p.z()-zMax() > Shape::eps && dir.dz() < 0.0) dest = zMax(); // greater than zMax
+
+        if (std::isnan(dest)) return NAN;
+        else{
+            d = (dest-p.z())/dir.dz();
+            if (isValidDistX(d) && isValidDistY(d)){ s = (d < s) ? d : s; }
         }
     }
-    return s == std::numeric_limits<double>::max() ? (isOnSurface ? 0.0 : NAN) : s;
+    return s;
 }
 
 Direction Box::normal(const Point& pos) const{

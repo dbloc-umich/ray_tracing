@@ -1,10 +1,15 @@
+# Objects and dependencies
 *.d
 *.o
 *.exe
+
+# Latex
 *.aux
 *.fdb*
 *.fls
 *.log
 *.gz
 *.tex
+
+# Vscode settings
 *.json
