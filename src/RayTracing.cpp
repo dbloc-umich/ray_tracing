@@ -56,8 +56,9 @@ double intensity(const kDTree& tree, Point p, const Direction& dir, Shape* curre
     if (refract){
         double cosi = fabs(dir.dot(normal));
         double cost = fabs(refract.dot(normal));
-        double R = (n1*cosi - n2*cost)/(n1*cosi + n2*cost);
-        R *= R; // reflection coefficient
+        double Rs = (n1*cosi - n2*cost)/(n1*cosi + n2*cost);
+        double Rp = (n1*cost - n2*cosi)/(n1*cost + n2*cosi);
+        double R = 0.5*(Rs*Rs + Rp*Rp); // reflectance
         return intensity(tree, p, reflect, next, initial*R) + intensity(tree, p, refract, next, initial*(1-R));
     }
     return intensity(tree, p, reflect, next, initial); // total internal reflection

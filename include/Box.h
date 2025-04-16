@@ -39,8 +39,7 @@ class Box: public Shape{
     Direction normal(const Point& pos) const override;
 
     protected:
-    Point _lower;
-    Point _upper;
+    Point _lower, _upper;
     std::ostream& print(std::ostream& os) const noexcept override;
 };
 #endif // BOX_H

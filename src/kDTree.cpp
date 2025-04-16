@@ -5,31 +5,9 @@
 #include <cmath>
 #include <exception>
 #include <limits>
-#include <stack>
 #include <tuple>
 
 namespace{
-    using iterator = NodeList::iterator;
-    using const_iterator = NodeList::const_iterator;
-    using BoxStack = std::stack<BoundingBox*>;
-    constexpr double eps = 1e-5; // a small nudge given to each dimension of the BoundingBox
-
-decltype(auto) findVertices(const_iterator cbegin, const_iterator cend){
-    double x0, y0, z0, x1, y1, z1;
-    x0 = y0 = z0 = std::numeric_limits<double>::max();
-    x1 = y1 = z1 = std::numeric_limits<double>::min();
-    for (auto it = cbegin; it != cend; it++){
-        x0 = std::min(x0, (*it)->xMin());
-        y0 = std::min(y0, (*it)->yMin());
-        z0 = std::min(z0, (*it)->zMin());
-        x1 = std::max(x1, (*it)->xMax());
-        y1 = std::max(y1, (*it)->yMax());
-        z1 = std::max(z1, (*it)->zMax());
-    }
-    x0 -= eps; y0 -= eps; z0 -= eps;
-    x1 += eps; y1 += eps; z1 += eps;
-    return std::make_tuple(Point(x0, y0, z0), Point(x1, y1, z1));
-}
 
 iterator medianNode(BoundingBox& bbox0, BoundingBox& bbox1, iterator begin, iterator end, const char axis='x'){
     /**
@@ -207,7 +185,7 @@ Shape* nextExternalNode(BoxStack& stack, const Point& pos, const Direction& dir,
 }
 
 kDTree::kDTree(NodeList& nodes):
-    _root(nullptr)
+    Tree()
 {
     if (!nodes.empty()){
         Point lower, upper;
@@ -245,23 +223,11 @@ Shape* kDTree::nextNode(const Point& pos, const Direction& dir, Shape* current, 
         BoxStack stack;
         stack.emplace(dynamic_cast<BoundingBox*>(_root.get()));
         std::vector<Shape*> visited{current};
+        visited.reserve(8);
         auto nextNode = nextExternalNode(stack, pos, dir, visited, s);
         if (!nextNode) s = NAN;
         return nextNode;
     }
     s = NAN;
     return nullptr;
-}
-
-double kDTree::xMin() const noexcept{ return _root ? _root->xMin() : NAN; }
-double kDTree::xMax() const noexcept{ return _root ? _root->xMax() : NAN; }
-double kDTree::yMin() const noexcept{ return _root ? _root->yMin() : NAN; }
-double kDTree::yMax() const noexcept{ return _root ? _root->yMax() : NAN; }
-double kDTree::zMin() const noexcept{ return _root ? _root->zMin() : NAN; }
-double kDTree::zMax() const noexcept{ return _root ? _root->zMax() : NAN; }
-
-std::ostream& operator<<(std::ostream& os, const kDTree& tree){
-    if (tree._root) os << *(tree._root);
-    else os << "Empty tree.";
-    return os;
 }
