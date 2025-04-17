@@ -13,10 +13,6 @@ class Vector{
     double dy() const noexcept{ return _dy; }
     double dz() const noexcept{ return _dz; }
 
-    void setX(double dx) noexcept{ _dx = dx; }
-    void setY(double dy) noexcept{ _dy = dy; }
-    void setZ(double dz) noexcept{ _dz = dz; }
-
     Vector operator+() const noexcept;
     Vector operator+(const Vector& other) const noexcept;
     Vector& operator+=(const Vector& other) noexcept;
@@ -49,5 +45,15 @@ class Vector{
 };
 
 inline Vector operator*(double d, const Vector& v) noexcept{ return v*d; }
+
+class MutableVector : public Vector{
+    public:
+    using Vector::Vector;
+    MutableVector(const Vector& v): Vector(v.dx(), v.dy(), v.dz()) {}
+
+    void setX(double dx) noexcept{ _dx = dx; }
+    void setY(double dy) noexcept{ _dy = dy; }
+    void setZ(double dz) noexcept{ _dz = dz; }
+};
 
 #endif // VECTOR_H

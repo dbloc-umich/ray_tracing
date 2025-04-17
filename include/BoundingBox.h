@@ -19,11 +19,6 @@ class BoundingBox: public Box{
     BoundingBox& operator=(const BoundingBox&) = delete;
     BoundingBox& operator=(BoundingBox&&) = default;
 
-    double Sigma_t() const noexcept override{ return 0.0; } // A BoundingBox cannot have any cross section
-    void setSigma_t(double) = delete;
-    double refractive() const noexcept override{ return 1.0; } // Assumed vacuum
-    void setRefractive(double) = delete;
-
     Node& operator[](std::size_t i) noexcept;
     const Node& operator[](std::size_t i) const noexcept{ return _children[i]; }
     std::size_t level(){ return _level; }

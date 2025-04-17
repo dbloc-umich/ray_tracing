@@ -11,10 +11,6 @@ class Direction: public Vector{
     Direction(const Point& p1, const Point& p2);
     Direction(const Vector& v): Direction(v.dx(), v.dy(), v.dz()){}
 
-    void setX(double) noexcept = delete;
-    void setY(double) noexcept = delete;
-    void setZ(double) noexcept = delete;
-
     double norm() const noexcept override;
 };
 
