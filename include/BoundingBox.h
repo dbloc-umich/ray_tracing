@@ -30,10 +30,11 @@ class BoundingBox: public Box{
 
     bool contentsOverlap(const Shape& other) const noexcept override;
 
-    std::size_t size() const noexcept{ return _children.size(); }
+    std::size_t size() const noexcept;
     constexpr std::size_t max_size() const noexcept{ return 8; }
-    bool empty() const noexcept{ return size() == 0; }
-    bool full() const noexcept{ return size() == 8; }
+    std::size_t numContents() const noexcept{ return _contents.size(); }
+    bool empty() const noexcept;
+    bool full() const noexcept;
 
     protected:
     NodeList _children, _contents;

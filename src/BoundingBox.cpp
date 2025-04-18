@@ -33,6 +33,28 @@ bool BoundingBox::contentsOverlap(const Shape& other) const noexcept{
     return false;
 }
 
+std::size_t BoundingBox::size() const noexcept{
+    std::size_t sz = 0;
+    for (const auto& node: _children){
+        if (node) sz++;
+    }
+    return sz;
+}
+
+bool BoundingBox::empty() const noexcept{
+    for (const auto& node: _children){
+        if (node) return false;
+    }
+    return true;
+}
+
+bool BoundingBox::full() const noexcept{
+    for (const auto& node: _children){
+        if (!node) return false;
+    }
+    return true;    
+}
+
 std::ostream& BoundingBox::print(std::ostream& os) const noexcept{
     printTabs(os, _level);
     Box::print(os);
