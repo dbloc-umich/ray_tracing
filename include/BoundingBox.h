@@ -33,8 +33,6 @@ class BoundingBox: public Box{
     const Node& operator()(std::size_t i) const noexcept{ return _contents[i]; }
     void push(Node& node) noexcept{ _contents.push_back(std::move(node)); }
     void push(Node&& node) noexcept{ _contents.push_back(std::move(node)); }
-    template<typename T>
-    void emplace(T&& node) noexcept { _contents.emplace_back(std::forward<T>(node)); }
     
     std::size_t level(){ return _level; }
     void setLevel(std::size_t level){ _level = level; }
