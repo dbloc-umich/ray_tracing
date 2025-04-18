@@ -1,6 +1,6 @@
 #include "RayTracing.h"
 #include "Direction.h"
-#include "kDTree.h"
+#include "Octree.h"
 
 #include <cmath>
 
@@ -19,7 +19,7 @@ Direction refracted(const Direction& in, const Direction& normal, double n1, dou
     return Direction(nullptr);
 }
 
-double intensity(const kDTree& tree, Point p, const Direction& dir, Shape* current, double initial){
+double intensity(const Octree& tree, Point p, const Direction& dir, Shape* current, double initial){
     if (initial < 1e-12) return initial;
     double s; // placeholder
     Shape* next = tree.nextNode(p, dir, current, s);

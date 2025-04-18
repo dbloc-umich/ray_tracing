@@ -2,6 +2,7 @@
 #define BOUNDING_BOX_H
 #include "Box.h"
 #include <memory>
+#include <type_traits>
 #include <vector>
 
 using Node = std::unique_ptr<Shape>;
@@ -9,9 +10,10 @@ using NodeList = std::vector<Node>;
 
 class BoundingBox: public Box{
     public:
-    BoundingBox(const Point& lower, const Point& upper);
-    BoundingBox(double x0=0.0, double y0=0.0, double z0=0.0, double x1=1.0, double y1=1.0, double z1=1.0);
-    explicit BoundingBox(NodeList& values);
+    template <typename... Args,
+              typename = std::enable_if_t<!std::is_base_of<BoundingBox, std::decay_t<Args>...>::value>>
+    BoundingBox(Args&&... args): Box(std::forward<Args>(args)...), _children(8), _contents{}, _level(0) {}
+
     BoundingBox(const BoundingBox&) = delete;
     BoundingBox(BoundingBox&&) = default;
     ~BoundingBox() = default;
@@ -19,8 +21,10 @@ class BoundingBox: public Box{
     BoundingBox& operator=(const BoundingBox&) = delete;
     BoundingBox& operator=(BoundingBox&&) = default;
 
-    Node& operator[](std::size_t i) noexcept;
+    Node& operator[](std::size_t i) noexcept{ return _children[i]; }
     const Node& operator[](std::size_t i) const noexcept{ return _children[i]; }
+    Node& operator()(std::size_t i) noexcept{ return _contents[i]; }
+    const Node& operator()(std::size_t i) const noexcept{ return _contents[i]; }
     std::size_t level(){ return _level; }
     void setLevel(std::size_t level){ _level = level; }
 
@@ -32,8 +36,9 @@ class BoundingBox: public Box{
     bool full() const noexcept{ return size() == 8; }
 
     protected:
-    NodeList _children;
+    NodeList _children, _contents;
     std::size_t _level;
     std::ostream& print(std::ostream& os) const noexcept override;
 };
+
 #endif // BOUNDING_BOX_H
