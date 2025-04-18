@@ -4,22 +4,22 @@
 #include <type_traits>
 
 #include "Direction.h"
-#include "kDTree.h"
+#include "Octree.h"
 #include "RayTracing.h"
 #include "Sphere.h"
 using namespace std;
 
 int main(){
     const double R = 2;
-    const double Sigma_t = 0.01;
+    const double Sigma_t = 0.1;
     const double refrac = 1.5;
 
-    NodeList nodes;
-    for (int i = 0; i < 1; i++){
+    std::vector<Node> nodes;
+    for (int i = 0; i < 8; i++){
         nodes.emplace_back(std::make_unique<Sphere>(0, 2*i*R, 0, R, Sigma_t, refrac));
-        nodes.emplace_back(std::make_unique<Sphere>(4*R, 2*i*R, 0, R, Sigma_t, refrac));
+        //nodes.emplace_back(std::make_unique<Sphere>(4*R, 2*i*R, 0, R, Sigma_t, refrac));
     }
-    kDTree tree(nodes);
+    Octree tree(nodes);
     std::cout << tree << std::endl;
 
     /*
@@ -39,10 +39,28 @@ int main(){
     };
     */
 
-    Point p(-4, 0, 0);
-    Direction dir(1, 0, 0);
-    double I = intensity(tree, p, dir);
-    cout << I << endl;
+    /*
+    // Test for a point outside of the entire Box
+    {
+        Point p(-4, 0, 0);
+        Direction dir(1, 0, 0);
+        test(p, dir);
+    }
+
+    // Test for a Point inside of the Box
+    {
+        Point p(3, 3, 0);
+        Direction dir(1, 0, 0);
+        test(p, dir);
+    }
+    */
+
+    {
+        Point p(-2*R, 0, 0);
+        Direction dir(3, 1, 0);
+        double I = intensity(tree, p, dir);
+        cout << I << endl;
+    }
 
     return 0;
 }

@@ -1,20 +1,20 @@
-#ifndef KD_TREE_H
-#define KD_TREE_H
+#ifndef OCTREE_H
+#define OCTREE_H
 #include "BoundingBox.h"
 
-class kDTree{
+class Octree{
     public:
-    kDTree(): _root(nullptr) {}
-    explicit kDTree(NodeList& nodes);
-    kDTree(const kDTree&) = delete;
-    kDTree(kDTree&&) = default;
-    ~kDTree() = default;
+    Octree(): _root(nullptr) {}
+    explicit Octree(std::vector<Node>& nodes);
+    Octree(const Octree&) = delete;
+    Octree(Octree&&) = default;
+    virtual ~Octree() = default;
     
-    kDTree& operator=(const kDTree&) = delete;
-    kDTree& operator=(kDTree&&) = default;
+    Octree& operator=(const Octree&) = delete;
+    Octree& operator=(Octree&&) = default;
 
     void insert(Node& node);
-    NodeList remove(Node& node);
+    std::vector<Node> remove(Node& node);
     /**
      * Inputs:
      *  pos: the position of the particle, must be on the surface of a leaf node
@@ -35,9 +35,10 @@ class kDTree{
     double zMax() const noexcept;
 
     explicit operator bool() const noexcept{ return bool(_root); } // to check if tree is empty
-    friend std::ostream& operator<<(std::ostream& os, const kDTree& tree);
+    friend std::ostream& operator<<(std::ostream& os, const Octree& tree);
 
     protected:
     Node _root;
 };
-#endif // KD_TREE_H
+
+#endif // OCTREE_H

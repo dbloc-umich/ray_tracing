@@ -1,6 +1,6 @@
 #include "RayTracing.h"
 #include "Direction.h"
-#include "kDTree.h"
+#include "Octree.h"
 
 #include <cmath>
 #include <random>
@@ -26,7 +26,7 @@ Direction refracted(const Direction& in, const Direction& normal, double n1, dou
     return Direction(nullptr);
 }
 
-double intensity(const kDTree& tree, Point p, const Direction& dir, Shape* current, double initial){
+double intensity(const Octree& tree, Point p, const Direction& dir, Shape* current, double initial){
     if (initial < IThreshold){
         double prob = initial/IThreshold; // survival probability
         std::cout << prob << std::endl;
@@ -68,8 +68,9 @@ double intensity(const kDTree& tree, Point p, const Direction& dir, Shape* curre
     if (refract){
         double cosi = fabs(dir.dot(normal));
         double cost = fabs(refract.dot(normal));
-        double R = (n1*cosi - n2*cost)/(n1*cosi + n2*cost);
-        R *= R; // reflection coefficient
+        double Rs = (n1*cosi - n2*cost)/(n1*cosi + n2*cost);
+        double Rp = (n1*cost - n2*cosi)/(n1*cost + n2*cosi);
+        double R = 0.5*(Rs*Rs + Rp*Rp); // reflectance
         return intensity(tree, p, reflect, next, initial*R) + intensity(tree, p, refract, next, initial*(1-R));
     }
     return intensity(tree, p, reflect, next, initial); // total internal reflection

@@ -10,7 +10,7 @@ class Direction: public Vector{
     Direction(double dx, double dy, double dz);
     Direction(const Point& p1, const Point& p2);
     Direction(const Vector& v): Direction(v.dx(), v.dy(), v.dz()){}
-
+  
     double norm() const noexcept override;
 };
 

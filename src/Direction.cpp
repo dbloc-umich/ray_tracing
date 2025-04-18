@@ -14,15 +14,13 @@ Direction::Direction(double mu, double gamma):
 Direction::Direction(double dx, double dy, double dz):
     Vector(dx, dy, dz)
 {
-    double norm = Vector::norm();
-    *this /= norm;
+    *this /= Vector::norm();
 }
 
 Direction::Direction(const Point& p1, const Point& p2):
     Vector(p1, p2)
 {
-    double norm = Vector::norm();
-    *this /= norm;
+    *this /= Vector::norm();
 }
 
 double Direction::norm() const noexcept{ return *this ? 1.0 : NAN; }
