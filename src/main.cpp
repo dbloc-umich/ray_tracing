@@ -22,6 +22,7 @@ int main(){
     Octree tree(nodes);
     std::cout << tree << std::endl;
 
+    /*
     auto test = [&tree](Point p, Direction dir) -> void
     {
         try{
@@ -36,6 +37,7 @@ int main(){
             cerr << ex.what() << endl;
         }
     };
+    */
 
     /*
     // Test for a point outside of the entire Box
@@ -59,7 +61,6 @@ int main(){
         double I = intensity(tree, p, dir);
         cout << I << endl;
     }
-
 
     return 0;
 }

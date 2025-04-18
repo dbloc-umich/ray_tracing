@@ -18,7 +18,6 @@ class BoundingBox: public Box{
 
     BoundingBox(const Point& lower, const Point& upper);
     explicit BoundingBox(double x0=0.0, double y0=0.0, double z0=0.0, double x1=1.0, double y1=1.0, double z1=1.0);
-
     BoundingBox(const BoundingBox&) = delete;
     BoundingBox(BoundingBox&&) = default;
     ~BoundingBox() = default;

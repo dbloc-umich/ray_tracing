@@ -3,6 +3,13 @@
 #include "Octree.h"
 
 #include <cmath>
+#include <random>
+
+namespace{
+    static constexpr double IThreshold = 1e-6;
+    static std::default_random_engine rng(64);
+    static std::uniform_real_distribution<double> dist(0.0, 1.0);
+}
 
 Direction reflected(const Direction& in, const Direction& normal){ return in - 2*(normal.dot(in))*normal; }
 Direction refracted(const Direction& in, const Direction& normal, double n1, double n2){
@@ -20,12 +27,17 @@ Direction refracted(const Direction& in, const Direction& normal, double n1, dou
 }
 
 double intensity(const Octree& tree, Point p, const Direction& dir, Shape* current, double initial){
-    if (initial < 1e-12) return initial;
+    if (initial < IThreshold){
+        double prob = initial/IThreshold; // survival probability
+        std::cout << prob << std::endl;
+        if (dist(rng) <= prob) return intensity(tree, p, dir, nullptr, IThreshold);
+        return 0.0;
+    }
     double s; // placeholder
     Shape* next = tree.nextNode(p, dir, current, s);
-    if (!next){
-        std::cout << "Recovering " << initial << std::endl;
-        return initial;
+    if (!next) return initial;
+    {
+        //std::cout << "Recovering " << initial << std::endl;
     }
 
     p.advance(dir, s);
