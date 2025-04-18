@@ -1,13 +1,11 @@
 #ifndef OCTREE_H
 #define OCTREE_H
 #include "BoundingBox.h"
-#include <stack>
 
-static constexpr double BOX_EPS = 1e-5; // a small nudge given to each dimension of the BoundingBox
 class Octree{
     public:
     Octree(): _root(nullptr) {}
-    explicit Octree(NodeList& nodes);
+    explicit Octree(std::vector<Node>& nodes);
     Octree(const Octree&) = delete;
     Octree(Octree&&) = default;
     virtual ~Octree() = default;
@@ -16,7 +14,7 @@ class Octree{
     Octree& operator=(Octree&&) = default;
 
     void insert(Node& node);
-    NodeList remove(Node& node);
+    std::vector<Node> remove(Node& node);
     /**
      * Inputs:
      *  pos: the position of the particle, must be on the surface of a leaf node

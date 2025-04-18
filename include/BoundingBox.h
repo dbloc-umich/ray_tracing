@@ -1,12 +1,12 @@
 #ifndef BOUNDING_BOX_H
 #define BOUNDING_BOX_H
 #include "Box.h"
+#include<array>
 #include <memory>
 #include <type_traits>
 #include <vector>
 
-using Node = std::unique_ptr<Shape>;
-using NodeList = std::vector<Node>;
+using Node = std::unique_ptr<Shape>; // may be redefined as a class later to include bidirectional nodes
 
 class BoundingBox: public Box{
     public:
@@ -48,7 +48,8 @@ class BoundingBox: public Box{
     std::size_t octant(const Shape& other) const noexcept;
 
     protected:
-    NodeList _children, _contents;
+    std::array<Node, 8> _children;
+    std::vector<Node> _contents;
     std::size_t _level;
     std::ostream& print(std::ostream& os) const noexcept override;
 };
