@@ -10,9 +10,14 @@ using NodeList = std::vector<Node>;
 
 class BoundingBox: public Box{
     public:
+    /* To be worked on later
     template <typename... Args,
               typename = std::enable_if_t<!std::is_base_of<BoundingBox, std::decay_t<Args>...>::value>>
     BoundingBox(Args&&... args): Box(std::forward<Args>(args)...), _children(8), _contents{}, _level(0) {}
+    */
+
+    BoundingBox(const Point& lower, const Point& upper);
+    explicit BoundingBox(double x0=0.0, double y0=0.0, double z0=0.0, double x1=1.0, double y1=1.0, double z1=1.0);
 
     BoundingBox(const BoundingBox&) = delete;
     BoundingBox(BoundingBox&&) = default;
@@ -23,8 +28,14 @@ class BoundingBox: public Box{
 
     Node& operator[](std::size_t i) noexcept{ return _children[i]; }
     const Node& operator[](std::size_t i) const noexcept{ return _children[i]; }
+    
     Node& operator()(std::size_t i) noexcept{ return _contents[i]; }
     const Node& operator()(std::size_t i) const noexcept{ return _contents[i]; }
+    void push(Node& node) noexcept{ _contents.push_back(std::move(node)); }
+    void push(Node&& node) noexcept{ _contents.push_back(std::move(node)); }
+    template<typename T>
+    void emplace(T&& node) noexcept { _contents.emplace_back(std::forward<T>(node)); }
+    
     std::size_t level(){ return _level; }
     void setLevel(std::size_t level){ _level = level; }
 
@@ -35,6 +46,8 @@ class BoundingBox: public Box{
     std::size_t numContents() const noexcept{ return _contents.size(); }
     bool empty() const noexcept;
     bool full() const noexcept;
+
+    std::size_t octant(const Shape& other) const noexcept;
 
     protected:
     NodeList _children, _contents;

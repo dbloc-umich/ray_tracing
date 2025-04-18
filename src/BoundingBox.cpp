@@ -8,6 +8,20 @@ static std::ostream& printTabs(std::ostream& os, std::size_t n){
     return os;
 }
 
+BoundingBox::BoundingBox(const Point& lower, const Point& upper):
+    Box(lower, upper),
+    _children(8),
+    _contents{},
+    _level(0)
+{}
+
+BoundingBox::BoundingBox(double x0, double y0, double z0, double x1, double y1, double z1):
+    Box(x0, y0, z0, x1, y1, z1),
+    _children(8),
+    _contents{},
+    _level(0)    
+{}
+
 bool BoundingBox::contentsOverlap(const Shape& other) const noexcept{
     if (this == &other) return true;  // same object 
     if (!this->overlaps(other)) return false;
@@ -53,6 +67,13 @@ bool BoundingBox::full() const noexcept{
         if (!node) return false;
     }
     return true;    
+}
+
+std::size_t BoundingBox::octant(const Shape& other) const noexcept{
+    // Check if there's an octant that fully contains the Shape
+    
+    std::size_t oct = 0;
+    return oct;
 }
 
 std::ostream& BoundingBox::print(std::ostream& os) const noexcept{

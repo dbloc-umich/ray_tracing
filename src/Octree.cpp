@@ -6,43 +6,69 @@ namespace{
     using const_iterator = NodeList::const_iterator;
     using BoxStack = std::stack<BoundingBox*>;
 
-    decltype(auto) findVertices(const_iterator cbegin, const_iterator cend){
-        double x0, y0, z0, x1, y1, z1;
-        x0 = y0 = z0 = std::numeric_limits<double>::max();
-        x1 = y1 = z1 = std::numeric_limits<double>::min();
-        for (auto it = cbegin; it != cend; it++){
-            x0 = std::min(x0, (*it)->xMin());
-            y0 = std::min(y0, (*it)->yMin());
-            z0 = std::min(z0, (*it)->zMin());
-            x1 = std::max(x1, (*it)->xMax());
-            y1 = std::max(y1, (*it)->yMax());
-            z1 = std::max(z1, (*it)->zMax());
-        }
-        x0 -= BOX_EPS; y0 -= BOX_EPS; z0 -= BOX_EPS;
-        x1 += BOX_EPS; y1 += BOX_EPS; z1 += BOX_EPS;
-        return std::make_tuple(Point(x0, y0, z0), Point(x1, y1, z1));
+decltype(auto) findVertices(const_iterator cbegin, const_iterator cend){
+    double x0, y0, z0, x1, y1, z1;
+    x0 = y0 = z0 = std::numeric_limits<double>::max();
+    x1 = y1 = z1 = std::numeric_limits<double>::min();
+    for (auto it = cbegin; it != cend; it++){
+        x0 = std::min(x0, (*it)->xMin());
+        y0 = std::min(y0, (*it)->yMin());
+        z0 = std::min(z0, (*it)->zMin());
+        x1 = std::max(x1, (*it)->xMax());
+        y1 = std::max(y1, (*it)->yMax());
+        z1 = std::max(z1, (*it)->zMax());
     }
+    x0 -= BOX_EPS; y0 -= BOX_EPS; z0 -= BOX_EPS;
+    x1 += BOX_EPS; y1 += BOX_EPS; z1 += BOX_EPS;
+    return std::make_tuple(Point(x0, y0, z0), Point(x1, y1, z1));
+}
 
-    bool hasOverlappingContents(const Node& current){
-        // Potentially O(N^2) in time complexity
-        /*
-        if (!current) return false; // nullptr;
-        if (const BoundingBox* box = dynamic_cast<const BoundingBox*>(current.get())){
-            for (std::size_t i = 0; i < box->size(); i++){
-                if (!(*box)[i]) continue; // nullptr
-                if (hasOverlappingContents((*box)[i])) return true;
+void construct(Node& current, iterator begin, iterator end, Point& lower, Point& upper, std::size_t level){
+    /**
+     * Inputs:
+     *  current: pointer to the BoundingBox at which space partitioning occurs
+     *  nodes: a vector of all nodes contained within *current
+     *  begin, end: indices of nodes to partition
+     *  lower, upper: vertices of the BoundingBox that must enclose all objects in nodes
+     * Outputs:
+     *  Recursively construct a kDTree as an octree
+    **/
 
-                for (std::size_t j = i+1; j < box->size(); j++){
-                    if (!(*box)[j]) continue; // nullptr
-                    if ((*box)[i]->contentsOverlap(*(*box)[j])) return true;
-                }
+    if (!current){ // current is nullptr
+        std::unique_ptr<BoundingBox> node = std::make_unique<BoundingBox>(lower, upper);
+        node->setLevel(level);
+        current = std::move(node);
+    }    
+}
+
+void destruct(Node& current, NodeList& nodes){
+    if (current){ // not nullptr
+        if (BoundingBox* box = dynamic_cast<BoundingBox*>(current.get())){
+            // If current is a BoundingBox, recursively destruct its children
+            for (std::size_t i = 0; i < box->size(); i++) destruct((*box)[i], nodes);
+        } else nodes.emplace_back(std::move(current));
+        current.reset();
+    }
+}
+
+bool hasOverlappingContents(const Node& current){
+    // Potentially O(N^2) in time complexity
+
+    if (!current) return false; // nullptr;
+    if (const BoundingBox* box = dynamic_cast<const BoundingBox*>(current.get())){
+        for (std::size_t i = 0; i < box->size(); i++){
+            if (!(*box)[i]) continue; // nullptr
+            if (hasOverlappingContents((*box)[i])) return true;
+
+            for (std::size_t j = 0; j < box->numContents(); j++){
+                if ((*box)[i]->contentsOverlap(*(*box)(j))) return true;
             }
         }
-        */
-        return false; // not a BoundingBox
     }
+    return false; // not a BoundingBox
+}
 
-    Shape* nextExternalNode(BoxStack& stack, const Point& pos, const Direction& dir, std::vector<Shape*>& visitedNodes, double& s){ return visitedNodes[0]; }
+Shape* nextExternalNode(BoxStack& stack, const Point& pos, const Direction& dir, std::vector<Shape*>& visitedNodes, double& s){ return visitedNodes[0]; }
 }
 
 Shape* Octree::nextNode(const Point& pos, const Direction& dir, Shape* current, double& s) const{
