@@ -2,10 +2,10 @@
 #define POINT_H
 #include <iostream>
 
-class Direction;
+class Vector;
 class Point{
     public:
-    Point(double x=0.0, double y=0.0, double z=0.0): _x(x), _y(y), _z(z) {}
+    explicit Point(double x=0.0, double y=0.0, double z=0.0): _x(x), _y(y), _z(z) {}
 
     double x() const noexcept{ return _x; }
     double y() const noexcept{ return _y; }
@@ -19,7 +19,7 @@ class Point{
     bool operator==(const Point& other) const noexcept;
     bool operator!=(const Point& other) const noexcept{ return !(*this==other); }
 
-    Point& advance(const Direction& dir, const double s);
+    Point& advance(const Vector& v, const double s=1);
     
     friend std::ostream& operator<<(std::ostream& os, const Point& p);
 

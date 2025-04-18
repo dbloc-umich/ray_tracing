@@ -1,5 +1,5 @@
 #include "Point.h"
-#include "Direction.h"
+#include "Vector.h"
 
 #include <cmath>
 #include <limits>
@@ -16,10 +16,10 @@ bool Point::operator==(const Point& other) const noexcept{
     return x && y && z;
 }
 
-Point& Point::advance(const Direction& dir, const double s){
-    _x += dir.dx()*s;
-    _y += dir.dy()*s;
-    _z += dir.dz()*s;
+Point& Point::advance(const Vector& v, const double s){
+    _x += v.dx()*s;
+    _y += v.dy()*s;
+    _z += v.dz()*s;
     return *this;
 }
 

@@ -11,17 +11,18 @@ using namespace std;
 
 int main(){
     const double R = 2;
-    const double Sigma_t = 0.5;
-    const double refrac = 1.3;
+    const double Sigma_t = 0.01;
+    const double refrac = 1.5;
 
     NodeList nodes;
-    for (int i = 0; i < 8; i++){
+    for (int i = 0; i < 1; i++){
         nodes.emplace_back(std::make_unique<Sphere>(0, 2*i*R, 0, R, Sigma_t, refrac));
         nodes.emplace_back(std::make_unique<Sphere>(4*R, 2*i*R, 0, R, Sigma_t, refrac));
     }
     kDTree tree(nodes);
     std::cout << tree << std::endl;
 
+    /*
     auto test = [&tree](Point p, Direction dir) -> void
     {
         try{
@@ -36,20 +37,12 @@ int main(){
             cerr << ex.what() << endl;
         }
     };
+    */
 
-    // Test for a point outside of the entire Box
-    {
-        Point p(-4, 0, 0);
-        Direction dir(1, 0, 0);
-        test(p, dir);
-    }
-
-    // Test for a Point inside of the Box
-    {
-        Point p(3, 3, 0);
-        Direction dir(1, 0, 0);
-        test(p, dir);
-    }
+    Point p(-4, 0, 0);
+    Direction dir(1, 0, 0);
+    double I = intensity(tree, p, dir);
+    cout << I << endl;
 
     return 0;
 }

@@ -10,7 +10,7 @@ using NodeList = std::vector<Node>;
 class BoundingBox: public Box{
     public:
     BoundingBox(const Point& lower, const Point& upper);
-    BoundingBox(double x0=0.0, double y0=0.0, double z0=0.0, double x1=1.0, double y1=1.0, double z1=1.0);
+    explicit BoundingBox(double x0=0.0, double y0=0.0, double z0=0.0, double x1=1.0, double y1=1.0, double z1=1.0);
     explicit BoundingBox(NodeList& values);
     BoundingBox(const BoundingBox&) = delete;
     BoundingBox(BoundingBox&&) = default;

@@ -8,7 +8,7 @@ class Point;
 
 class Shape{
     public:
-    Shape(double Sigma_t=0.0, double refrac=1.0);
+    explicit Shape(double Sigma_t=0.0, double refrac=1.0);
     virtual ~Shape() = default;
 
     virtual double Sigma_t() const noexcept{ return _Sigma_t; }

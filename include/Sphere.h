@@ -6,8 +6,8 @@
 class Box;
 class Sphere: public Shape{  
     public:
-    Sphere(const Point& pt, double R=1.0, double Sigma_t=0.0, double refrac=1.0);
-    Sphere(double x=0.0, double y=0.0, double z=0.0, double R=1.0, double Sigma_t=0.0, double refrac=1.0);
+    explicit Sphere(const Point& pt, double R=1.0, double Sigma_t=0.0, double refrac=1.0);
+    explicit Sphere(double x=0.0, double y=0.0, double z=0.0, double R=1.0, double Sigma_t=0.0, double refrac=1.0);
 
     Point origin() const noexcept{ return _origin; }
     double radius() const noexcept{ return _radius; }
