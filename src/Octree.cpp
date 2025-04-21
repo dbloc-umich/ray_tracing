@@ -13,7 +13,7 @@ namespace{
     using const_iterator = NodeList::const_iterator;
     using BoxStack = std::stack<BoundingBox*>;
 
-void construct(Node& current, NodeList& nodes, const Point& lower, const Point& upper, std::size_t level){
+void construct(Node& current, NodeList& nodes, const Point& lower, const Point& upper, std::size_t level=0){
 
     if (!current){ // current is nullptr
         std::unique_ptr<BoundingBox> box = std::make_unique<BoundingBox>(lower, upper);
@@ -147,7 +147,7 @@ Octree::Octree(NodeList& nodes):
         
         Point lower(x0, y0, z0);
         Point upper(x1, y1, z1);
-        construct(_root, nodes, lower, upper, 0);
+        construct(_root, nodes, lower, upper);
         
         if (hasOverlappingContents(_root)){
             NodeList movedNodes;

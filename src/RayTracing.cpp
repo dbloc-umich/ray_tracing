@@ -29,16 +29,13 @@ Direction refracted(const Direction& in, const Direction& normal, double n1, dou
 double intensity(const Octree& tree, Point p, const Direction& dir, Shape* current, double initial){
     if (initial < IThreshold){
         double prob = initial/IThreshold; // survival probability
-        std::cout << prob << std::endl;
-        if (dist(rng) <= prob) return intensity(tree, p, dir, nullptr, IThreshold);
+        double rand = dist(rng);
+        if (rand <= prob) return intensity(tree, p, dir, current, IThreshold);
         return 0.0;
     }
     double s; // placeholder
     Shape* next = tree.nextNode(p, dir, current, s);
     if (!next) return initial;
-    {
-        //std::cout << "Recovering " << initial << std::endl;
-    }
 
     p.advance(dir, s);
     if (current == next) initial *= exp(-next->Sigma_t()*s); // moving within a Shape, implicit absorption
