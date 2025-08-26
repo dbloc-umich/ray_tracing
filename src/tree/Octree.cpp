@@ -7,14 +7,13 @@
 #include <stack>
 
 namespace{
-    static constexpr double eps = 1e-5; // a small nudge given to each dimension of the BoundingBox
+    static constexpr double eps = 1e-6; // a small nudge given to each dimension of the BoundingBox
     using NodeList = std::vector<Node>;
     using iterator = NodeList::iterator;
     using const_iterator = NodeList::const_iterator;
     using BoxStack = std::stack<BoundingBox*>;
 
 void construct(Node& current, NodeList& nodes, const Point& lower, const Point& upper, std::size_t level=0){
-
     if (!current){ // current is nullptr
         std::unique_ptr<BoundingBox> box = std::make_unique<BoundingBox>(lower, upper);
         box->setLevel(level);
@@ -87,13 +86,17 @@ Shape* nextExternalNode(BoxStack& stack, const Point& pos, const Direction& dir,
     BoundingBox* box = stack.top(); // stack.top() is always at least the parent of all nodes in visitedNodes
     std::size_t index = box->max_size();
     s = std::numeric_limits<double>::max();
+    
+    // Check the children next
     for (std::size_t i = 0; i < box->size(); i++){
-        if (std::find(visitedNodes.cbegin(), visitedNodes.cend(), (*box)[i].get()) != visitedNodes.cend()) continue; // currently on a visited Node, will skip
         double dist = (*box)[i]->distanceToSurface(pos, dir);
-        if (!std::isnan(dist)){
+        // If dist is nan, push the child to visitedNodes
+        if (std::isnan(dist)) visitedNodes.push_back((*box)[i].get());
+        else{
             Point nextPos = pos;
-            nextPos.advance(dir, dist); // to check against tangency
-            if (!dir.isOrthogonal((*box)[i]->normal(nextPos)) && dist < s){
+            nextPos.advance(dir, dist);
+            if (dir.isOrthogonal((*box)[i]->normal(nextPos))) visitedNodes.push_back((*box)[i].get()); // checks against tangency
+            else if (dist < s){
                 index = i;
                 s = dist;
             }

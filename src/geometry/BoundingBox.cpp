@@ -65,15 +65,16 @@ std::size_t BoundingBox::octant(const Shape& other) const noexcept{
     double xMid = (xMin()+xMax())/2;
     double yMid = (yMin()+yMax())/2;
     double zMid = (zMin()+zMax())/2;
-    auto x = other.xMin() <= xMid && other.xMax() >= xMid;
-    auto y = other.yMin() <= yMid && other.yMax() >= yMid;
-    auto z = other.zMin() <= zMid && other.zMax() >= zMid;
+
+    auto x = other.xMin() < xMid && other.xMax() > xMid;
+    auto y = other.yMin() < yMid && other.yMax() > yMid;
+    auto z = other.zMin() < zMid && other.zMax() > zMid;
     if (x || y || z) return 8; // should be contained in _contents
 
     std::size_t oct = 0;
-    if (other.xMin() > xMid) oct += 4;
-    if (other.yMin() > yMid) oct += 2;
-    if (other.zMin() > zMid) oct += 1;
+    if (other.xMin() >= xMid) oct += 4;
+    if (other.yMin() >= yMid) oct += 2;
+    if (other.zMin() >= zMid) oct += 1;
     return oct;
 }
 
@@ -83,7 +84,7 @@ std::ostream& BoundingBox::print(std::ostream& os) const noexcept{
     
     if (empty()) os << " is empty.";
     else{
-        os << " encloses " << size() << " object";
+        os << " encloses " << size() + _contents.size() << " object";
         if (size() > 1) os << "s";
         os << ":\n";
     }

@@ -11,5 +11,8 @@
 *.gz
 *.tex
 
+# Test files
+test*
+
 # Vscode settings
 *.json

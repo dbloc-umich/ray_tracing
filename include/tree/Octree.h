@@ -17,7 +17,7 @@ class Octree{
     std::vector<Node> remove(Node& node);
     /**
      * Inputs:
-     *  pos: the position of the particle, must be on the surface of a leaf node
+     *  pos: the position of the particle
      *  dir: the direction of the particle
      *  current: a raw pointer to the Shape that has the particle on its surface
      *  s: a placeholder double&

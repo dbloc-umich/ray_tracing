@@ -139,7 +139,7 @@ double Box::distanceToSurface(const Point& p, const Direction& dir) const noexce
             if (isValidDistX(d) && isValidDistY(d)){ s = (d < s) ? d : s; }
         }
     }
-    return s;
+    return s == std::numeric_limits<double>::max() ? NAN : s;
 }
 
 Direction Box::normal(const Point& pos) const{
