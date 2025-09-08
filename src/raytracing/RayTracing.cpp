@@ -6,7 +6,7 @@
 #include <random>
 
 namespace{
-    static constexpr double IThreshold = 1e-6;
+    static constexpr double IThreshold = 1e-9;
     static std::default_random_engine rng(64);
     static std::uniform_real_distribution<double> dist(0.0, 1.0);
 }
@@ -26,12 +26,21 @@ Direction refracted(const Direction& in, const Direction& normal, double n1, dou
 }
 
 double intensity(const Octree& tree, Point p, const Direction& dir, bool isRefracted, bool isReflected, Shape* current, double initial){
+    if (initial == 0.0) return 0.0;
     if (initial < IThreshold){
-        if (dist(rng) <= initial/IThreshold) return intensity(tree, p, dir, current, IThreshold);
+        if (dist(rng) <= initial/IThreshold) return intensity(tree, p, dir, isRefracted, isReflected, current, IThreshold);
         return 0.0;
     }
+
     double s; // placeholder
     Shape* next = tree.nextNode(p, dir, current, s);
+    if (!current){
+        if (!next) std::cout << "Point " << p << " traveling at " << dir << " does not reach any other Shape." << std::endl;
+        else std::cout << "Point " << p << " traveling at " << dir << " reaches " << *next << " after a distance of " << s << "." << std::endl;
+    } else{
+        if (!next) std::cout << "Point " << p << " on " << *current << " traveling at " << dir << " does not reach any other Shape." << std::endl;
+        else std::cout << "Point " << p << " on " << *current << " traveling at " << dir << " reaches " << *next << " after a distance of " << s << "." << std::endl;
+    }
     if (!next) return initial;
 
     p.advance(dir, s);
@@ -58,20 +67,21 @@ double intensity(const Octree& tree, Point p, const Direction& dir, bool isRefra
     }
 
     Direction normal = next->normal(p);
-    Direction refract = isRefracted ? refracted(dir, normal, n1, n2) : Direction(nullptr);
-    Direction reflect = isReflected ? reflected(dir, normal) : Direction(nullptr);
+    Direction refract = refracted(dir, normal, n1, n2);
+    Direction reflect = reflected(dir, normal);
 
     if (isRefracted && refract){
         // if the refration is calculated and the refracted ray exists
-        double cosi = fabs(dir.dot(normal));
-        double cost = fabs(refract.dot(normal));
-        double Rs = (n1*cosi - n2*cost)/(n1*cosi + n2*cost);
-        double Rp = (n1*cost - n2*cosi)/(n1*cost + n2*cosi);
-        double R = 0.5*(Rs*Rs + Rp*Rp); // reflectance
-        double refractedIntensity = intensity(tree, p, refract, isRefracted, isReflected, next, initial*(1-R));
-        double reflectedIntensity = isReflected ? intensity(tree, p, reflect, isRefracted, isReflected, next, initial*R) : 0.0;
-        return refractedIntensity + reflectedIntensity;
+        if (isReflected){
+            double cosi = fabs(dir.dot(normal));
+            double cost = fabs(refract.dot(normal));
+            double Rs = (n1*cosi - n2*cost)/(n1*cosi + n2*cost);
+            double Rp = (n1*cost - n2*cosi)/(n1*cost + n2*cosi);
+            double R = 0.5*(Rs*Rs + Rp*Rp);
+            return intensity(tree, p, refract, true, true, next, initial*(1-R)) + intensity(tree, p, reflect, true, true, next, initial*R);
+        }
+        return intensity(tree, p, refract, true, false, next, initial);
     }
     // only reflection, no refraction
-    return intensity(tree, p, reflect, isRefracted, isReflected, next, initial);
+    return intensity(tree, p, reflect, false, true, next, initial);
 }

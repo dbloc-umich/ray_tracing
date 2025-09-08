@@ -1,9 +1,8 @@
 #ifndef BOUNDING_BOX_H
 #define BOUNDING_BOX_H
 #include "Box.h"
-#include<array>
+#include <array>
 #include <memory>
-#include <type_traits>
 #include <vector>
 
 using Node = std::unique_ptr<Shape>; // may be redefined as a class later to include bidirectional nodes
@@ -25,9 +24,11 @@ class BoundingBox: public Box{
     BoundingBox& operator=(const BoundingBox&) = delete;
     BoundingBox& operator=(BoundingBox&&) = default;
 
+    // Access the children
     Node& operator[](std::size_t i) noexcept{ return _children[i]; }
     const Node& operator[](std::size_t i) const noexcept{ return _children[i]; }
     
+    // Access the contents
     Node& operator()(std::size_t i) noexcept{ return _contents[i]; }
     const Node& operator()(std::size_t i) const noexcept{ return _contents[i]; }
     void push(Node& node) noexcept{ _contents.push_back(std::move(node)); }

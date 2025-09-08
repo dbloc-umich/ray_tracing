@@ -41,13 +41,13 @@ void Box::setVertices(const Point& lower, const Point& upper){
 }
 
 bool Box::surfaceContains(const Point& p) const noexcept{
-    if (fabs(p.x()-xMin()) <= Shape::eps || fabs(p.x()-xMax()) <= Shape::eps)
-        return p.y() > yMin() && p.y() < yMax() && p.z() > zMin() && p.z() < zMax();
-    if (fabs(p.y()-yMin()) <= Shape::eps || fabs(p.y()-yMax()) <= Shape::eps)
-        return p.z() > zMin() && p.z() < zMax() && p.x() > xMin() && p.x() < xMax();
-    if (fabs(p.z()-zMin()) <= Shape::eps || fabs(p.z()-zMax()) <= Shape::eps)
-        return p.x() > xMin() && p.x() < xMax() && p.y() > yMin() && p.y() < yMax();
-    return false;
+    bool inX = p.x()-xMin() >= -Shape::eps && p.x()-xMax() <= Shape::eps;
+    bool inY = p.y()-yMin() >= -Shape::eps && p.y()-yMax() <= Shape::eps;
+    bool inZ = p.z()-zMin() >= -Shape::eps && p.z()-zMax() <= Shape::eps;
+    bool onX = fabs(p.x()-xMin()) <= Shape::eps || fabs(p.x()-xMax()) <= Shape::eps;
+    bool onY = fabs(p.y()-yMin()) <= Shape::eps || fabs(p.y()-yMax()) <= Shape::eps;
+    bool onZ = fabs(p.z()-zMin()) <= Shape::eps || fabs(p.z()-zMax()) <= Shape::eps;
+    return (inX && inY && inZ) && (onX || onY || onZ);
 }
 
 bool Box::encloses(const Point& p) const noexcept{

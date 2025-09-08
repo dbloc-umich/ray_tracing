@@ -37,6 +37,8 @@ class Octree{
     explicit operator bool() const noexcept{ return bool(_root); } // to check if tree is empty
     friend std::ostream& operator<<(std::ostream& os, const Octree& tree);
 
+    Shape* root() const noexcept{ return _root.get(); }
+
     protected:
     Node _root;
 };
