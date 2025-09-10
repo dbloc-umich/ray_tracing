@@ -1,6 +1,6 @@
 #include "RayTracing.h"
 #include "Direction.h"
-#include "Octree.h"
+#include "Tree.h"
 
 #include <cmath>
 #include <random>
@@ -25,7 +25,7 @@ Direction refracted(const Direction& in, const Direction& normal, double n1, dou
     return Direction(nullptr);
 }
 
-double intensity(const Octree& tree, Point p, const Direction& dir, bool isRefracted, bool isReflected, Shape* current, double initial){
+double intensity(const Tree& tree, Point p, const Direction& dir, bool isRefracted, bool isReflected, Shape* current, double initial){
     if (initial == 0.0) return 0.0;
     if (initial < IThreshold){
         if (dist(rng) <= initial/IThreshold) return intensity(tree, p, dir, isRefracted, isReflected, current, IThreshold);
@@ -34,13 +34,13 @@ double intensity(const Octree& tree, Point p, const Direction& dir, bool isRefra
 
     double s; // placeholder
     Shape* next = tree.nextNode(p, dir, current, s);
-    if (!current){
-        if (!next) std::cout << "Point " << p << " traveling at " << dir << " does not reach any other Shape." << std::endl;
-        else std::cout << "Point " << p << " traveling at " << dir << " reaches " << *next << " after a distance of " << s << "." << std::endl;
-    } else{
-        if (!next) std::cout << "Point " << p << " on " << *current << " traveling at " << dir << " does not reach any other Shape." << std::endl;
-        else std::cout << "Point " << p << " on " << *current << " traveling at " << dir << " reaches " << *next << " after a distance of " << s << "." << std::endl;
-    }
+    // if (!current){
+    //     if (!next) std::cout << "Point " << p << " traveling at " << dir << " does not reach any other Shape." << std::endl;
+    //     else std::cout << "Point " << p << " traveling at " << dir << " reaches " << *next << " after a distance of " << s << "." << std::endl;
+    // } else{
+    //     if (!next) std::cout << "Point " << p << " on " << *current << " traveling at " << dir << " does not reach any other Shape." << std::endl;
+    //     else std::cout << "Point " << p << " on " << *current << " traveling at " << dir << " reaches " << *next << " after a distance of " << s << "." << std::endl;
+    // }
     if (!next) return initial;
 
     p.advance(dir, s);
