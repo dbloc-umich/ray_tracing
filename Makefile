@@ -4,7 +4,6 @@ DEP_DIR = dep
 INC_DIR = include
 OBJ_DIR = obj
 SRC_DIR = src
-# TEST_DIR = test
 
 # Subdirecotires
 INC_SUBDIRS = $(shell find $(INC_DIR) -type d)
@@ -13,13 +12,24 @@ SRC_SUBDIRS = $(shell find $(SRC_DIR) -type d)
 SRC = $(shell find $(SRC_DIR) -name '*.cpp')
 OBJ = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 DEP = $(SRC:$(SRC_DIR)/%.cpp=$(DEP_DIR)/%.d)
-# TEST = $(wildcard $(TEST_DIR)/*.cpp)
 TARGET = $(BIN_DIR)/main.exe
+
+LIB_SRC := $(filter-out src/main.cpp, $(SRC))
+LIB_OBJ := $(LIB_SRC:.cpp=.o)
+
+TEST_DIR := tests
+TEST_TARGET := $(BIN_DIR)/run_test.exe
+TEST_SRC := $(wildcard $(TEST_DIR)/*.cpp)
+TEST_OBJ := $(TEST_SRC:.cpp=.o)
+TEST_DEP := $(TEST_SRC:.cpp=.d)
 
 INC = $(addprefix -I,$(INC_SUBDIRS))
 CXX = g++
-CXXFLAGS = -Wall -O2 -MMD -MP $(INC)
+CXXFLAGS = -Wall -O2 -MMD -MP $(INC) -Iexternal
 
+.PHONY: all clean test
+
+# make all
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
@@ -32,8 +42,17 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 
 -include $(DEP)
 
-clean:
-	@rm -rf $(OBJ_DIR) $(BIN_DIR) $(DEP_DIR)
+# make test
+test: $(TEST_TARGET)
+	@$(TEST_TARGET)
 
-run: $(TARGET)
-	@./$(TARGET)
+$(TEST_TARGET): $(TEST_OBJ) $(LIB_OBJ)
+	@mkdir -p $(BIN_DIR)
+	@$(CXX) $(CXXFLAGS) -o $@ $^
+
+$(TEST_DIR)/%.o: $(TEST_DIR)/%.cpp
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# make clean
+clean:
+	@rm -rf $(OBJ_DIR) $(BIN_DIR) $(DEP_DIR) $(TEST_DEP) $(TEST_OBJ)

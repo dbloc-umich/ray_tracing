@@ -142,6 +142,13 @@ double Box::distanceToSurface(const Point& p, const Direction& dir) const noexce
     return s == std::numeric_limits<double>::max() ? NAN : s;
 }
 
+Point Box::centroid() const noexcept{
+    double x = (xMin() + xMax())/2;
+    double y = (yMin() + yMax())/2;
+    double z = (zMin() + zMax())/2;
+    return Point(x, y, z);
+}
+
 Direction Box::normal(const Point& pos) const{
     if (!surfaceContains(pos)) throw std::invalid_argument("ERROR: Point is not on the surface.");
     if (fabs(pos.x() - xMin()) < Shape::eps) return Direction(-1, 0, 0);

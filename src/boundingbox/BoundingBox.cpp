@@ -23,6 +23,17 @@ bool BoundingBox::contentsOverlap(const Shape& other) const noexcept{
     return false;
 }
 
+double BoundingBox::solidVolume() const noexcept{
+    double V = 0.0;
+    for (auto& it: _children){
+        if (it){
+            if (auto box = dynamic_cast<BoundingBox*>(it.get())) V += box->solidVolume();
+            else V += it->volume();
+        }
+    }
+    return V;
+}
+
 std::size_t BoundingBox::size() const noexcept{
     std::size_t sz = 0;
     for (const auto& node: _children){

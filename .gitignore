@@ -11,9 +11,6 @@
 *.gz
 *.tex
 
-# Test files
-test*
-
 # Plots, for now
 plots*
 

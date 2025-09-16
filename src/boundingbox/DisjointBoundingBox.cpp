@@ -10,6 +10,18 @@ bool DisjointBoundingBox::contentsOverlap(const Shape& other) const noexcept{
     return BoundingBox::contentsOverlap(other);
 }
 
+double DisjointBoundingBox::solidVolume() const noexcept{
+    double V = 0.0;
+    for (auto& it: _contents) V += it->volume();
+    for (auto& it: _children){
+        if (it){
+            if (auto box = dynamic_cast<DisjointBoundingBox*>(it.get())) V += box->solidVolume();
+            else V += it->volume();
+        }
+    }
+    return V;
+}
+
 bool DisjointBoundingBox::empty() const noexcept{
     for (const auto& node: _contents){
         if (node) return false;

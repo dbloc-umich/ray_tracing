@@ -19,11 +19,11 @@ class DisjointBoundingBox: public BoundingBox{
     void push(Node& node) noexcept{ _contents.push_back(std::move(node)); }
     void push(Node&& node) noexcept{ _contents.push_back(std::move(node)); }
 
-    virtual bool contentsOverlap(const Shape& other) const noexcept override;
+    bool contentsOverlap(const Shape& other) const noexcept override;
 
+    double solidVolume() const noexcept override;
     std::size_t numContents() const noexcept{ return _contents.size(); }
-    virtual bool empty() const noexcept override;
-
+    bool empty() const noexcept override;
     std::size_t octant(const Shape& other) const noexcept;
 
     private:

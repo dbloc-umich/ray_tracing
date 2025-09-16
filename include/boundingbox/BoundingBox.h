@@ -23,8 +23,9 @@ class BoundingBox: public Box{
     std::size_t level(){ return _level; }
     void setLevel(std::size_t level){ _level = level; }
 
-    virtual bool contentsOverlap(const Shape& other) const noexcept override;
+    bool contentsOverlap(const Shape& other) const noexcept override;
 
+    virtual double solidVolume() const noexcept;
     std::size_t size() const noexcept;
     constexpr std::size_t max_size() const noexcept{ return 8; }
     virtual bool empty() const noexcept;

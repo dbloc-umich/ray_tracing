@@ -39,6 +39,7 @@ class Shape{
     ***/
     virtual double distanceToSurface(const Point& p, const Direction& dir) const noexcept = 0;
 
+    virtual Point centroid() const noexcept = 0;
     virtual Direction normal(const Point& pos) const = 0; // outward unit normal vector
     friend std::ostream& operator<<(std::ostream& os, const Shape& shape){ return shape.print(os); }
 

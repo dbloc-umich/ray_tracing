@@ -1,6 +1,5 @@
 #ifndef TREE_H
 #define TREE_H
-#include <type_traits>
 #include <vector>
 #include "BoundingBox.h"
 

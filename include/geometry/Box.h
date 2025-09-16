@@ -36,6 +36,7 @@ class Box: public Shape{
     bool overlaps(const Shape& other) const noexcept override;
     double distanceToSurface(const Point& p, const Direction& dir) const noexcept override;
 
+    Point centroid() const noexcept override;
     Direction normal(const Point& pos) const override;
 
     protected:

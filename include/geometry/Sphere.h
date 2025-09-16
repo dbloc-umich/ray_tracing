@@ -31,6 +31,7 @@ class Sphere: public Shape{
     bool overlaps(const Shape& other) const noexcept override;
     double distanceToSurface(const Point& p, const Direction& dir) const noexcept override;
 
+    Point centroid() const noexcept override{ return _origin; }
     Direction normal(const Point& pos) const override;
 
     protected:
