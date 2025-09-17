@@ -14,3 +14,4 @@ double intensity(const Tree& tree, Point p, const Direction& dir,
                  Shape* current = nullptr, double initial = 1.0);
 
 #endif // RAY_TRACING_H
+  
