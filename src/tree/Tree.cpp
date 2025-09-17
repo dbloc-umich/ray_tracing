@@ -1,26 +1,40 @@
 #include <Tree.h>
 #include <cmath>
 
-double Tree::xMin() const noexcept{ return _root ? _root->xMin() : NAN; }
-double Tree::xMax() const noexcept{ return _root ? _root->xMax() : NAN; }
-double Tree::yMin() const noexcept{ return _root ? _root->yMin() : NAN; }
-double Tree::yMax() const noexcept{ return _root ? _root->yMax() : NAN; }
-double Tree::zMin() const noexcept{ return _root ? _root->zMin() : NAN; }
-double Tree::zMax() const noexcept{ return _root ? _root->zMax() : NAN; }
+template<typename T>
+double Tree<T>::xMin() const noexcept{ return _root ? _root->xMin() : NAN; }
 
-std::vector<Node> Tree::remove(Node& node){
+template<typename T>
+double Tree<T>::xMax() const noexcept{ return _root ? _root->xMax() : NAN; }
+
+template<typename T>
+double Tree<T>::yMin() const noexcept{ return _root ? _root->yMin() : NAN; }
+
+template<typename T>
+double Tree<T>::yMax() const noexcept{ return _root ? _root->yMax() : NAN; }
+
+template<typename T>
+double Tree<T>::zMin() const noexcept{ return _root ? _root->zMin() : NAN; }
+
+template<typename T>
+double Tree<T>::zMax() const noexcept{ return _root ? _root->zMax() : NAN; }
+
+template<typename T>
+std::vector<Node> Tree<T>::remove(Node& node){
     NodeList list;
     destruct(node, list);
     return list;
 }
 
-std::ostream& operator<<(std::ostream& os, const Tree& tree){
+template<typename T>
+std::ostream& operator<<(std::ostream& os, const Tree<T>& tree){
     if (tree._root) os << *(tree._root);
     else os << "Empty tree.";
     return os;
 }
 
-std::pair<Point, Point> Tree::findVertices(const_iterator begin, const_iterator end) const{
+template<typename T>
+std::pair<Point, Point> Tree<T>::findVertices(const_iterator begin, const_iterator end) const{
     double x0, y0, z0, x1, y1, z1;
     x0 = y0 = z0 = std::numeric_limits<double>::max();
     x1 = y1 = z1 = std::numeric_limits<double>::min();

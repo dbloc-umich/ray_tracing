@@ -1,9 +1,13 @@
 #ifndef TREE_H
 #define TREE_H
+#include <type_traits>
 #include <vector>
 #include "BoundingBox.h"
 
+template<typename T>
 class Tree{
+    static_assert(std::is_base_of(BoundingBox, T)::value);
+
     public:
     Tree(): _root(nullptr) {}
     Tree(const Tree&) = delete;
@@ -35,24 +39,26 @@ class Tree{
     double zMax() const noexcept;
 
     explicit operator bool() const noexcept{ return bool(_root); } // to check if tree is empty
-    Shape* root() const noexcept{ return _root.get(); }
+    BoxNode& root() noexcept{ return _root; }
     friend std::ostream& operator<<(std::ostream& os, const Tree& tree);
 
     protected:
-    Node _root;
+    BoxNode _root;
 
     static constexpr double eps = 1e-6;
+    using BoxType = T;
+    using BoxNode = std::unique_ptr<T>;
     using NodeList = std::vector<Node>;
     using iterator = NodeList::iterator;
     using const_iterator = NodeList::const_iterator;
     std::pair<Point, Point> findVertices(const_iterator begin, const_iterator end) const;
 
     // Required helper functions
-    virtual void destruct(Node& current, NodeList& nodes) = 0;
-    virtual bool hasOverlappingContents(const Node& current) const = 0;
+    virtual void destruct(BoxNode& current, NodeList& nodes) = 0;
+    virtual bool hasOverlappingContents(const BoxNode& current) const = 0;
 };
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, const Tree& tree);
+std::ostream& operator<<(std::ostream& os, const Tree<T>& tree);
 
 #endif // TREE_H

@@ -2,7 +2,7 @@
 #define KDTREE_H
 #include "Tree.h"
 
-class kdTree: public Tree{
+class kdTree: public Tree<BoundingBox>{
     public:
     using Tree::Tree;
     explicit kdTree(std::vector<Node>& nodes);
@@ -11,10 +11,10 @@ class kdTree: public Tree{
     Shape* nextNode(const Point& pos, const Direction& dir, Shape* current, double& s) const override;
 
     protected:
-    iterator medianNode(BoundingBox& bbox0, BoundingBox& bbox1, iterator begin, iterator end, const char axis);
+    iterator medianNode(BoxType& bbox0, BoxType& bbox1, iterator begin, iterator end, const char axis);
     void construct(Node& current, iterator begin, iterator end, Point& lower, Point& upper, std::size_t level);
-    void destruct(Node& current, NodeList& nodes) override;
-    bool hasOverlappingContents(const Node& current) const override;
+    void destruct(BoxNode& current, NodeList& nodes) override;
+    bool hasOverlappingContents(const BoxNode& current) const override;
 };
 
 #endif // KDTREE_H

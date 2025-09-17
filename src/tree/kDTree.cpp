@@ -6,10 +6,6 @@
 #include <exception>
 #include <stack>
 
-namespace{
-    using BoxType = BoundingBox;
-}
-
 kdTree::kdTree(NodeList& nodes):
     Tree()
 {
