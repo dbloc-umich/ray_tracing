@@ -1,62 +1,40 @@
-#include <chrono>
-#include <random>
-#include <stack>
-#include <vector>
-#include <type_traits>
-
 #include "Direction.h"
 #include "Octree.h"
 #include "RayTracing.h"
 #include "Sphere.h"
+
+#include <random>
+
 using namespace std;
 
 int main(){
-    // double r1 = 2.5;
-    // double r2 = 1.5;
-    // double refrac = 1.3;
-    // std::vector<Node> nodes;
-    // Point p(-2*r1, r2, 0);
-    // Direction dir(1, 0, 0);
 
-    // double Sigma_t = 3.0e-6;
-    // double pow = sqrt(sqrt(10));
-    // for (unsigned i = 0; i < 27; i++){
-    //     nodes.emplace_back(std::make_unique<Sphere>(0, 0, 0, r1, Sigma_t, refrac));
-    //     nodes.emplace_back(std::make_unique<Sphere>(r1+r2, 0, 0, r2, Sigma_t, refrac));
-    //     Octree tree(nodes);        
-    //     double I1 = intensity(tree, p, dir, false, false);
-    //     double I2 = intensity(tree, p, dir, true, true);
-        
-    //     cout << Sigma_t*r1 << ", " << I1 << ", " << I2 << endl;
-    //     Sigma_t *= pow;
-    // }
+    // Study the impact of refraction and reflection on a system of varying packing factor
+    double L = 10;
+    double Rmax = L/2;
+    double Rmin = 0;
 
-    {
-        double r1 = 2.5;
-        double r2 = 1.5;
-        double Sigma_t = 0.3;
-        double refrac = 1.3;
-        
-        std::vector<Node> nodes;
-        nodes.emplace_back(std::make_unique<Sphere>(0, 0, 0, r1, Sigma_t, refrac));
-        nodes.emplace_back(std::make_unique<Sphere>(r1+r2, 0, 0, r2, Sigma_t, refrac));
-        Octree tree(nodes);
-        Point p(-2*r1, 0.5*r1, 0);
-        Direction dir(1, 0, 0);
+    std::default_random_engine rng(3);
+    std::uniform_real_distribution<double> xDist(-L, L);
+    std::uniform_real_distribution<double> yDist(-L, L);
+    std::uniform_real_distribution<double> zDist(-L, L);
+    std::uniform_real_distribution<double> rDist(Rmin, Rmax);
+    vector<Node> nodes;
 
-        double y = 0.5*r1;
-        double s = 2*sqrt(r1*r1-y*y) + 2*sqrt(r2*r2-y*y);
-        double A = exp(-Sigma_t*s);
-        cout << "Analytical expressions:" << endl;
-        cout << "Intensity without refraction and reflection: " << A << endl;
-        cout << "Calculated expressions:" << endl;
-        double I1 = intensity(tree, p, dir, false, false);
-        double I2 = intensity(tree, p, dir, true, true);
-        cout << "Intensity without refraction and reflection: " << I1 << endl;
-        cout << "Intensity with refraction and reflection: " << I2 << endl;
-        cout << "Error: " << fabs(I2-I1)/I2 << endl;
-        cout << endl;
+
+    unsigned N = 2;
+    double V = 0;
+    for (unsigned i = 0; i < N; i++){
+        double x = xDist(rng);
+        double y = yDist(rng);
+        double z = zDist(rng);
+        double r = rDist(rng);
+        nodes.emplace_back(std::make_unique<Sphere>(x, y, z, r));
+        V += nodes.back()->volume();
     }
+
+    Octree tree(nodes);
+    cout << "Packing factor = " << V/tree.root()->volume();
 
     return 0;
 }
