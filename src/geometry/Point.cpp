@@ -6,7 +6,7 @@
 
 static constexpr double eps = 1e-9;
 double Point::dist(const Point& other) const noexcept{
-    return sqrt((other._x-_x)*(other._x-_x) + (other._y-_y)*(other._y-_y) + (other._z-_z)*(other._z-_z));
+    return std::sqrt((other._x-_x)*(other._x-_x) + (other._y-_y)*(other._y-_y) + (other._z-_z)*(other._z-_z));
 }
 
 bool Point::operator==(const Point& other) const noexcept{

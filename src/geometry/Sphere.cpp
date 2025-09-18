@@ -1,10 +1,9 @@
 #include "Sphere.h"
 #include "Box.h"
+#include "Constants.h"
 #include "Direction.h"
 #include <cmath>
 #include <exception>
-
-static const double PI = acos(-1.0);
 
 Sphere::Sphere(const Point& pt, double R, double Sigma_t, double refrac):
     Shape(Sigma_t, refrac),
@@ -27,8 +26,8 @@ void Sphere::setRadius(double R){
     _radius = R;
 }
 
-double Sphere::surfaceArea() const noexcept{ return 4.0*PI*_radius*_radius; }
-double Sphere::volume() const noexcept{ return 4.0/3*PI*_radius*_radius*_radius; }
+double Sphere::surfaceArea() const noexcept{ return 4.0*Constants::PI*_radius*_radius; }
+double Sphere::volume() const noexcept{ return 4.0/3*Constants::PI*_radius*_radius*_radius; }
 
 bool Sphere::surfaceContains(const Point& p) const noexcept{
     double dx = _origin.x() - p.x();
@@ -95,10 +94,10 @@ double Sphere::distanceToSurface(const Point& p, const Direction& dir) const noe
     if (discr < 0) return NAN; // particle is outside and will never enters the Sphere
     double sp, sm; // two roots of the solutions
     if (B < 0){
-        sp = (-B + sqrt(discr))/2;
+        sp = (-B + std::sqrt(discr))/2;
         sm = C/sp; 
     } else{
-        sm = (-B - sqrt(discr))/2;
+        sm = (-B - std::sqrt(discr))/2;
         sp = C/sm;
     }
 

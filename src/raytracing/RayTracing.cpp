@@ -20,7 +20,7 @@ Direction refracted(const Direction& in, const Direction& normal, double n1, dou
     if (sine <= 1.0){
         Direction ortho = normal.cross(c); // component of the refracted vector that is orthogonal to normal
         int sgn = in.dot(normal) > 0.0 ? 1 : -1;
-        return ortho*sine + sgn*normal*sqrt(1-sine*sine);
+        return ortho*sine + sgn*normal*std::sqrt(1-sine*sine);
     }
     return Direction(nullptr);
 }

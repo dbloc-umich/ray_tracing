@@ -8,7 +8,7 @@ Direction::Direction(std::nullptr_t):
 {}
 
 Direction::Direction(double mu, double gamma):
-    Vector( fabs(mu) > 1.0 ? NAN : mu, sqrt(1-mu*mu)*cos(gamma), sqrt(1-mu*mu)*sin(gamma))
+    Vector( fabs(mu) > 1.0 ? NAN : mu, std::sqrt(1-mu*mu)*cos(gamma), std::sqrt(1-mu*mu)*sin(gamma))
 {}
 
 Direction::Direction(double dx, double dy, double dz):

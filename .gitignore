@@ -11,6 +11,9 @@
 *.gz
 *.tex
 
+# main.cpp, for now
+src/main.cpp
+
 # Plots, for now
 plots*
 

@@ -61,7 +61,7 @@ bool Vector::operator==(const Vector& other) const noexcept{
 Vector::operator bool() const noexcept{ return !(std::isnan(_dx) || std::isnan(_dy) || std::isnan(_dz)); }
 
 double Vector::dot(const Vector& other) const noexcept{ return _dx*other._dx + _dy*other._dy + _dz*other._dz; }
-double Vector::norm() const noexcept{ return sqrt(this->dot(*this)); }
+double Vector::norm() const noexcept{ return std::sqrt(this->dot(*this)); }
 Vector Vector::cross(const Vector& other) const noexcept{
     double dx = _dy*other._dz - _dz*other._dy;
     double dy = _dz*other._dx - _dx*other._dz;

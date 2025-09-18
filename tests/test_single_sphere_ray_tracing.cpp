@@ -53,7 +53,7 @@ TEST_CASE("one sphere, streamline with non-normal incidence"){
     Direction dir(1, 0, 0);
 
     double I = intensity(tree, p, dir, false, false);
-    double Itrue = exp(-sqrt(3)*Sigma_t*r);
+    double Itrue = exp(-std::sqrt(3)*Sigma_t*r);
     REQUIRE(fabs(I-Itrue)/Itrue < 1e-6);
 }
 
