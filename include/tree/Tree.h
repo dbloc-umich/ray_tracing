@@ -1,7 +1,8 @@
 #ifndef TREE_H
 #define TREE_H
-#include <vector>
 #include "BoundingBox.h"
+#include <utility>
+#include <vector>
 
 class Tree{
     public:
@@ -27,15 +28,9 @@ class Tree{
     **/
     virtual Shape* nextNode(const Point& pos, const Direction& dir, Shape* current, double& s) const = 0;
 
-    double xMin() const noexcept;
-    double xMax() const noexcept;
-    double yMin() const noexcept;
-    double yMax() const noexcept;
-    double zMin() const noexcept;
-    double zMax() const noexcept;
-
     explicit operator bool() const noexcept{ return bool(_root); } // to check if tree is empty
-    Shape* root() const noexcept{ return _root.get(); }
+    Node& root() noexcept{ return _root; }
+    const Node& root() const noexcept{ return _root; }
     friend std::ostream& operator<<(std::ostream& os, const Tree& tree);
 
     protected:

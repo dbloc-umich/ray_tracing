@@ -31,6 +31,23 @@ Octree::Octree(NodeList& nodes):
     }
 }
 
+void Octree::insert(Node& node){
+    Node& parent = smallestParentNode(node, _root, _root);
+    BoxType* box = dynamic_cast<BoxType*>(parent.get());
+    
+    if (box->size() < 8) (*box)[box->size()] = std::move(node);
+    else if (box->octant(*node)) box->push(node);
+    else{
+        std::size_t level = box->level();
+        Point lower = box->lowerVertex();
+        Point upper = box->upperVertex();
+        NodeList nodes;
+        nodes.emplace_back(std::move(node));
+        destruct(parent, nodes);
+        construct(parent, nodes, lower, upper, level);
+    }
+}
+
 Shape* Octree::nextNode(const Point& pos, const Direction& dir, Shape* current, double& s) const{
     if (!_root){
         s = NAN;
@@ -189,6 +206,18 @@ void Octree::destruct(Node& current, NodeList& nodes){
         } else nodes.emplace_back(std::move(current));
         current.reset();
     }
+}
+
+Node& Octree::smallestParentNode(const Node& node, Node& parent, Node& current){
+    // Find the lowest-level parent Node that contains node
+    if (!current) return current;
+    if (BoxType* box = dynamic_cast<BoxType*>(current.get())){
+        unsigned oct = box->octant(*node);
+        if (oct == 8 || !box->full()) return current; // node intersects with at least a major axis or node is yet full
+        return smallestParentNode(node, current, (*box)[oct]);
+    }
+    // if current is not a BoundingBox, it cannot be a parent.
+    return parent;
 }
 
 bool Octree::hasOverlappingContents(const Node& current) const{

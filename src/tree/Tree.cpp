@@ -1,13 +1,6 @@
 #include <Tree.h>
 #include <cmath>
 
-double Tree::xMin() const noexcept{ return _root ? _root->xMin() : NAN; }
-double Tree::xMax() const noexcept{ return _root ? _root->xMax() : NAN; }
-double Tree::yMin() const noexcept{ return _root ? _root->yMin() : NAN; }
-double Tree::yMax() const noexcept{ return _root ? _root->yMax() : NAN; }
-double Tree::zMin() const noexcept{ return _root ? _root->zMin() : NAN; }
-double Tree::zMax() const noexcept{ return _root ? _root->zMax() : NAN; }
-
 std::vector<Node> Tree::remove(Node& node){
     NodeList list;
     destruct(node, list);
