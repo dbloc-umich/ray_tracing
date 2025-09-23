@@ -59,20 +59,20 @@ int main(){
             }
         }
         
-        const Octree tree(nodes);
+        const kdTree tree(nodes);
         actual_pf[i] = V/tree.root()->volume();
         
         // Ray tracing
-        double x = tree.xMin() - L;
-        double dy = (tree.yMax() - tree.yMin())/Ny;
-        double dz = (tree.zMax() - tree.zMin())/Ny;
+        double x = tree.root()->xMin() - L;
+        double dy = (tree.root()->yMax() - tree.root()->yMin())/Ny;
+        double dz = (tree.root()->zMax() - tree.root()->zMin())/Ny;
         double overallI1 = 0;
         double overallI2 = 0;
 
         for (int iy = 0; iy < Ny+1; iy++){
-            double y = tree.yMin() + dy*iy;
+            double y = tree.root()->yMin() + dy*iy;
             for (int iz = 0; iz < Ny+1; iz++){
-                double z = tree.zMin() + dz*iz;
+                double z = tree.root()->zMin() + dz*iz;
                 Point p(x, y, z);
                 double I1 = intensity(tree, p, dir, false, false);
                 double I2 = intensity(tree, p, dir, true, true);
