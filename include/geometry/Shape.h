@@ -31,7 +31,7 @@ class Shape{
     virtual bool encloses(const Point& p) const noexcept = 0; // If this->surfaceContains(p) is true, then this->encloses(p) is false;
     virtual bool encloses(const Shape& other) const noexcept = 0;
     virtual bool overlaps(const Shape& other) const noexcept = 0;
-    virtual bool contentsOverlap(const Shape& other) const noexcept{ return this->overlaps(other); };
+
     /***
      * if the Point is inside the Shape, the smallest (positive) distance to the surface(s)
      * if the Point is on the surface, 0.0 if it leaves and the smallest distance to the surface if it enters
@@ -44,8 +44,8 @@ class Shape{
     friend std::ostream& operator<<(std::ostream& os, const Shape& shape){ return shape.print(os); }
 
     protected:
-    virtual std::ostream& print(std::ostream& os) const noexcept = 0;
-    static constexpr double eps = 1e-9;
     double _Sigma_t, _refrac;
+    static constexpr double eps = 1e-9;
+    virtual std::ostream& print(std::ostream& os) const noexcept = 0;
 };
 #endif // SHAPE_H

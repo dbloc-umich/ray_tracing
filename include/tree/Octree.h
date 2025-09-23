@@ -1,19 +1,20 @@
-#ifndef OCTREE_H
-#define OCTREE_H
-#include "Tree.h"
+// #ifndef OCTREE_H
+// #define OCTREE_H
+// #include "DisjointBoundingBox.h"
+// #include "Tree.h"
 
-class Octree: public Tree{
-    public:
-    using Tree::Tree;
-    explicit Octree(std::vector<Node>& nodes);
+// class Octree: public Tree<DisjointBoundingBox>{
+//     public:
+//     using Tree::Tree;
+//     explicit Octree(std::vector<Node>& nodes);
 
-    void insert(Node& node) override {};
-    Shape* nextNode(const Point& pos, const Direction& dir, Shape* current, double& s) const override;
+//     void insert(Node& node) override {};
+//     Shape* nextNode(const Point& pos, const Direction& dir, Shape* current, double& s) const override;
 
-    protected:
-    void construct(Node& current, NodeList& nodes, const Point& lower, const Point& upper, std::size_t level=0);
-    void destruct(Node& current, NodeList& nodes) override;
-    bool hasOverlappingContents(const Node& current) const override;
-};
+//     protected:
+//     void construct(Node& current, NodeList& nodes, const Point& lower, const Point& upper, std::size_t level=0);
+//     void destruct(BoxNode& current, NodeList& nodes) override;
+//     bool hasOverlappingContents(const BoxNode& current) const override;
+// };
 
-#endif // OCTREE_H
+// #endif // OCTREE_H
