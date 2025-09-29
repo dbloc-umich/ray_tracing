@@ -33,7 +33,7 @@
 //     }
 
 //     double s; // placeholder
-//     Shape* next = tree.nextNode(p, dir, current, s);
+//     Shape* next = tree.nextShape(p, dir, current, s);
 //     // if (!current){
 //     //     if (!next) std::cout << "Point " << p << " traveling at " << dir << " does not reach any other Shape." << std::endl;
 //     //     else std::cout << "Point " << p << " traveling at " << dir << " reaches " << *next << " after a distance of " << s << "." << std::endl;
@@ -62,7 +62,7 @@
 //     } else{
 //         // particle travels within the same Node
 //         n1 = current->refractive();
-//         auto pseudoNext = tree.nextNode(p, dir, current, s);
+//         auto pseudoNext = tree.nextShape(p, dir, current, s);
 //         n2 = (s == 0) ? pseudoNext->refractive() : 1.0;
 //     }
 

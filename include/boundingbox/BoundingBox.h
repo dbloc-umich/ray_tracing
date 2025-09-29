@@ -24,7 +24,7 @@
 //     std::size_t level(){ return _level; }
 //     void setLevel(std::size_t level){ _level = level; }
 
-//     bool contentsOverlap(const Shape& other) const noexcept override;
+//     bool leavesOverlap(const Shape& other) const noexcept override;
 //     bool containsShapes() const noexcept override{ return true; }
 
 //     std::size_t size() const noexcept;

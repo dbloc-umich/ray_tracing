@@ -13,12 +13,12 @@
 //     _level(0)    
 // {}
 
-// bool BoundingBox::contentsOverlap(const Shape& other) const noexcept{
+// bool BoundingBox::leavesOverlap(const Shape& other) const noexcept{
 //     if (this == &other) return true;  // same object 
 //     if (!this->overlaps(other)) return false;
 
 //     for (auto& it: _children){
-//         if (it && it->contentsOverlap(other)) return true;
+//         if (it && it->leavesOverlap(other)) return true;
 //     }
 //     return false;
 // }

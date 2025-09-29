@@ -1,12 +1,13 @@
 // #include "Octree.h"
 // #include "Direction.h"
-// #include "DisjointBoundingBox.h"
+// #include "Point.h"
+// #include "Shape.h"
 
 // #include <cmath>
 // #include <exception>
 // #include <stack>
 
-// Octree::Octree(NodeList& nodes):
+// Octree::Octree(PtrList& nodes):
 //     Tree()
 // {
 //     if (!nodes.empty()){
@@ -15,7 +16,7 @@
 //         construct(_root, nodes, lower, upper);
         
 //         if (hasOverlappingContents(_root)){
-//             NodeList movedNodes;
+//             PtrList movedNodes;
 //             destruct(_root, movedNodes);
 //             while (!movedNodes.empty()){
 //                 nodes.push_back(std::move(movedNodes.back()));
@@ -27,7 +28,7 @@
 //     }
 // }
 
-// Shape* Octree::nextNode(const Point& pos, const Direction& dir, Shape* current, double& s) const{
+// Shape* Octree::nextShape(const Point& pos, const Direction& dir, Shape* current, double& s) const{
 //     if (!_root){
 //         s = NAN;
 //         return nullptr;
@@ -139,7 +140,7 @@
 // }
 
 
-// void Octree::construct(Node& current, NodeList& nodes, const Point& lower, const Point& upper, std::size_t level){
+// void Octree::construct(Node& current, PtrList& nodes, const Point& lower, const Point& upper, std::size_t level){
 //     if (!current){ // current is nullptr
 //         std::unique_ptr<BoxType> box = std::make_unique<BoxType>(lower, upper);
 //         box->setLevel(level);
@@ -148,7 +149,7 @@
 //             for (std::size_t i = 0; i < nodes.size(); i++) (*box)[i] = std::move(nodes[i]);
 //         }
 //         else{
-//             std::array<NodeList, 8> octantList;
+//             std::array<PtrList, 8> octantList;
 //             while (!nodes.empty()){
 //                 const std::size_t oct = box->octant(*(nodes.back()));
 //                 if (oct == 8) box->push(nodes.back());
@@ -176,7 +177,7 @@
 //     }    
 // }
 
-// void Octree::destruct(BoxNode& current, NodeList& nodes){
+// void Octree::destruct(Node& current, PtrList& nodes){
 //     if (current){ // not nullptr
 //         if (BoxType* box = dynamic_cast<BoxType*>(current.get())){
 //             // If current is a BoxType, recursively destruct its children
@@ -187,7 +188,7 @@
 //     }
 // }
 
-// bool Octree::hasOverlappingContents(const BoxNode& current) const{
+// bool Octree::hasOverlappingContents(const Node& current) const{
 //     // Potentially O(N^2) in time complexity
 
 //     if (!current) return false; // nullptr;
@@ -200,7 +201,7 @@
         
 //         for (std::size_t i = 0; i < box->size(); i++){
 //             for (std::size_t j = 0; j < box->numContents(); j++){
-//                 if ((*box)[i]->contentsOverlap(*(*box)(j))) return true;
+//                 if ((*box)[i]->leavesOverlap(*(*box)(j))) return true;
 //             }
 //             if (hasOverlappingContents((*box)[i])) return true;
 //         }

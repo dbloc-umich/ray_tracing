@@ -1,13 +1,13 @@
 // #include "DisjointBoundingBox.h"
 
-// bool DisjointBoundingBox::contentsOverlap(const Shape& other) const noexcept{
+// bool DisjointBoundingBox::leavesOverlap(const Shape& other) const noexcept{
 //     if (this == &other) return true;  // same object 
 //     if (!this->overlaps(other)) return false;
 
 //     for (auto& it: _contents){
 //         if (it && it->overlaps(other)) return true;
 //     }
-//     return BoundingBox::contentsOverlap(other);
+//     return BoundingBox::leavesOverlap(other);
 // }
 
 // double DisjointBoundingBox::solidVolume() const noexcept{

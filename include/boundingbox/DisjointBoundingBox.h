@@ -19,7 +19,7 @@
 //     void push(Node& node) noexcept{ _contents.push_back(std::move(node)); }
 //     void push(Node&& node) noexcept{ _contents.push_back(std::move(node)); }
 
-//     bool contentsOverlap(const Shape& other) const noexcept override;
+//     bool leavesOverlap(const Shape& other) const noexcept override;
 
 //     double solidVolume() const noexcept override;
 //     std::size_t numContents() const noexcept{ return _contents.size(); }
