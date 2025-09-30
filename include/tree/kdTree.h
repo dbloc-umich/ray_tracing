@@ -1,11 +1,13 @@
 #ifndef KDTREE_H
 #define KDTREE_H
+
+#include "Node.h"
 #include "Tree.h"
 
 class Box;
-class kdTree: public Tree{
+class kdTree: public Tree<Node>{
     public:
-    using Tree::Tree;
+    using Tree<Node>::Tree;
     explicit kdTree(PtrList& ptrs);
 
     void insert(std::unique_ptr<Shape> shape) override;

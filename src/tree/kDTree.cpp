@@ -193,14 +193,14 @@ void kdTree::construct(Node& current, iterator begin, iterator end, std::size_t 
 
     if (end - begin <= 2){ // 1 or 2 pointers left
         for (auto it = begin; it != end; it++){
-            current[it-begin] = std::make_unique<Node>(std::move(*it), 2);
+            current[it-begin] = std::make_unique<Node>(std::move(*it));
         }
     } else{
         Box box0 = dynamic_cast<Box&>(*current);
         Box box1;
         iterator median = medianNode(box0, box1, begin, end, axis);
-        current[0] = std::make_unique<Node>(std::make_unique<Box>(box0), 2);
-        current[1] = std::make_unique<Node>(std::make_unique<Box>(box1), 2);
+        current[0] = std::make_unique<Node>(std::make_unique<Box>(box0));
+        current[1] = std::make_unique<Node>(std::make_unique<Box>(box1));
 
         char next;
         if (axis == 'x') next = 'y';

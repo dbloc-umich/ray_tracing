@@ -1,5 +1,7 @@
 // #include "RayTracing.h"
 // #include "Direction.h"
+// #include "Point.h"
+// #include "Shape.h"
 // #include "Tree.h"
 
 // #include <cmath>
