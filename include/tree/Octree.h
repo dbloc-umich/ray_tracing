@@ -1,19 +1,22 @@
-// #ifndef OCTREE_H
-// #define OCTREE_H
-// #include "Tree.h"
+#ifndef OCTREE_H
+#define OCTREE_H
 
-// class Octree: public Tree{
-//     public:
-//     using Tree::Tree;
-//     explicit Octree(std::vector<Node>& nodes);
+#include "Tree.h"
+#include "UNode.h"
 
-//     void insert(Node& node) override {};
-//     Shape* nextShape(const Point& pos, const Direction& dir, Shape* current, double& s) const override;
+class Octree: public Tree<UNode>{
+    public:
+    using Tree<UNode>::Tree;
+    explicit Octree(PtrList& ptrs);
 
-//     protected:
-//     void construct(Node& current, PtrList& nodes, const Point& lower, const Point& upper, std::size_t level=0);
-//     void destruct(Node& current, PtrList& nodes) override;
-//     bool hasOverlappingContents(const Node& current) const override;
-// };
+    void insert(std::unique_ptr<Shape> shape) override;
+    Shape* nextShape(const Point& pos, const Direction& dir, Shape* current, double& s) const noexcept override;
 
-// #endif // OCTREE_H
+    protected:
+    void construct(UNode& current, PtrList& ptrs, std::size_t level=0) noexcept;
+    void destruct(UNode& current, PtrList& ptrs) noexcept override;
+    UNode& smallestBox(UNode& current, const std::unique_ptr<Shape>& shape) const noexcept override;
+    bool hasOverlappingContents(const UNode& current) const noexcept override;
+};
+
+#endif // OCTREE_H

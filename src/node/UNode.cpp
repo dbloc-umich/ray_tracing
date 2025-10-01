@@ -42,10 +42,24 @@ bool UNode::leavesOverlap(const UNode& other) const noexcept{
     return false;
 }
 
-bool UNode::empty() const noexcept{
-    bool x = std::find_if(_children.cbegin(), _children.cend(), [](auto& node){ return bool(node); }) == _children.cend();
-    bool y = _leaves.empty();
-    return x && y;
+std::size_t UNode::octant(const Shape& other) const noexcept{
+    if (!_shape->encloses(other)) return -1;
+    
+    // Check if there's an octant that fully contains the Shape
+    double xMid = (_shape->xMin()+_shape->xMax())/2;
+    double yMid = (_shape->yMin()+_shape->yMax())/2;
+    double zMid = (_shape->zMin()+_shape->zMax())/2;
+
+    bool x = other.xMin() < xMid && other.xMax() > xMid;
+    bool y = other.yMin() < yMid && other.yMax() > yMid;
+    bool z = other.zMin() < zMid && other.zMax() > zMid;
+    if (x || y || z) return 8; // should be contained in _leaves
+
+    std::size_t oct = 0;
+    if (other.xMin() >= xMid) oct += 4;
+    if (other.yMin() >= yMid) oct += 2;
+    if (other.zMin() >= zMid) oct += 1;
+    return oct;
 }
 
 std::ostream& UNode::print(std::ostream& os) const noexcept{

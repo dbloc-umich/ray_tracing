@@ -14,7 +14,6 @@ class Node: public NodeBase<Node, 2>{
 
     bool leavesOverlap(const Shape& other) const noexcept override;
     bool leavesOverlap(const Node& other) const noexcept override;
-    bool empty() const noexcept override;
 
     protected:
     std::ostream& print(std::ostream& os) const noexcept override;

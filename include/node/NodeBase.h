@@ -20,6 +20,7 @@ class Shape;
 template<class T, std::size_t N = 2>
 class NodeBase{
     public:
+    explicit NodeBase(Shape* shape = nullptr): _shape(shape), _children(), _level(0) {}
     explicit NodeBase(std::unique_ptr<Shape> shape = nullptr): _shape(std::move(shape)), _children(), _level(0) {}
     NodeBase(const NodeBase<T,N>&) = delete;
     NodeBase(NodeBase<T,N>&&) = default;
@@ -40,7 +41,8 @@ class NodeBase{
     std::size_t size() const noexcept{
         return std::count_if(_children.cbegin(), _children.cend(), [](auto& node){ return bool(node); }); }
     constexpr std::size_t max_size() const noexcept{ return N; }
-    virtual bool empty() const noexcept = 0;
+    virtual bool empty() const noexcept{
+        return std::find_if(_children.cbegin(), _children.cend(), [](auto& node){ return bool(node); }) == _children.cend(); }
     virtual bool isLeaf() const noexcept{ return empty(); }
 
     // Modifier and observer functions, from std::unique_ptr

@@ -35,10 +35,6 @@ bool Node::leavesOverlap(const Node& other) const noexcept{
     return false;
 }
 
-bool Node::empty() const noexcept{
-    return std::find_if(_children.cbegin(), _children.cend(), [](auto& node){ return bool(node); }) == _children.cend();
-}
-
 std::ostream& Node::print(std::ostream& os) const noexcept{
     printTabs(os, _level);
     os << *_shape << " ";

@@ -17,10 +17,12 @@ kdTree::kdTree(PtrList& ptrs):
         _root = Node(boundingBox(ptrs.cbegin(), ptrs.cend()));
         construct(_root, ptrs.begin(), ptrs.end(), 0, 'x');
         
-        // The first throw is to check where construct() is implemented correctly. This throw right here might even be a bad design.
-        //if (!hasValidBoxs(_root)) throw std::runtime_error("ERROR: At least one bounding box does not enclose its contents.");
-        if (hasOverlappingContents(_root)) throw std::invalid_argument("ERROR: There are overlapping contents.");
         ptrs.clear();
+        if (hasOverlappingContents(_root)){
+            // Returns the shapes back to the original container, but the correct order is not guaranteed;
+            destruct(_root, ptrs);
+            throw std::invalid_argument("ERROR: There are overlapping contents.");
+        }  
     }
 }
 
@@ -42,8 +44,7 @@ void kdTree::insert(std::unique_ptr<Shape> shape){
     ptrs.push_back(std::move(shape));
     // Check if the Shape can be put inside _root
     if (_root->encloses(*ptrs[0])){
-        // Find the deepest level that node can be inserted
-        Node& node = smallestBox(_root, ptrs[0]);
+        Node& node = smallestBox(_root, ptrs[0]); // the deepest level that node can be inserted
         // Check if there's still room to insert without destroying the subtree
         for (std::size_t i = 0; i < 2; i++){
             if (!node[i]){
@@ -64,7 +65,7 @@ void kdTree::insert(std::unique_ptr<Shape> shape){
     }
 }
 
-Shape* kdTree::nextShape(const Point& pos, const Direction& dir, Shape* current, double& s) const{
+Shape* kdTree::nextShape(const Point& pos, const Direction& dir, Shape* current, double& s) const noexcept{
     if (!_root){
         s = NAN;
         return nullptr;
@@ -76,7 +77,7 @@ Shape* kdTree::nextShape(const Point& pos, const Direction& dir, Shape* current,
 
     s = std::numeric_limits<double>::max();
     std::stack<std::reference_wrapper<const Node>> stack; // keeps tracks of nodes to visit
-    stack.push(std::cref(_root));
+    stack.emplace(_root);
     Shape* next;
     
     while (!stack.empty()){
@@ -90,12 +91,12 @@ Shape* kdTree::nextShape(const Point& pos, const Direction& dir, Shape* current,
         }
 
         // Check the children, selectively mark those that the Point won't reach as visited
-        for (unsigned i = 0; i < node.size(); i++){
+        for (std::size_t i = 0; i < node.size(); i++){
             auto& candidate = *(node[i]);
             dist = candidate->distanceToSurface(pos, dir);
             if (std::isnan(dist)) continue;
 
-            if (!candidate.isLeaf()) stack.push(std::cref(candidate)); // Not a leaf node, keeps adding to the stack
+            if (!candidate.isLeaf()) stack.emplace(candidate); // Not a leaf node, keeps adding to the stack
             else{
                 // Reaches a leaf node, now performing distance calcs
                 if (candidate->encloses(pos)){
@@ -137,7 +138,7 @@ Shape* kdTree::nextShape(const Point& pos, const Direction& dir, Shape* current,
     return next;
 }
 
-kdTree::iterator kdTree::medianNode(Box& box0, Box& box1, iterator begin, iterator end, char axis){
+kdTree::iterator kdTree::medianNode(Box& box0, Box& box1, iterator begin, iterator end, char axis) noexcept{
     /**
      * Inputs:
      *  box0 is the bounding box that completely encloses all objects in nodes[begin:end)
@@ -181,7 +182,7 @@ kdTree::iterator kdTree::medianNode(Box& box0, Box& box1, iterator begin, iterat
     return median;
 }
 
-void kdTree::construct(Node& current, iterator begin, iterator end, std::size_t level, char axis){
+void kdTree::construct(Node& current, iterator begin, iterator end, std::size_t level, char axis) noexcept{
     /**
      * Inputs:
      *  current: Node pointing to the Box at which space partitioning occurs
@@ -211,19 +212,19 @@ void kdTree::construct(Node& current, iterator begin, iterator end, std::size_t 
     }
 }
 
-void kdTree::destruct(Node& current, PtrList& ptrs){
+void kdTree::destruct(Node& current, PtrList& ptrs) noexcept{
     // current must be non-null
-    if (current.isLeaf()) ptrs.emplace_back(current.get());
+    if (current.isLeaf()) ptrs.emplace_back(current.release());
     else{
         if (current[0]) destruct(*current[0], ptrs);
         if (current[1]) destruct(*current[1], ptrs);
+        current.reset();
     }
-    current.reset();
 }
 
 Node& kdTree::smallestBox(Node& current, const std::unique_ptr<Shape>& shape) const noexcept{
     // current must be non-null and current->encloses(*shape) must be true
-    for (unsigned i = 0; i < 2; i++){
+    for (std::size_t i = 0; i < 2; i++){
         if (current[i] && !current[i]->isLeaf() && (*current[i])->encloses(*shape)){
             return smallestBox(*current[i], shape);
         }
@@ -231,7 +232,7 @@ Node& kdTree::smallestBox(Node& current, const std::unique_ptr<Shape>& shape) co
     return current;
 }
 
-bool kdTree::hasOverlappingContents(const Node& current) const{
+bool kdTree::hasOverlappingContents(const Node& current) const noexcept{
     // Should be O(N*logN) in time complexity
     if (!current || current.isLeaf()) return false; // nullptr;
 
