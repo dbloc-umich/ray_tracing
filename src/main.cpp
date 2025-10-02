@@ -9,6 +9,7 @@
 
 int main(){
 
+    /*
     // Study the impact of refraction and reflection on a system of varying packing factor
     double L = 10;
     double Rmax = L/10;
@@ -93,6 +94,6 @@ int main(){
         std::cout << "average error: " << avg_error[i] << ", ";
         std::cout << "maximum error: " << max_error[i] << " occuring at " << argmax_pt[i] << std::endl;
     }
-
+    */
     return 0;
 }

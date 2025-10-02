@@ -1,20 +1,24 @@
 #ifndef KDTREE_H
 #define KDTREE_H
+
+#include "Node.h"
 #include "Tree.h"
 
-class kdTree: public Tree{
+class Box;
+class kdTree: public Tree<Node>{
     public:
-    using Tree::Tree;
-    explicit kdTree(std::vector<Node>& nodes);
+    using Tree<Node>::Tree;
+    explicit kdTree(PtrList& ptrs);
 
-    void insert(Node& node) override;
-    Shape* nextNode(const Point& pos, const Direction& dir, Shape* current, double& s) const override;
+    void insert(std::unique_ptr<Shape> shape) override;
+    Shape* nextShape(const Point& pos, const Direction& dir, Shape* current, double& s) const noexcept override;
 
     protected:
-    iterator medianNode(BoundingBox& bbox0, BoundingBox& bbox1, iterator begin, iterator end, const char axis);
-    void construct(Node& current, iterator begin, iterator end, Point& lower, Point& upper, std::size_t level);
-    void destruct(Node& current, NodeList& nodes) override;
-    bool hasOverlappingContents(const Node& current) const override;
+    iterator medianNode(Box& bbox0, Box& bbox1, iterator begin, iterator end, char axis) noexcept;
+    void construct(Node& current, iterator begin, iterator end, std::size_t level, char axis) noexcept;
+    void destruct(Node& current, PtrList& ptrs) noexcept override;
+    Node& smallestBox(Node& current, const std::unique_ptr<Shape>& shape) const noexcept override;
+    bool hasOverlappingContents(const Node& current) const noexcept override;
 };
 
 #endif // KDTREE_H

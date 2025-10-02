@@ -12,7 +12,7 @@ TEST_CASE("two spheres, streamline with normal incidence"){
     double Sigma_t = 0.3;
     double n = 1.3;
     
-    std::vector<Node> nodes;
+    std::vector<std::unique_ptr<Shape>> nodes;
     nodes.emplace_back(std::make_unique<Sphere>(0, 0, 0, r1, Sigma_t, n));
     nodes.emplace_back(std::make_unique<Sphere>(r1+r2, 0, 0, r2, Sigma_t, n));
     Octree tree(nodes);
@@ -30,7 +30,7 @@ TEST_CASE("two spheres, refraction and reflection with normal incidence"){
     double Sigma_t = 0.3;
     double n = 1.3;
     
-    std::vector<Node> nodes;
+    std::vector<std::unique_ptr<Shape>> nodes;
     nodes.emplace_back(std::make_unique<Sphere>(0, 0, 0, r1, Sigma_t, n));
     nodes.emplace_back(std::make_unique<Sphere>(r1+r2, 0, 0, r2, Sigma_t, n));
     Octree tree(nodes);
@@ -51,7 +51,7 @@ TEST_CASE("two spheres, refraction and reflection with non-normal incidence"){
     double Sigma_t = 0.3;
     double n = 1.3;
     
-    std::vector<Node> nodes;
+    std::vector<std::unique_ptr<Shape>> nodes;
     nodes.emplace_back(std::make_unique<Sphere>(0, 0, 0, r1, Sigma_t, n));
     nodes.emplace_back(std::make_unique<Sphere>(r1+r2, 0, 0, r2, Sigma_t, n));
     Octree tree(nodes);
@@ -69,7 +69,7 @@ TEST_CASE("two spheres, tangential incidence to both spheres"){
     double Sigma_t = 0.3;
     double n = 1.3;
     
-    std::vector<Node> nodes;
+    std::vector<std::unique_ptr<Shape>> nodes;
     nodes.emplace_back(std::make_unique<Sphere>(0, 0, 0, r1, Sigma_t, n));
     nodes.emplace_back(std::make_unique<Sphere>(r1+r2, 0, 0, r2, Sigma_t, n));
     Octree tree(nodes);

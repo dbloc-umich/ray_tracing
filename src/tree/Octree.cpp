@@ -1,54 +1,91 @@
 #include "Octree.h"
-#include "Direction.h"
-#include "DisjointBoundingBox.h"
 
 #include <cmath>
 #include <exception>
 #include <stack>
 
-namespace{
-    using BoxType = DisjointBoundingBox;
-}
+#include "Box.h"
+#include "Direction.h"
+#include "Point.h"
+#include "Shape.h"
 
-Octree::Octree(NodeList& nodes):
+Octree::Octree(PtrList& ptrs):
     Tree()
 {
-    if (!nodes.empty()){
-        Point lower, upper;
-        std::tie(lower, upper) = findVertices(nodes.cbegin(), nodes.cend());
-        construct(_root, nodes, lower, upper);
+    if (!ptrs.empty()){
+        _root = UNode(boundingBox(ptrs.cbegin(), ptrs.cend()));
+        construct(_root, ptrs);
         
         if (hasOverlappingContents(_root)){
-            NodeList movedNodes;
-            destruct(_root, movedNodes);
-            while (!movedNodes.empty()){
-                nodes.push_back(std::move(movedNodes.back()));
-                movedNodes.pop_back();
-            }
+            // Returns the shapes back to the original container, but the correct order is not guaranteed;
+            destruct(_root, ptrs);
             throw std::invalid_argument("ERROR: There are overlapping contents.");
-        }
-        nodes.clear();
+        }  
     }
 }
 
-void Octree::insert(Node& node){
-    Node& parent = smallestParentNode(node, _root, _root);
-    BoxType* box = dynamic_cast<BoxType*>(parent.get());
+void Octree::insert(std::unique_ptr<Shape> shape){
+    // Empty tree, make a box over the shape
+    if (!_root){
+        PtrList ptrs;
+        ptrs.push_back(std::move(shape));
+        _root = UNode(boundingBox(ptrs.cbegin(), ptrs.cend()));
+        _root[0] = std::make_unique<UNode>(std::move(ptrs[0]));
+    }
     
-    if (box->size() < 8) (*box)[box->size()] = std::move(node);
-    else if (box->octant(*node)) box->push(node);
-    else{
-        std::size_t level = box->level();
-        Point lower = box->lowerVertex();
-        Point upper = box->upperVertex();
-        NodeList nodes;
-        nodes.emplace_back(std::move(node));
-        destruct(parent, nodes);
-        construct(parent, nodes, lower, upper, level);
+    // Collision check
+    if (_root.leavesOverlap(*shape)){
+        throw std::invalid_argument("ERROR: The node to be inserted overlaps with the content of the tree.");
+    }
+    
+    PtrList ptrs;
+    ptrs.push_back(std::move(shape));
+    // Check if the Shape can be put inside _root
+    if (_root->encloses(*ptrs[0])){
+        UNode& node = smallestBox(_root, ptrs[0]); // the deepest level that node can be inserted
+
+        if (node.size() != node.max_size()){
+            // Node is not yet full, may be able to put the shape directly under _children
+            // Check if all the existing children are leaf nodes
+            bool isLastInternal = true;
+            for (std::size_t oct = 0; oct < node.max_size(); oct++){
+                if (node[oct] && !node[oct]->isLeaf()){
+                    isLastInternal = false;
+                    break;
+                }
+            }
+            if (isLastInternal){
+                // insert directly to the first empty children
+                for (std::size_t oct = 0; oct < node.max_size(); oct++){
+                    if (!node[oct]){
+                        node[oct] = std::make_unique<UNode>(std::move(ptrs[0]));
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Check if the Shape can be added to the node's direct leaves
+        std::size_t oct = node.octant(*ptrs[0]);
+        if (oct == 8) node.emplace(std::make_unique<Node>(std::move(ptrs[0])));
+        else{
+            if (!node[oct]) node[oct] = std::make_unique<UNode>(std::move(ptrs[0]));
+            else{
+                // destruct the children but leave the leaves alone, then reconstruct the current node
+                for (oct = 0; oct < node.max_size(); oct++){
+                    if (node[oct]) destruct(*node[oct], ptrs);
+                }
+                construct(node, ptrs, node.level());
+            }
+        }
+    } else{
+        destruct(_root, ptrs);
+        _root = UNode(boundingBox(ptrs.cbegin(), ptrs.cend()));
+        construct(_root, ptrs, 0);
     }
 }
 
-Shape* Octree::nextNode(const Point& pos, const Direction& dir, Shape* current, double& s) const{
+Shape* Octree::nextShape(const Point& pos, const Direction& dir, Shape* current, double& s) const noexcept{
     if (!_root){
         s = NAN;
         return nullptr;
@@ -59,45 +96,46 @@ Shape* Octree::nextNode(const Point& pos, const Direction& dir, Shape* current, 
     }
 
     s = std::numeric_limits<double>::max();
-    std::stack<BoxType*> stack;
-    stack.push(dynamic_cast<BoxType*>(_root.get()));
-    Shape* next = nullptr;
+    std::stack<std::reference_wrapper<const UNode>> stack; // keeps tracks of nodes to visit
+    stack.emplace(_root);
+    Shape* next;
     
     while (!stack.empty()){
-        BoxType* box = stack.top();
+        auto& node = stack.top().get();
         stack.pop();
         // Check if box has any viable candidates
-        double dist = box->distanceToSurface(pos, dir);
-        if (!box->encloses(pos) && !(box->surfaceContains(pos) && dist > 0.0)){
+        double dist = node->distanceToSurface(pos, dir);
+        if (!node->encloses(pos) && !(node->surfaceContains(pos) && dist > 0.0)){
             // pos is outside of box, so the distance to any Shape inside of it will be at least dist
             if (s < dist) continue;
         }
 
-        // Check the contents first
-        for (unsigned j = 0; j < box->numContents(); j++){
-            Shape* candidate = (*box)(j).get(); // candidate does not point to a BoxType
+        // Check the leaves
+        for (std::size_t j = 0; j < node.leafCount(); j++){
+            auto& candidate = *(node(j));
             dist = candidate->distanceToSurface(pos, dir);
+            if (std::isnan(dist)) continue;
             if (candidate->encloses(pos)){
                 // Point is inside the Shape
                 s = dist;
-                return candidate;
+                return candidate.get();
             }
 
             if (candidate->surfaceContains(pos)){
                 if (dist == 0.0) continue; // Travelling away from candidate
-                if ((!current) || (current != candidate && current->surfaceContains(pos))){
+                if ((!current) || (current != candidate.get() && current->surfaceContains(pos))){
                     // Current is nullptr or Point is on the intersection of current and candidate
                     if (!dir.isOrthogonal(candidate->normal(pos))){
                         // checks against tangency
                         s = 0.0;
-                        return candidate;
+                        return candidate.get();
                     }
                     continue;
                 }
-                if (current == candidate && dist > 0.0){
+                if (current == candidate.get() && dist > 0.0){
                     // Traveling within candidate
                     s = dist;
-                    return candidate;
+                    return current;
                 }
             }
 
@@ -107,40 +145,41 @@ Shape* Octree::nextNode(const Point& pos, const Direction& dir, Shape* current, 
                 if (!dir.isOrthogonal(candidate->normal(nextPos))){
                     // checks against tangency
                     s = dist;
-                    next = candidate;
-                }       
+                    next = candidate.get();
+                }
             }
         }
 
-        // Check the children next, selectively mark those that the Point won't reach as visited
-        for (unsigned i = 0; i < box->size(); i++){
-            Shape* candidate = (*box)[i].get();
+        // Check the children, selectively mark those that the Point won't reach as visited
+        for (unsigned i = 0; i < node.size(); i++){
+            auto& candidate = *(node[i]);
             dist = candidate->distanceToSurface(pos, dir);
             if (std::isnan(dist)) continue;
 
-            if (BoxType* subbox = dynamic_cast<BoxType*>(candidate)) stack.push(subbox);
+            if (!candidate.isLeaf()) stack.emplace(candidate); // Not a leaf node, keeps adding to the stack
             else{
+                // Reaches a leaf node, now performing distance calcs
                 if (candidate->encloses(pos)){
                     // Point is inside the Shape
                     s = dist;
-                    return candidate;
+                    return candidate.get();
                 }
 
                 if (candidate->surfaceContains(pos)){
                     if (dist == 0.0) continue; // Travelling away from candidate
-                    if ((!current) || (current != candidate && current->surfaceContains(pos))){
+                    if ((!current) || (current != candidate.get() && current->surfaceContains(pos))){
                         // Current is nullptr or Point is on the intersection of current and candidate
                         if (!dir.isOrthogonal(candidate->normal(pos))){
                             // checks against tangency
                             s = 0.0;
-                            return candidate;
+                            return candidate.get();
                         }
                         continue;
                     }
-                    if (current == candidate && dist > 0.0){
+                    if (current == candidate.get() && dist > 0.0){
                         // Traveling within candidate
                         s = dist;
-                        return candidate;
+                        return current;
                     }
                 }
 
@@ -150,7 +189,7 @@ Shape* Octree::nextNode(const Point& pos, const Direction& dir, Shape* current, 
                     if (!dir.isOrthogonal(candidate->normal(nextPos))){
                         // checks against tangency
                         s = dist;
-                        next = candidate;
+                        next = candidate.get();
                     }
                 }
             }
@@ -160,29 +199,30 @@ Shape* Octree::nextNode(const Point& pos, const Direction& dir, Shape* current, 
 }
 
 
-void Octree::construct(Node& current, NodeList& nodes, const Point& lower, const Point& upper, std::size_t level){
-    if (!current){ // current is nullptr
-        std::unique_ptr<BoxType> box = std::make_unique<BoxType>(lower, upper);
-        box->setLevel(level);
-        if (nodes.size() <= 8) {
-            // There are 8 items or less, move them all into the children nodes
-            for (std::size_t i = 0; i < nodes.size(); i++) (*box)[i] = std::move(nodes[i]);
+void Octree::construct(UNode& current, PtrList& ptrs, std::size_t level) noexcept{
+    current.setLevel(level);
+    if (ptrs.size() <= 8) {
+        // There are 8 items or less, move them all into the children ptrs
+        for (std::size_t i = 0; i < ptrs.size(); i++){
+            current[i] = std::make_unique<UNode>(std::move(ptrs[i]));
         }
-        else{
-            std::array<NodeList, 8> octantList;
-            while (!nodes.empty()){
-                const std::size_t oct = box->octant(*(nodes.back()));
-                if (oct == 8) box->push(nodes.back());
-                else octantList[oct].push_back(std::move(nodes.back()));
-                nodes.pop_back();              
-            }
+    }
+    else{
+        std::array<PtrList, 8> octantList;
+        while (!ptrs.empty()){
+            const std::size_t oct = current.octant(*(ptrs.back()));
+            if (oct == 8) current.emplace(std::make_unique<Node>(ptrs.back().release()));
+            else octantList[oct].emplace_back(ptrs.back().release());
+            ptrs.pop_back();
+        }
 
-            for (std::size_t oct = 0; oct < 8; oct++){
-                Point subLower(lower);
-                Point subUpper(upper);
-                double xMid = (lower.x()+upper.x())/2;
-                double yMid = (lower.y()+upper.y())/2;
-                double zMid = (lower.z()+upper.z())/2;
+        for (std::size_t oct = 0; oct < 8; oct++){
+            if (!octantList[oct].empty()){
+                Point subLower(current->xMin(), current->yMin(), current->zMin());
+                Point subUpper(current->xMax(), current->yMax(), current->zMax());
+                double xMid = (current->xMin() + current->xMax())/2;
+                double yMid = (current->yMin() + current->yMax())/2;
+                double zMid = (current->zMin() + current->zMax())/2;
 
                 if (oct < 4) subUpper.setX(xMid);
                 else subLower.setX(xMid);
@@ -190,53 +230,54 @@ void Octree::construct(Node& current, NodeList& nodes, const Point& lower, const
                 else subLower.setY(yMid);
                 if (!(oct % 2)) subUpper.setZ(zMid);
                 else subLower.setZ(zMid);
-                construct((*box)[oct], octantList[oct], subLower, subUpper, level+1);
+                
+                current[oct] = std::make_unique<UNode>(std::make_unique<Box>(subLower, subUpper));
+                construct(*current[oct], octantList[oct], level+1);
             }
         }
-        current = std::move(box);
-    }    
-}
+    }
+}    
 
-void Octree::destruct(Node& current, NodeList& nodes){
-    if (current){ // not nullptr
-        if (BoxType* box = dynamic_cast<BoxType*>(current.get())){
-            // If current is a BoxType, recursively destruct its children
-            for (std::size_t i = 0; i < box->size(); i++) destruct((*box)[i], nodes);
-            for (std::size_t j = 0; j < box->numContents(); j++) nodes.emplace_back(std::move((*box)(j)));
-        } else nodes.emplace_back(std::move(current));
+void Octree::destruct(UNode& current, PtrList& ptrs) noexcept{
+    // current must be non-null
+    if (current.isLeaf()) ptrs.emplace_back(current.release());
+    else{
+        for (std::size_t j = 0; j < current.leafCount(); j++){
+            ptrs.emplace_back(current(j)->release());
+            current(j).reset();
+        }
+        for (std::size_t i = 0; i < current.max_size(); i++){
+            if (current[i]) destruct(*current[i], ptrs);
+        }
         current.reset();
     }
 }
 
-Node& Octree::smallestParentNode(const Node& node, Node& parent, Node& current){
-    // Find the lowest-level parent Node that contains node
-    if (!current) return current;
-    if (BoxType* box = dynamic_cast<BoxType*>(current.get())){
-        unsigned oct = box->octant(*node);
-        if (oct == 8 || !box->full()) return current; // node intersects with at least a major axis or node is yet full
-        return smallestParentNode(node, current, (*box)[oct]);
-    }
-    // if current is not a BoundingBox, it cannot be a parent.
-    return parent;
+UNode& Octree::smallestBox(UNode& current, const std::unique_ptr<Shape>& shape) const noexcept{
+    // current must be non-null and current->encloses(*shape) must be true
+    std::size_t oct = current.octant(*shape);
+    if (oct == 8 || !current[oct] || current[oct]->isLeaf()) return current;
+    return smallestBox(*current[oct], shape);
 }
 
-bool Octree::hasOverlappingContents(const Node& current) const{
-    // Potentially O(N^2) in time complexity
+bool Octree::hasOverlappingContents(const UNode& current) const noexcept{
+    // Should be O(N*logN) at best, but the leaves can worsen it
+    if (!current || current.isLeaf()) return false; // nullptr;
 
-    if (!current) return false; // nullptr;
-    if (const BoxType* box = dynamic_cast<const BoxType*>(current.get())){
-        for (std::size_t j = 0; j < box->numContents(); j++){
-            for (std::size_t k = j+1; k < box->numContents(); k++){
-                if ((*box)(j)->overlaps(*(*box)(k))) return true;
-            }
-        }
-        
-        for (std::size_t i = 0; i < box->size(); i++){
-            for (std::size_t j = 0; j < box->numContents(); j++){
-                if ((*box)[i]->contentsOverlap(*(*box)(j))) return true;
-            }
-            if (hasOverlappingContents((*box)[i])) return true;
+    for (std::size_t j = 0; j < current.leafCount(); j++){
+        for (std::size_t k = j+1; k < current.leafCount(); k++){
+            if ((*current(j))->overlaps(**current(k))) return true;
         }
     }
-    return false; // not a BoxType
+
+    for (std::size_t i = 0; i < current.max_size(); i++){
+        if (!current[i]) continue;
+        if (hasOverlappingContents(*current[i])) return true;
+        for (std::size_t j = 0; j < current.max_size(); j++){
+            if (!current[j]) continue;
+            if (current[i]->leavesOverlap(*current[j])) return true;
+        }
+    }
+
+    return false;
 }

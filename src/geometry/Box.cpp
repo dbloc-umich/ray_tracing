@@ -59,9 +59,9 @@ bool Box::encloses(const Point& p) const noexcept{
 }
 
 bool Box::encloses(const Shape& other) const noexcept{
-    bool x = xMin() < other.xMin() && xMax() > other.xMax();
-    bool y = yMin() < other.yMin() && yMax() > other.yMax();
-    bool z = zMin() < other.zMin() && zMax() > other.zMax();
+    bool x = xMin() <= other.xMin() && xMax() >= other.xMax();
+    bool y = yMin() <= other.yMin() && yMax() >= other.yMax();
+    bool z = zMin() <= other.zMin() && zMax() >= other.zMax();
     return x && y && z;
 }
 

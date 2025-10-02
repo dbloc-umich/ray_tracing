@@ -1,5 +1,7 @@
 #include "RayTracing.h"
 #include "Direction.h"
+#include "Point.h"
+#include "Shape.h"
 #include "Tree.h"
 
 #include <cmath>
@@ -25,7 +27,8 @@ Direction refracted(const Direction& in, const Direction& normal, double n1, dou
     return Direction(nullptr);
 }
 
-double intensity(const Tree& tree, Point p, const Direction& dir, bool isRefracted, bool isReflected, Shape* current, double initial){
+template<typename T>
+double intensity(const Tree<T>& tree, Point p, const Direction& dir, bool isRefracted, bool isReflected, Shape* current, double initial){
     if (initial == 0.0) return 0.0;
     if (initial < IThreshold){
         if (dist(rng) <= initial/IThreshold) return intensity(tree, p, dir, isRefracted, isReflected, current, IThreshold);
@@ -33,7 +36,7 @@ double intensity(const Tree& tree, Point p, const Direction& dir, bool isRefract
     }
 
     double s; // placeholder
-    Shape* next = tree.nextNode(p, dir, current, s);
+    Shape* next = tree.nextShape(p, dir, current, s);
     // if (!current){
     //     if (!next) std::cout << "Point " << p << " traveling at " << dir << " does not reach any other Shape." << std::endl;
     //     else std::cout << "Point " << p << " traveling at " << dir << " reaches " << *next << " after a distance of " << s << "." << std::endl;
@@ -62,7 +65,7 @@ double intensity(const Tree& tree, Point p, const Direction& dir, bool isRefract
     } else{
         // particle travels within the same Node
         n1 = current->refractive();
-        auto pseudoNext = tree.nextNode(p, dir, current, s);
+        auto pseudoNext = tree.nextShape(p, dir, current, s);
         n2 = (s == 0) ? pseudoNext->refractive() : 1.0;
     }
 
@@ -86,3 +89,10 @@ double intensity(const Tree& tree, Point p, const Direction& dir, bool isRefract
     // only reflection, no refraction
     return intensity(tree, p, reflect, isRefracted, isReflected, next, initial);
 }
+
+// Explicit instantiations
+#include "Node.h"
+template double intensity<Node>(const Tree<Node>&, Point, const Direction&, bool, bool, Shape*, double);
+
+#include "UNode.h"
+template double intensity<UNode>(const Tree<UNode>&, Point, const Direction&, bool, bool, Shape*, double);

@@ -1,20 +1,26 @@
 #ifndef TREE_H
 #define TREE_H
-#include "BoundingBox.h"
-#include <utility>
+
+#include <iostream>
+#include <memory>
 #include <vector>
 
+class Direction;
+class Point;
+class Shape;
+
+template <class T>
 class Tree{
     public:
     Tree(): _root(nullptr) {}
-    Tree(const Tree&) = delete;
-    Tree(Tree&&) = default;
+    Tree(const Tree<T>&) = delete;
+    Tree(Tree<T>&&) = default;
     virtual ~Tree() = default;
-    Tree& operator=(const Tree&) = delete;
-    Tree& operator=(Tree&&) = default;
+    Tree<T>& operator=(const Tree<T>&) = delete;
+    Tree<T>& operator=(Tree<T>&&) = default;
 
-    virtual void insert(Node& node) = 0;
-    std::vector<Node> remove(Node& node);
+    virtual void insert(std::unique_ptr<Shape> shape) = 0;
+    std::vector<std::unique_ptr<Shape>> remove(T& node);
 
     /**
      * Inputs:
@@ -24,30 +30,44 @@ class Tree{
      *  s: a placeholder double&
      * Outputs:
      *  s is the modified distance that the Point has to travel to reach the next Shape
-     *  a raw pointer to Shape (from Node::get()) where the particle lands is returned
+     *  a raw pointer to Shape where the particle lands is returned
     **/
-    virtual Shape* nextNode(const Point& pos, const Direction& dir, Shape* current, double& s) const = 0;
+    virtual Shape* nextShape(const Point& pos, const Direction& dir, Shape* current, double& s) const noexcept = 0;
+
+    double xMin() const noexcept;
+    double xMax() const noexcept;
+    double yMin() const noexcept;
+    double yMax() const noexcept;
+    double zMin() const noexcept;
+    double zMax() const noexcept;
 
     explicit operator bool() const noexcept{ return bool(_root); } // to check if tree is empty
-    Node& root() noexcept{ return _root; }
-    const Node& root() const noexcept{ return _root; }
-    friend std::ostream& operator<<(std::ostream& os, const Tree& tree);
+    T& root() noexcept{ return _root; }
+    const T& root() const noexcept{ return _root; }
+    
+    template<typename U>
+    friend std::ostream& operator<<(std::ostream& os, const Tree<U>& tree);
 
     protected:
-    Node _root;
+    T _root;
 
     static constexpr double eps = 1e-6;
-    using NodeList = std::vector<Node>;
-    using iterator = NodeList::iterator;
-    using const_iterator = NodeList::const_iterator;
-    std::pair<Point, Point> findVertices(const_iterator begin, const_iterator end) const;
+    using PtrList = std::vector<std::unique_ptr<Shape>>;
+    using iterator = PtrList::iterator;
+    using const_iterator = PtrList::const_iterator;
+    std::unique_ptr<Shape> boundingBox(const_iterator begin, const_iterator end) const noexcept;
 
     // Required helper functions
-    virtual void destruct(Node& current, NodeList& nodes) = 0;
-    virtual bool hasOverlappingContents(const Node& current) const = 0;
+    virtual void destruct(T& current, PtrList& nodes) noexcept = 0;
+    virtual T& smallestBox(T& current, const std::unique_ptr<Shape>& shape) const noexcept = 0;
+    virtual bool hasOverlappingContents(const T& current) const noexcept = 0;
 };
 
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const Tree& tree);
+template <typename U>
+std::ostream& operator<<(std::ostream& os, const Tree<U>& tree){
+    if (tree._root) os << tree._root;
+    else os << "Empty tree.";
+    return os;
+}
 
 #endif // TREE_H
