@@ -151,8 +151,8 @@ Shape* Octree::nextShape(const Point& pos, const Direction& dir, Shape* current,
         }
 
         // Check the children, selectively mark those that the Point won't reach as visited
-        for (unsigned i = 0; i < node.max_size(); i++){
-            if (node[i]) continue;
+        for (std::size_t i = 0; i < node.max_size(); i++){
+            if (!node[i]) continue;
             auto& candidate = *(node[i]);
             dist = candidate->distanceToSurface(pos, dir);
             if (std::isnan(dist)) continue;
