@@ -7,6 +7,8 @@
 #include <cmath>
 #include <random>
 
+//#define MONITOR
+
 namespace{
     static constexpr double IThreshold = 1e-9;
     static std::default_random_engine rng(64);
@@ -37,13 +39,15 @@ double intensity(const Tree<T>& tree, Point p, const Direction& dir, bool isRefr
 
     double s; // placeholder
     Shape* next = tree.nextShape(p, dir, current, s);
-    // if (!current){
-    //     if (!next) std::cout << "Point " << p << " traveling at " << dir << " does not reach any other Shape." << std::endl;
-    //     else std::cout << "Point " << p << " traveling at " << dir << " reaches " << *next << " after a distance of " << s << "." << std::endl;
-    // } else{
-    //     if (!next) std::cout << "Point " << p << " on " << *current << " traveling at " << dir << " does not reach any other Shape." << std::endl;
-    //     else std::cout << "Point " << p << " on " << *current << " traveling at " << dir << " reaches " << *next << " after a distance of " << s << "." << std::endl;
-    // }
+#ifdef MONITOR
+    if (!current){
+        if (!next) std::cout << "Point " << p << " traveling at " << dir << " does not reach any other Shape." << std::endl;
+        else std::cout << "Point " << p << " traveling at " << dir << " reaches " << *next << " after a distance of " << s << "." << std::endl;
+    } else{
+        if (!next) std::cout << "Point " << p << " on " << *current << " traveling at " << dir << " does not reach any other Shape." << std::endl;
+        else std::cout << "Point " << p << " on " << *current << " traveling at " << dir << " reaches " << *next << " after a distance of " << s << "." << std::endl;
+    }
+#endif
     if (!next) return initial;
 
     p.advance(dir, s);

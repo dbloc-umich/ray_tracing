@@ -78,20 +78,21 @@ Shape* kdTree::nextShape(const Point& pos, const Direction& dir, Shape* current,
     s = std::numeric_limits<double>::max();
     std::stack<std::reference_wrapper<const Node>> stack; // keeps tracks of nodes to visit
     stack.emplace(_root);
-    Shape* next;
-    
+    Shape* next = nullptr;
+
     while (!stack.empty()){
         auto& node = stack.top().get();
         stack.pop();
         // Check if box has any viable candidates
         double dist = node->distanceToSurface(pos, dir);
         if (!node->encloses(pos) && !(node->surfaceContains(pos) && dist > 0.0)){
-            // pos is outside of box, so the distance to any Shape inside of it will be at least dist
+            // pos is outside of this Shape, so the distance to any Shape inside of it will be at least dist
             if (s < dist) continue;
         }
 
         // Check the children, selectively mark those that the Point won't reach as visited
-        for (std::size_t i = 0; i < node.size(); i++){
+        for (std::size_t i = 0; i < node.max_size(); i++){
+            if (!node[i]) continue;
             auto& candidate = *(node[i]);
             dist = candidate->distanceToSurface(pos, dir);
             if (std::isnan(dist)) continue;
