@@ -33,35 +33,35 @@ void kdTree::insert(std::unique_ptr<Shape> shape){
         ptrs.push_back(std::move(shape));
         _root = Node(boundingBox(ptrs.cbegin(), ptrs.cend()));
         _root[0] = std::make_unique<Node>(std::move(ptrs[0]));
-    }
-    
-    // Collision check
-    if (_root.leavesOverlap(*shape)){
-        throw std::invalid_argument("ERROR: The node to be inserted overlaps with the content of the tree.");
-    }
-    
-    PtrList ptrs;
-    ptrs.push_back(std::move(shape));
-    // Check if the Shape can be put inside _root
-    if (_root->encloses(*ptrs[0])){
-        Node& node = smallestBox(_root, ptrs[0]); // the deepest level that node can be inserted
-        // Check if there's still room to insert without destroying the subtree
-        for (std::size_t i = 0; i < 2; i++){
-            if (!node[i]){
-                node[i] = std::make_unique<Node>(std::move(ptrs[0]));
-                return;
-            }
-        }
-        // Node is full, now building a brand new subtree
-        std::size_t level = node.level();
-        char axis = level%3 == 0 ? 'x' : (level%3 == 1 ? 'y' : 'z');
-        destruct(node, ptrs);
-        node = Node(boundingBox(ptrs.cbegin(), ptrs.cend()));
-        construct(node, ptrs.begin(), ptrs.end(), level, axis);
     } else{
-        destruct(_root, ptrs);
-        _root = Node(boundingBox(ptrs.cbegin(), ptrs.cend()));
-        construct(_root, ptrs.begin(), ptrs.end(), 0, 'x');
+        // Collision check
+        if (_root.leavesOverlap(*shape)){
+            throw std::invalid_argument("ERROR: The node to be inserted overlaps with the content of the tree.");
+        }
+        
+        PtrList ptrs;
+        ptrs.push_back(std::move(shape));
+        // Check if the Shape can be put inside _root
+        if (_root->encloses(*ptrs[0])){
+            Node& node = smallestBox(_root, ptrs[0]); // the deepest level that node can be inserted
+            // Check if there's still room to insert without destroying the subtree
+            for (std::size_t i = 0; i < 2; i++){
+                if (!node[i]){
+                    node[i] = std::make_unique<Node>(std::move(ptrs[0]));
+                    return;
+                }
+            }
+            // Node is full, now building a brand new subtree
+            std::size_t level = node.level();
+            char axis = level%3 == 0 ? 'x' : (level%3 == 1 ? 'y' : 'z');
+            destruct(node, ptrs);
+            node = Node(boundingBox(ptrs.cbegin(), ptrs.cend()));
+            construct(node, ptrs.begin(), ptrs.end(), level, axis);
+        } else{
+            destruct(_root, ptrs);
+            _root = Node(boundingBox(ptrs.cbegin(), ptrs.cend()));
+            construct(_root, ptrs.begin(), ptrs.end(), 0, 'x');
+        }
     }
 }
 

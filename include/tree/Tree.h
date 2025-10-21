@@ -7,6 +7,7 @@
 
 class Direction;
 class Point;
+class Ray;
 class Shape;
 
 template <class T>
@@ -41,9 +42,14 @@ class Tree{
     double zMin() const noexcept;
     double zMax() const noexcept;
 
-    explicit operator bool() const noexcept{ return bool(_root); } // to check if tree is empty
     T& root() noexcept{ return _root; }
     const T& root() const noexcept{ return _root; }
+    explicit operator bool() const noexcept{ return bool(_root); } // to check if tree is empty
+    bool leavesOverlap(const Shape& other) const noexcept{ return _root.leavesOverlap(other); }
+    bool leavesOverlap(const T& other) const noexcept{ return _root.leavesOverlap(other); }
+
+    // Ray tracing algorithms
+    double intensity (const Ray& ray, bool isRefracted = true, bool isReflected = true) const noexcept;
     
     template<typename U>
     friend std::ostream& operator<<(std::ostream& os, const Tree<U>& tree);

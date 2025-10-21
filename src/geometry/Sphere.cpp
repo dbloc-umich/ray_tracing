@@ -1,7 +1,8 @@
 #include "Sphere.h"
 #include "Box.h"
-#include "Constants.h"
 #include "Direction.h"
+
+#define _USE_MATH_DEFINES
 #include <cmath>
 #include <exception>
 
@@ -26,8 +27,8 @@ void Sphere::setRadius(double R){
     _radius = R;
 }
 
-double Sphere::surfaceArea() const noexcept{ return 4.0*Constants::PI*_radius*_radius; }
-double Sphere::volume() const noexcept{ return 4.0/3*Constants::PI*_radius*_radius*_radius; }
+double Sphere::surfaceArea() const noexcept{ return 4.0*M_PI*_radius*_radius; }
+double Sphere::volume() const noexcept{ return 4.0/3*M_PI*_radius*_radius*_radius; }
 
 bool Sphere::surfaceContains(const Point& p) const noexcept{
     double dx = _origin.x() - p.x();

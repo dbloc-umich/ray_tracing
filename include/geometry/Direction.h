@@ -14,4 +14,7 @@ class Direction: public Vector{
     double norm() const noexcept override;
 };
 
+Direction reflected(const Direction& in, const Direction& normal);
+Direction refracted(const Direction& in, const Direction& normal, double n1, double n2);
+
 #endif // DIRECTION_H

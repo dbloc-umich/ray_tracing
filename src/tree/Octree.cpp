@@ -31,57 +31,57 @@ void Octree::insert(std::unique_ptr<Shape> shape){
         ptrs.push_back(std::move(shape));
         _root = UNode(boundingBox(ptrs.cbegin(), ptrs.cend()));
         _root[0] = std::make_unique<UNode>(std::move(ptrs[0]));
-    }
-    
-    // Collision check
-    if (_root.leavesOverlap(*shape)){
-        throw std::invalid_argument("ERROR: The node to be inserted overlaps with the content of the tree.");
-    }
-    
-    PtrList ptrs;
-    ptrs.push_back(std::move(shape));
-    // Check if the Shape can be put inside _root
-    if (_root->encloses(*ptrs[0])){
-        UNode& node = smallestBox(_root, ptrs[0]); // the deepest level that node can be inserted
+    } else{
+        // Collision check
+        if (_root.leavesOverlap(*shape)){
+            throw std::invalid_argument("ERROR: The node to be inserted overlaps with the content of the tree.");
+        }
+        
+        PtrList ptrs;
+        ptrs.push_back(std::move(shape));
+        // Check if the Shape can be put inside _root
+        if (_root->encloses(*ptrs[0])){
+            UNode& node = smallestBox(_root, ptrs[0]); // the deepest level that node can be inserted
 
-        if (node.size() != node.max_size()){
-            // Node is not yet full, may be able to put the shape directly under _children
-            // Check if all the existing children are leaf nodes
-            bool isLastInternal = true;
-            for (std::size_t oct = 0; oct < node.max_size(); oct++){
-                if (node[oct] && !node[oct]->isLeaf()){
-                    isLastInternal = false;
-                    break;
-                }
-            }
-            if (isLastInternal){
-                // insert directly to the first empty children
+            if (node.size() != node.max_size()){
+                // Node is not yet full, may be able to put the shape directly under _children
+                // Check if all the existing children are leaf nodes
+                bool isLastInternal = true;
                 for (std::size_t oct = 0; oct < node.max_size(); oct++){
-                    if (!node[oct]){
-                        node[oct] = std::make_unique<UNode>(std::move(ptrs[0]));
+                    if (node[oct] && !node[oct]->isLeaf()){
+                        isLastInternal = false;
                         break;
                     }
                 }
-            }
-        }
-        
-        // Check if the Shape can be added to the node's direct leaves
-        std::size_t oct = node.octant(*ptrs[0]);
-        if (oct == 8) node.emplace(std::make_unique<Node>(std::move(ptrs[0])));
-        else{
-            if (!node[oct]) node[oct] = std::make_unique<UNode>(std::move(ptrs[0]));
-            else{
-                // destruct the children but leave the leaves alone, then reconstruct the current node
-                for (oct = 0; oct < node.max_size(); oct++){
-                    if (node[oct]) destruct(*node[oct], ptrs);
+                if (isLastInternal){
+                    // insert directly to the first empty children
+                    for (std::size_t oct = 0; oct < node.max_size(); oct++){
+                        if (!node[oct]){
+                            node[oct] = std::make_unique<UNode>(std::move(ptrs[0]));
+                            break;
+                        }
+                    }
                 }
-                construct(node, ptrs, node.level());
             }
+            
+            // Check if the Shape can be added to the node's direct leaves
+            std::size_t oct = node.octant(*ptrs[0]);
+            if (oct == 8) node.emplace(std::make_unique<Node>(std::move(ptrs[0])));
+            else{
+                if (!node[oct]) node[oct] = std::make_unique<UNode>(std::move(ptrs[0]));
+                else{
+                    // destruct the children but leave the leaves alone, then reconstruct the current node
+                    for (oct = 0; oct < node.max_size(); oct++){
+                        if (node[oct]) destruct(*node[oct], ptrs);
+                    }
+                    construct(node, ptrs, node.level());
+                }
+            }
+        } else{
+            destruct(_root, ptrs);
+            _root = UNode(boundingBox(ptrs.cbegin(), ptrs.cend()));
+            construct(_root, ptrs, 0);
         }
-    } else{
-        destruct(_root, ptrs);
-        _root = UNode(boundingBox(ptrs.cbegin(), ptrs.cend()));
-        construct(_root, ptrs, 0);
     }
 }
 

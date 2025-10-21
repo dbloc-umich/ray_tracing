@@ -32,8 +32,8 @@ class NodeBase{
     std::unique_ptr<T>& operator[](std::size_t i){ return _children[i]; }
     const std::unique_ptr<T>& operator[](std::size_t i) const{ return _children[i]; }
 
-    std::size_t level(){ return _level; }
-    void setLevel(std::size_t level){ _level = level; }
+    std::size_t level() const noexcept{ return _level; }
+    void setLevel(std::size_t level) noexcept{ _level = level; }
 
     virtual bool leavesOverlap(const Shape& other) const noexcept = 0;
     virtual bool leavesOverlap(const T& other) const noexcept = 0;
