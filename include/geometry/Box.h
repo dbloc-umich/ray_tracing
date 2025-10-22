@@ -6,8 +6,9 @@
 class Sphere;
 class Box: public Shape{
     public:
-    Box(const Point& lower, const Point& upper, double Sigma_t=0.0, double refrac=1.0);
-    explicit Box(double x0=0.0, double y0=0.0, double z0=0.0, double x1=1.0, double y1=1.0, double z1=1.0, double Sigma_t=0.0, double refrac=1.0);
+    Box(const Point& lower, const Point& upper, const std::shared_ptr<Material>& mat = nullptr);
+    explicit Box(double x0=0.0, double y0=0.0, double z0=0.0, double x1=1.0, double y1=1.0, double z1=1.0,
+                 const std::shared_ptr<Material>& mat = nullptr);
 
     Point lowerVertex() const noexcept{ return _lower; }
     Point upperVertex() const noexcept{ return _upper; }

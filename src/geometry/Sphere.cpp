@@ -4,18 +4,17 @@
 
 #define _USE_MATH_DEFINES
 #include <cmath>
-#include <exception>
 
-Sphere::Sphere(const Point& pt, double R, double Sigma_t, double refrac):
-    Shape(Sigma_t, refrac),
+Sphere::Sphere(const Point& pt, double R, const std::shared_ptr<Material>& mat):
+    Shape(mat),
     _origin(pt),
     _radius(R)
 {
     if(_radius <= 0) throw std::invalid_argument("ERROR: Radius must be positive.");
 }
 
-Sphere::Sphere(double x, double y, double z, double R, double Sigma_t, double refrac):
-    Shape(Sigma_t, refrac),
+Sphere::Sphere(double x, double y, double z, double R, const std::shared_ptr<Material>& mat):
+    Shape(mat),
     _origin(x,y,z),
     _radius(R)
 {

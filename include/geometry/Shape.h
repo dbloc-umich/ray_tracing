@@ -1,21 +1,17 @@
 #ifndef SHAPE_H
 #define SHAPE_H
-#include <iostream>
-#include <limits>
+
+#include <memory>
+#include <vector>
 
 class Direction;
+class Material;
 class Point;
 
 class Shape{
     public:
-    explicit Shape(double Sigma_t=0.0, double refrac=1.0);
+    explicit Shape(const std::shared_ptr<Material>& mat=nullptr);
     virtual ~Shape() = default;
-
-    virtual double Sigma_t() const noexcept{ return _Sigma_t; }
-    void setSigma_t(double Sigma_t);
-
-    virtual double refractive() const noexcept{ return _refrac; }
-    void setRefractive(double refrac);
 
     virtual double xMin() const noexcept = 0;
     virtual double xMax() const noexcept = 0;
@@ -40,10 +36,11 @@ class Shape{
 
     virtual Point centroid() const noexcept = 0;
     virtual Direction normal(const Point& pos) const = 0; // outward unit normal vector
-    friend std::ostream& operator<<(std::ostream& os, const Shape& shape){ return shape.print(os); }
+    double getProp(std::string name, const std::vector<double>& vars={}) const;
+    friend std::ostream& operator<<(std::ostream& os, const Shape& shape);
 
     protected:
-    double _Sigma_t, _refrac;
+    std::shared_ptr<Material> _mat;
     static constexpr double eps = 1e-9;
     virtual std::ostream& print(std::ostream& os) const noexcept = 0;
 };

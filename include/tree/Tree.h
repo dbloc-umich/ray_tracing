@@ -47,10 +47,7 @@ class Tree{
     explicit operator bool() const noexcept{ return bool(_root); } // to check if tree is empty
     bool leavesOverlap(const Shape& other) const noexcept{ return _root.leavesOverlap(other); }
     bool leavesOverlap(const T& other) const noexcept{ return _root.leavesOverlap(other); }
-
-    // Ray tracing algorithms
-    double intensity (const Ray& ray, bool isRefracted = true, bool isReflected = true) const noexcept;
-    
+   
     template<typename U>
     friend std::ostream& operator<<(std::ostream& os, const Tree<U>& tree);
 

@@ -1,21 +1,14 @@
 #include "Shape.h"
-#include <exception>
+#include "Material.h"
 
-Shape::Shape(double Sigma_t, double refrac):
-    _Sigma_t(Sigma_t),
-    _refrac(refrac)
-    //_parent(nullptr)
-{
-    if (Sigma_t < 0.0) throw std::invalid_argument("ERROR: Cross section must be non-negative.");
-    if (refrac < 1.0) throw std::invalid_argument("ERROR: Refractive index must be at least unity.");
+Shape::Shape(const std::shared_ptr<Material>& mat):
+    _mat(mat)
+{}
+
+double Shape::getProp(std::string name, const std::vector<double>& vars) const{
+    return _mat->computeProperty(name, vars);
 }
 
-void Shape::setSigma_t(double Sigma_t){
-    if (Sigma_t < 0.0) throw std::invalid_argument("ERROR: Cross section must be non-negative.");
-    _Sigma_t = Sigma_t;
-}
-
-void Shape::setRefractive(double refrac){
-    if (refrac < 1.0) throw std::invalid_argument("ERROR: Refractive index must be at least unity.");
-    _refrac = refrac;
+std::ostream& operator<<(std::ostream& os, const Shape& shape){
+    return shape.print(os);
 }

@@ -1,7 +1,7 @@
 #include "Octree.h"
 
 #include <cmath>
-#include <exception>
+#include <limits>
 #include <stack>
 
 #include "Box.h"

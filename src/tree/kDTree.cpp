@@ -2,8 +2,8 @@
 
 #include <algorithm>
 #include <cmath>
-#include <exception>
 #include <functional>
+#include <limits>
 #include <stack>
 
 #include "Box.h"
@@ -139,11 +139,11 @@ Shape* kdTree::nextShape(const Point& pos, const Direction& dir, Shape* current,
     return next;
 }
 
-kdTree::iterator kdTree::medianNode(Box& box0, Box& box1, iterator begin, iterator end, char axis) noexcept{
+kdTree::iterator kdTree::medianNode(Box* box0, Box* box1, iterator begin, iterator end, char axis) noexcept{
     /**
      * Inputs:
-     *  box0 is the bounding box that completely encloses all objects in nodes[begin:end)
-     *  box1 is a placeholder box
+     *  &box0 is the bounding box that completely encloses all objects in nodes[begin:end)
+     *  &box1 is a placeholder box
      * Outputs:
      *  since this function is only called when N = end-begin > 8:
      *      returns an iterator pointing to an element N/2 away from begin, where N=end-begin
@@ -162,24 +162,24 @@ kdTree::iterator kdTree::medianNode(Box& box0, Box& box1, iterator begin, iterat
     std::nth_element(begin, median, end, comp); // Find the median
     
     // box1 now should encloses the upper half of the nodes, now partialy sorted about element number N/2
-    Point p = box0.lowerVertex();
+    Point p = box0->lowerVertex();
     if (axis == 'x') p.setX((*median)->xMin() - eps);
     else if (axis == 'y') p.setY((*median)->yMin() - eps);
     else p.setZ((*median)->zMin() - eps);
-    box1.setVertices(p, box0.upperVertex());
+    box1->setVertices(p, box0->upperVertex());
 
     // Restructure box0 to only enclose the lower half of nodes0
-    Point uv = box0.upperVertex();
-    if (axis == 'x') uv.setX(box0.xMin());
-    else if (axis == 'y') uv.setY(box0.yMin());
-    else uv.setZ(box0.zMin());
+    Point uv = box0->upperVertex();
+    if (axis == 'x') uv.setX(box0->xMin());
+    else if (axis == 'y') uv.setY(box0->yMin());
+    else uv.setZ(box0->zMin());
 
     for (auto& it = begin; it != median; it++){
         if (axis == 'x' && (*it)->xMax() > uv.x()) uv.setX((*it)->xMax());
         else if (axis == 'y' && (*it)->yMax() > uv.y()) uv.setY((*it)->yMax());
         else if (axis == 'z' && (*it)->zMax() > uv.z()) uv.setZ((*it)->zMax());
     }
-    box0.setUpperVertex(uv);
+    box0->setUpperVertex(uv);
     return median;
 }
 
@@ -198,11 +198,11 @@ void kdTree::construct(Node& current, iterator begin, iterator end, std::size_t 
             current[it-begin] = std::make_unique<Node>(std::move(*it));
         }
     } else{
-        Box box0 = dynamic_cast<Box&>(*current);
-        Box box1;
+        Box* box0 = dynamic_cast<Box*>(current.get());
+        Box* box1 = new Box();
         iterator median = medianNode(box0, box1, begin, end, axis);
-        current[0] = std::make_unique<Node>(std::make_unique<Box>(box0));
-        current[1] = std::make_unique<Node>(std::make_unique<Box>(box1));
+        current[0] = std::make_unique<Node>(box0);
+        current[1] = std::make_unique<Node>(box1);
 
         char next;
         if (axis == 'x') next = 'y';
