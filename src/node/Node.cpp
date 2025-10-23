@@ -45,10 +45,7 @@ std::ostream& Node::print(std::ostream& os) const noexcept{
         os << ":\n";
 
         for (auto& it: _children){
-            if (it){
-                printTabs(os, _level+1);
-                os << *it << "\n";
-            }
+            if (it) os << *it << "\n";
         }
     }
     return os;

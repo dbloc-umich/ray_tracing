@@ -1,5 +1,9 @@
 #include "Ray.h"
+#include "Constants.h"
 #include "Shape.h"
+
+#define _USE_MATH_DEFINES
+#include <cmath>
 
 Ray::Ray(Point p, Direction dir, double I, double lambda, Shape* host):
     _p(p),
@@ -17,6 +21,11 @@ Ray::Ray(Point p, Direction dir, double I, double lambda, Shape* host):
 void Ray::setIntensity(double I){
     if (I < 0.0) throw std::invalid_argument("ERROR: Negative intensity.");
     _I = I;
+}
+
+double Ray::frequency() const noexcept{
+    // angular frequency in units of radians/s
+    return 2.0 * M_PI * constants::c / _lambda;
 }
 
 void Ray::setWavelength(double lambda){

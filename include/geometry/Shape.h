@@ -7,10 +7,11 @@
 class Direction;
 class Material;
 class Point;
+enum class Prop;
 
 class Shape{
     public:
-    explicit Shape(const std::shared_ptr<Material>& mat=nullptr);
+    explicit Shape(std::shared_ptr<Material> mat=nullptr);
     virtual ~Shape() = default;
 
     virtual double xMin() const noexcept = 0;
@@ -36,7 +37,7 @@ class Shape{
 
     virtual Point centroid() const noexcept = 0;
     virtual Direction normal(const Point& pos) const = 0; // outward unit normal vector
-    double getProp(std::string name, const std::vector<double>& vars={}) const;
+    double getProp(const Prop&, const std::vector<double>& vars={}) const;
     friend std::ostream& operator<<(std::ostream& os, const Shape& shape);
 
     protected:

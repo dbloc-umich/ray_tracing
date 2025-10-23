@@ -1,4 +1,6 @@
 #include "RayTracing.h"
+#include "Constants.h"
+#include "Material.h"
 #include "Ray.h"
 #include "Shape.h"
 #include "Tree.h"
@@ -47,10 +49,9 @@ double intensity(const Tree<T>& tree, const Ray& ray, bool isRefracted, bool isR
         else{
             top.setPoistion(top.position().advance(top.direction(), s));
             if (top.host() == next){
-                double alpha = next->getProp("extinction_coefficient", {top.wavelength()});
-                alpha *= 4.0*M_PI;
-                alpha /= top.wavelength() * next->getProp("refractive_index", {top.wavelength()});
-                top.setIntensity(top.intensity()*exp(-alpha*s)); // moving within a Shape, implicit absorption
+                double alpha = next->getProp(Prop::extinctionCoefficient, {top.wavelength()});
+                alpha *= 2.0 * top.frequency() / constants::c;
+                top.setIntensity(top.intensity()*exp(-alpha*s)); // moving within a Shape, implicit absorption;
             }
             if (!isRefracted && !isReflected){
                 top.setHost(next);
@@ -59,20 +60,20 @@ double intensity(const Tree<T>& tree, const Ray& ray, bool isRefracted, bool isR
                 double n1, n2;
                 if (!top.host()){ // current points to empty space
                     n1 = 1.0;
-                    n2 = next->getProp("refractive_index");
+                    n2 = next->getProp(Prop::refractiveIndex, {top.wavelength()});
                 } else if (s == 0.0){
                     // particle enters directly from current to next
-                    n1 = top.host()->getProp("refractive_index");
-                    n2 = next->getProp("refractive_index");
+                    n1 = top.host()->getProp(Prop::refractiveIndex, {top.wavelength()});
+                    n2 = next->getProp(Prop::refractiveIndex, {top.wavelength()});
                 } else if (top.host() != next){
                     // particle travels from one Node to another with vacuum in between them
                     n1 = 1.0;
-                    n2 = next->getProp("refractive_index");
+                    n2 = next->getProp(Prop::refractiveIndex, {top.wavelength()});
                 } else{
                     // particle travels within the same Node
-                    n1 = top.host()->getProp("refractive_index");
+                    n1 = top.host()->getProp(Prop::refractiveIndex, {top.wavelength()});
                     auto pseudoNext = tree.nextShape(top.position(), top.direction(), top.host(), s);
-                    n2 = (s == 0) ? pseudoNext->getProp("refractive_index") : 1.0;
+                    n2 = (s == 0) ? pseudoNext->getProp(Prop::refractiveIndex, {top.wavelength()}) : 1.0;
                 }
 
                 Direction normal = next->normal(top.position());

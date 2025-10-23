@@ -6,9 +6,9 @@
 class Box;
 class Sphere: public Shape{  
     public:
-    explicit Sphere(const Point& pt, double R=1.0, const std::shared_ptr<Material>& mat=nullptr);
+    explicit Sphere(const Point& pt, double R=1.0, std::shared_ptr<Material> mat=nullptr);
     explicit Sphere(double x=0.0, double y=0.0, double z=0.0, double R=1.0,
-                    const std::shared_ptr<Material>& mat = nullptr);
+                    std::shared_ptr<Material> mat = nullptr);
 
     Point origin() const noexcept{ return _origin; }
     double radius() const noexcept{ return _radius; }

@@ -1,11 +1,13 @@
 #include "Shape.h"
 #include "Material.h"
 
-Shape::Shape(const std::shared_ptr<Material>& mat):
+#include <iostream>
+
+Shape::Shape(std::shared_ptr<Material> mat):
     _mat(mat)
 {}
 
-double Shape::getProp(std::string name, const std::vector<double>& vars) const{
+double Shape::getProp(const Prop& name, const std::vector<double>& vars) const{
     return _mat->computeProperty(name, vars);
 }
 

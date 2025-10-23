@@ -1,5 +1,6 @@
 #include "InterpolatedProperty.h"
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -14,6 +15,9 @@ InterpolatedProperty::InterpolatedProperty(std::string file)
     }
     if (_grid.size() != _val.size())
         throw std::invalid_argument("ERROR: Dimension mismatch between independent and dependent variables");
+    if (!std::is_sorted(_grid.begin(), _grid.end())){
+        // sort vectors here
+    }
 }
 
 double InterpolatedProperty::compute(const std::vector<double>& vars) const{
@@ -24,9 +28,9 @@ double InterpolatedProperty::compute(const std::vector<double>& vars) const{
     if (x <= _grid[0]) return _val[0];
     if (x >= _grid.back()) return _val.back();
     std::size_t ind = 0;
-    for (std::size_t i = 0; i < _grid.size()-1; i++){
-        if (x <= _grid[i]){
-            ind = x;
+    for (auto it = _grid.crbegin(); it != _grid.crend(); it++){
+        if (*it <= x){
+            ind = std::distance(_grid.begin(), it.base()) - 1;
             break;
         }
     }

@@ -3,7 +3,7 @@
 #include <cmath>
 #include <limits>
 
-Box::Box(const Point& lower, const Point& upper, const std::shared_ptr<Material>& mat):
+Box::Box(const Point& lower, const Point& upper, std::shared_ptr<Material> mat):
     Shape(mat),
     _lower(std::min(lower.x(), upper.x()), std::min(lower.y(), upper.y()), std::min(lower.z(), upper.z())),
     _upper(std::max(lower.x(), upper.x()), std::max(lower.y(), upper.y()), std::max(lower.z(), upper.z()))
@@ -12,7 +12,7 @@ Box::Box(const Point& lower, const Point& upper, const std::shared_ptr<Material>
         throw std::invalid_argument("ERROR: The vertices coincide in at least one coordinate.");
 }
 
-Box::Box(double x0, double y0, double z0, double x1, double y1, double z1, const std::shared_ptr<Material>& mat):
+Box::Box(double x0, double y0, double z0, double x1, double y1, double z1, std::shared_ptr<Material> mat):
     Shape(mat),
     _lower(std::min(x0,x1), std::min(y0,y1), std::min(z0,z1)),
     _upper(std::max(x0,x1), std::max(y0,y1), std::max(z0,z1))

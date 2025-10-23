@@ -19,6 +19,7 @@ class Ray{
     void setIntensity(double I);
 
     double wavelength() const noexcept{ return _lambda; }
+    double frequency() const noexcept;
     void setWavelength(double lambda);
 
     Shape* host() const noexcept{ return _host; }
@@ -28,7 +29,7 @@ class Ray{
     Point _p;
     Direction _dir;
     double _I;
-    double _lambda;
+    double _lambda; // vacuum wavelength, [m]
     Shape* _host;
 };
 

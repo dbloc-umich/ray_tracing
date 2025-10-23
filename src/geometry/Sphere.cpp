@@ -5,7 +5,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-Sphere::Sphere(const Point& pt, double R, const std::shared_ptr<Material>& mat):
+Sphere::Sphere(const Point& pt, double R, std::shared_ptr<Material> mat):
     Shape(mat),
     _origin(pt),
     _radius(R)
@@ -13,7 +13,7 @@ Sphere::Sphere(const Point& pt, double R, const std::shared_ptr<Material>& mat):
     if(_radius <= 0) throw std::invalid_argument("ERROR: Radius must be positive.");
 }
 
-Sphere::Sphere(double x, double y, double z, double R, const std::shared_ptr<Material>& mat):
+Sphere::Sphere(double x, double y, double z, double R, std::shared_ptr<Material> mat):
     Shape(mat),
     _origin(x,y,z),
     _radius(R)
