@@ -67,7 +67,7 @@ class NodeBase{
 
 template<class T, std::size_t N>
 std::ostream& NodeBase<T, N>::printTabs(std::ostream& os, std::size_t n) const noexcept{
-    for (unsigned i = 0; i < n; i++) os << "\t";
+    for (unsigned i = 0; i < n; i++) os << "  ";
     return os;
 }
 

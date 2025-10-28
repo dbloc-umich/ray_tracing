@@ -37,8 +37,10 @@ class Shape{
 
     virtual Point centroid() const noexcept = 0;
     virtual Direction normal(const Point& pos) const = 0; // outward unit normal vector
-    double getProp(const Prop&, const std::vector<double>& vars={}) const;
     friend std::ostream& operator<<(std::ostream& os, const Shape& shape);
+
+    bool hasProperty(const Prop&) const noexcept;
+    double computeProperty(const Prop&, const std::vector<double>& vars={}) const;
 
     protected:
     std::shared_ptr<Material> _mat;

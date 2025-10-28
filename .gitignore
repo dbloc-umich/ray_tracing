@@ -11,7 +11,8 @@
 *.gz
 *.tex
 
-# main.cpp
+# User directory
+user*
 src/main.cpp
 
 # Plots, for now
