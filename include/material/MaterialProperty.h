@@ -1,7 +1,6 @@
 #ifndef MATERIAL_PROPERTY_H
 #define MATERIAL_PROPERTY_H
 
-#include <string>
 #include <vector>
 
 class MaterialProperty{

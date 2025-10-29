@@ -3,10 +3,11 @@
 
 #include "MaterialProperty.h"
 
+#include <string>
+
 class InterpolatedProperty : public MaterialProperty{
     public:
     InterpolatedProperty(std::string file);
-
     double compute(const std::vector<double>& = {}) const override;
 
     protected:
