@@ -25,7 +25,7 @@ TEST_DEP := $(TEST_SRC:$(TEST_DIR)/%.cpp=$(DEP_DIR)/$(TEST_DIR)/%.d)
 
 INC = $(addprefix -I,$(INC_SUBDIRS))
 CXX = g++
-CXXFLAGS = -Wall -O2 -MMD -MP $(INC) -Iexternal
+CXXFLAGS = -Wall -O2 -MMD -MP $(INC) -I../external # directory to external codes, add more if needed
 
 .PHONY: all clean test
 
