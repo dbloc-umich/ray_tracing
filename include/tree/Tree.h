@@ -5,8 +5,6 @@
 #include <memory>
 #include <vector>
 
-class Direction;
-class Point;
 class Ray;
 class Shape;
 
@@ -25,15 +23,14 @@ class Tree{
 
     /**
      * Inputs:
-     *  pos: the position of the particle
-     *  dir: the direction of the particle
+     *  ray: a ray representing the particle, with its position, direction, and what Shape it's on
      *  current: a raw pointer to the Shape that has the particle on its surface
      *  s: a placeholder double&
      * Outputs:
-     *  s is the modified distance that the Point has to travel to reach the next Shape
+     *  s is the modified distance that the particle has to travel to reach the next Shape
      *  a raw pointer to Shape where the particle lands is returned
     **/
-    virtual Shape* nextShape(const Point& pos, const Direction& dir, Shape* current, double& s) const noexcept = 0;
+    virtual Shape* nextShape(const Ray& ray, double& s) const noexcept = 0;
 
     double xMin() const noexcept;
     double xMax() const noexcept;

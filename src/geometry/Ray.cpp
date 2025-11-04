@@ -5,7 +5,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-Ray::Ray(Point p, Direction dir, double I, double lambda, Shape* host):
+Ray::Ray(Eigen::Vector3d p, UnitVector3d dir, double I, double lambda, Shape* host):
     _p(p),
     _dir(dir),
     _I(I),

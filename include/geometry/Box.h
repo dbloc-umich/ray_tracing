@@ -1,21 +1,19 @@
 #ifndef BOX_H
 #define BOX_H
 #include "Shape.h"
-#include "Point.h"
 
-class Sphere;
 class Box: public Shape{
     public:
-    Box(const Point& lower, const Point& upper, std::shared_ptr<Material> mat = nullptr);
+    Box(const Eigen::Vector3d& lower, const Eigen::Vector3d& upper, std::shared_ptr<Material> mat = nullptr);
     explicit Box(double x0=0.0, double y0=0.0, double z0=0.0, double x1=1.0, double y1=1.0, double z1=1.0,
                  std::shared_ptr<Material> mat = nullptr);
 
-    Point lowerVertex() const noexcept{ return _lower; }
-    Point upperVertex() const noexcept{ return _upper; }
+    Eigen::Vector3d lowerVertex() const noexcept{ return _lower; }
+    Eigen::Vector3d upperVertex() const noexcept{ return _upper; }
 
-    void setLowerVertex(const Point& point);
-    void setUpperVertex(const Point& point);
-    void setVertices(const Point& lower, const Point& upper);
+    void setLowerVertex(const Eigen::Vector3d& point);
+    void setUpperVertex(const Eigen::Vector3d& point);
+    void setVertices(const Eigen::Vector3d& lower, const Eigen::Vector3d& upper);
 
     double xMin() const noexcept override{ return _lower.x(); }
     double xMax() const noexcept override{ return _upper.x(); }
@@ -31,17 +29,17 @@ class Box: public Shape{
     double surfaceArea() const noexcept override{ return 2*(length()*width() + length()*height() + width()*height()); }
     double volume() const noexcept override{ return length()*width()*height(); }
 
-    bool surfaceContains(const Point& p) const noexcept override;
-    bool encloses(const Point& p) const noexcept override;
+    bool surfaceContains(const Eigen::Vector3d& p) const noexcept override;
+    bool encloses(const Eigen::Vector3d& p) const noexcept override;
     bool encloses(const Shape& other) const noexcept override;
     bool overlaps(const Shape& other) const noexcept override;
-    double distanceToSurface(const Point& p, const Direction& dir) const noexcept override;
+    double distanceToSurface(const Eigen::Vector3d& p, const UnitVector3d& dir) const noexcept override;
 
-    Point centroid() const noexcept override;
-    Direction normal(const Point& pos) const override;
+    Eigen::Vector3d centroid() const noexcept override;
+    UnitVector3d normal(const Eigen::Vector3d& pos) const override;
 
     protected:
-    Point _lower, _upper;
+    Eigen::Vector3d _lower, _upper;
     std::ostream& print(std::ostream& os) const noexcept override;
 };
 #endif // BOX_H

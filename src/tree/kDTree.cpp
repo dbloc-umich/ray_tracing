@@ -7,8 +7,9 @@
 #include <stack>
 
 #include "Box.h"
-#include "Direction.h"
-#include "Point.h"
+#include "Ray.h"
+
+//#define MONITOR
 
 kdTree::kdTree(PtrList& ptrs):
     Tree()
@@ -64,11 +65,15 @@ void kdTree::insert(std::unique_ptr<Shape> shape){
     }
 }
 
-Shape* kdTree::nextShape(const Point& pos, const Direction& dir, Shape* current, double& s) const noexcept{
+Shape* kdTree::nextShape(const Ray& ray, double& s) const noexcept{
     if (!_root){
         s = NAN;
         return nullptr;
     }
+
+    Eigen::Vector3d pos = ray.position();
+    UnitVector3d dir = ray.direction();
+    Shape* current = ray.host();
     if (current){
         s = current->distanceToSurface(pos, dir);
         if (current->encloses(pos) || (current->surfaceContains(pos) && s > 0.0)) return current;
@@ -84,6 +89,9 @@ Shape* kdTree::nextShape(const Point& pos, const Direction& dir, Shape* current,
         stack.pop();
         // Check if box has any viable candidates
         double dist = node->distanceToSurface(pos, dir);
+#ifdef MONITOR
+        std::cout << "Checking node " << *node << ", dist = " << dist << ", s = " << s << std::endl;
+#endif
         if (!node->encloses(pos) && !(node->surfaceContains(pos) && dist > 0.0)){
             // pos is outside of this Shape, so the distance to any Shape inside of it will be at least dist
             if (s < dist) continue;
@@ -95,12 +103,26 @@ Shape* kdTree::nextShape(const Point& pos, const Direction& dir, Shape* current,
             auto& candidate = *(node[i]);
             dist = candidate->distanceToSurface(pos, dir);
             if (std::isnan(dist)) continue;
+#ifdef MONITOR
+            else std::cout << "Candidate: " << *candidate << ", dist = " << dist << ", s = " << s << std::endl;
+#endif
 
-            if (!candidate.isLeaf()) stack.emplace(candidate); // Not a leaf node, keeps adding to the stack
+            if (!candidate.isLeaf()){
+                stack.emplace(candidate); // Not a leaf node, keeps adding to the stack
+#ifdef MONITOR
+                std::cout << "Not a leaf node, keeps adding to the stack" << std::endl;
+#endif
+            }
             else{
-                // Reaches a leaf node, now performing distance calcs
+                // Reaches a leaf node, now performing distance comparisons
+#ifdef MONITOR
+                std::cout << "Reaches a leaf node, now performing distance comparisons" << std::endl;
+#endif
                 if (candidate->encloses(pos)){
                     // Point is inside the Shape
+#ifdef MONITOR
+                    std::cout << "Point is inside the Shape" << std::endl;
+#endif
                     s = dist;
                     return candidate.get();
                 }
@@ -124,8 +146,7 @@ Shape* kdTree::nextShape(const Point& pos, const Direction& dir, Shape* current,
                 }
 
                 if (s > dist){
-                    Point nextPos = pos;
-                    nextPos.advance(dir, dist);
+                    auto nextPos = pos + dir.value()*dist;
                     if (!dir.isOrthogonal(candidate->normal(nextPos))){
                         // checks against tangency
                         s = dist;
@@ -161,22 +182,22 @@ kdTree::iterator kdTree::medianNode(Box& box0, Box& box1, iterator begin, iterat
     std::nth_element(begin, median, end, comp); // Find the median
     
     // box1 now should encloses the upper half of the nodes, now partialy sorted about element number N/2
-    Point p = box0.lowerVertex();
-    if (axis == 'x') p.setX((*median)->xMin() - eps);
-    else if (axis == 'y') p.setY((*median)->yMin() - eps);
-    else p.setZ((*median)->zMin() - eps);
+    auto p = box0.lowerVertex();
+    if (axis == 'x') p[0] = (*median)->xMin() - eps;
+    else if (axis == 'y') p[1] = (*median)->yMin() - eps;
+    else p[2] = (*median)->zMin() - eps;
     box1 = Box(p, box0.upperVertex());
 
     // Restructure box0 to only enclose the lower half of nodes0
-    Point uv = box0.upperVertex();
-    if (axis == 'x') uv.setX(box0.xMin());
-    else if (axis == 'y') uv.setY(box0.yMin());
-    else uv.setZ(box0.zMin());
+    auto uv = box0.upperVertex();
+    if (axis == 'x') uv[0] = box0.xMin();
+    else if (axis == 'y') uv[1] = box0.yMin();
+    else uv[2] = box0.zMin();
 
     for (auto& it = begin; it != median; it++){
-        if (axis == 'x' && (*it)->xMax() > uv.x()) uv.setX((*it)->xMax());
-        else if (axis == 'y' && (*it)->yMax() > uv.y()) uv.setY((*it)->yMax());
-        else if (axis == 'z' && (*it)->zMax() > uv.z()) uv.setZ((*it)->zMax());
+        if (axis == 'x' && (*it)->xMax() > uv.x()) uv[0] = (*it)->xMax();
+        else if (axis == 'y' && (*it)->yMax() > uv.y()) uv[1] = (*it)->yMax();
+        else if (axis == 'z' && (*it)->zMax() > uv.z()) uv[2] = (*it)->zMax();
     }
     box0.setUpperVertex(uv);
     return median;

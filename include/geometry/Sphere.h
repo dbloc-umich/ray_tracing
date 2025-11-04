@@ -1,19 +1,17 @@
 #ifndef SPHERE_H
 #define SPHERE_H
 #include "Shape.h"
-#include "Point.h"
 
-class Box;
 class Sphere: public Shape{  
     public:
-    explicit Sphere(const Point& pt, double R=1.0, std::shared_ptr<Material> mat=nullptr);
+    explicit Sphere(const Eigen::Vector3d& pt, double R=1.0, std::shared_ptr<Material> mat=nullptr);
     explicit Sphere(double x=0.0, double y=0.0, double z=0.0, double R=1.0,
                     std::shared_ptr<Material> mat = nullptr);
 
-    Point origin() const noexcept{ return _origin; }
+    Eigen::Vector3d origin() const noexcept{ return _origin; }
     double radius() const noexcept{ return _radius; }
 
-    void setOrigin(const Point& point){ _origin = point; }
+    void setOrigin(const Eigen::Vector3d& point){ _origin = point; }
     void setRadius(double R);
 
     double xMin() const noexcept override{ return _origin.x() - _radius; }
@@ -26,17 +24,17 @@ class Sphere: public Shape{
     double surfaceArea() const noexcept override;
     double volume() const noexcept override;
 
-    bool surfaceContains(const Point& p) const noexcept override;
-    bool encloses(const Point& p) const noexcept override;
+    bool surfaceContains(const Eigen::Vector3d& p) const noexcept override;
+    bool encloses(const Eigen::Vector3d& p) const noexcept override;
     bool encloses(const Shape& other) const noexcept override;
     bool overlaps(const Shape& other) const noexcept override;
-    double distanceToSurface(const Point& p, const Direction& dir) const noexcept override;
+    double distanceToSurface(const Eigen::Vector3d& p, const UnitVector3d& dir) const noexcept override;
 
-    Point centroid() const noexcept override{ return _origin; }
-    Direction normal(const Point& pos) const override;
+    Eigen::Vector3d centroid() const noexcept override{ return _origin; }
+    UnitVector3d normal(const Eigen::Vector3d& pos) const override;
 
     protected:
-    Point _origin;
+    Eigen::Vector3d _origin;
     double _radius;
     std::ostream& print(std::ostream& os) const noexcept override;
 };

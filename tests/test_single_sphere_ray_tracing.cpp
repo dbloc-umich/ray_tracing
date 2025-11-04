@@ -1,7 +1,6 @@
 #include "catch2/catch2.hpp"
 
 #include "ConstantProperty.h"
-#include "Direction.h"
 #include "kdTree.h"
 #include "Material.h"
 #include "Ray.h"
@@ -21,7 +20,9 @@ TEST_CASE("one sphere, streamline with normal incidence"){
     nodes.emplace_back(std::make_unique<Sphere>(0, 0, 0, r, mat));
     kdTree tree(nodes);
 
-    Ray ray(Point(-2*r, 0, 0), Direction(1, 0, 0));
+    Eigen::Vector3d pos{-2*r, 0.0, 0.0};
+    UnitVector3d dir{1.0, 0.0, 0.0};
+    Ray ray(pos, dir);
     double I = intensity(tree, ray, HopMode::Streamline);
     double Itrue = exp(-2*alpha*r);
     REQUIRE(fabs(I-Itrue)/Itrue < 1e-6);
@@ -38,7 +39,9 @@ TEST_CASE("one sphere, refraction and reflection with normal incidence"){
     nodes.emplace_back(std::make_unique<Sphere>(0, 0, 0, r, mat));
     kdTree tree(nodes);
 
-    Ray ray(Point(-2*r, 0, 0), Direction(1, 0, 0));
+    Eigen::Vector3d pos{-2*r, 0.0, 0.0};
+    UnitVector3d dir{1.0, 0.0, 0.0};
+    Ray ray(pos, dir);
     double A = exp(-2*alpha*r);
     double R = (1.0-n)/(1.0+n); R *= R;
     double T = 1.0 - R;
@@ -58,7 +61,9 @@ TEST_CASE("one sphere, streamline with non-normal incidence"){
     nodes.emplace_back(std::make_unique<Sphere>(0, 0, 0, r, mat));
     kdTree tree(nodes);
 
-    Ray ray(Point(-2*r, 0.5*r, 0), Direction(1, 0, 0));
+    Eigen::Vector3d pos{-2*r, 0.5*r, 0.0};
+    UnitVector3d dir{1.0, 0.0, 0.0};
+    Ray ray(pos, dir);
     double I = intensity(tree, ray, HopMode::Streamline);
     double Itrue = exp(-std::sqrt(3)*alpha*r);
     REQUIRE(fabs(I-Itrue)/Itrue < 1e-6);
@@ -75,7 +80,9 @@ TEST_CASE("one sphere, refraction and reflection with non-normal incidence"){
     nodes.emplace_back(std::make_unique<Sphere>(0, 0, 0, r, mat));
     kdTree tree(nodes);
 
-    Ray ray(Point(-2*r, 0.5*r, 0), Direction(1, 0, 0));
+    Eigen::Vector3d pos{-2*r, 0.5*r, 0.0};
+    UnitVector3d dir{1.0, 0.0, 0.0};
+    Ray ray(pos, dir);
     double I = intensity(tree, ray, HopMode::Detailed);
     double Itrue = 0.338424;
     REQUIRE(fabs(I-Itrue)/Itrue < 1e-6);
@@ -92,7 +99,9 @@ TEST_CASE("one sphere, tangential incidence"){
     nodes.emplace_back(std::make_unique<Sphere>(0, 0, 0, r, mat));
     kdTree tree(nodes);
 
-    Ray ray(Point(-r, r, 0), Direction(1, 0, 0));
+    Eigen::Vector3d pos{-r, r, 0.0};
+    UnitVector3d dir{1.0, 0.0, 0.0};
+    Ray ray(pos, dir);
     double I = intensity(tree, ray, HopMode::Detailed);
     double Itrue = 1.0;
     REQUIRE(fabs(I-Itrue)/Itrue < 1e-6);

@@ -3,10 +3,9 @@
 
 #include <memory>
 #include <vector>
+#include "UnitVector3d.h"
 
-class Direction;
 class Material;
-class Point;
 enum class Prop;
 
 class Shape{
@@ -24,8 +23,8 @@ class Shape{
     virtual double surfaceArea() const noexcept = 0;
     virtual double volume() const noexcept = 0;
 
-    virtual bool surfaceContains(const Point& p) const noexcept = 0;
-    virtual bool encloses(const Point& p) const noexcept = 0; // If this->surfaceContains(p) is true, then this->encloses(p) is false;
+    virtual bool surfaceContains(const Eigen::Vector3d& p) const noexcept = 0;
+    virtual bool encloses(const Eigen::Vector3d& p) const noexcept = 0; // If this->surfaceContains(p) is true, then this->encloses(p) is false;
     virtual bool encloses(const Shape& other) const noexcept = 0;
     virtual bool overlaps(const Shape& other) const noexcept = 0;
     /***
@@ -33,10 +32,10 @@ class Shape{
      * if the Point is on the surface, 0.0 if it leaves and the smallest distance to the surface if it enters
      * if the Point is outside the Shape, NAN if it never enters the Shape, else the smallest distance to the surface
     ***/
-    virtual double distanceToSurface(const Point& p, const Direction& dir) const noexcept = 0;
+    virtual double distanceToSurface(const Eigen::Vector3d& p, const UnitVector3d& dir) const noexcept = 0;
 
-    virtual Point centroid() const noexcept = 0;
-    virtual Direction normal(const Point& pos) const = 0; // outward unit normal vector
+    virtual Eigen::Vector3d centroid() const noexcept = 0;
+    virtual UnitVector3d normal(const Eigen::Vector3d& pos) const = 0; // outward unit normal vector
     friend std::ostream& operator<<(std::ostream& os, const Shape& shape);
 
     bool hasProperty(const Prop&) const noexcept;

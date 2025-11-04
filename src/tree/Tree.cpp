@@ -4,9 +4,6 @@
 #include <limits>
 
 #include "Box.h"
-#include "Point.h"
-
-//#define MONITOR
 
 template <class T>
 double Tree<T>::xMin() const noexcept{ return _root ? _root->xMin() : NAN; }

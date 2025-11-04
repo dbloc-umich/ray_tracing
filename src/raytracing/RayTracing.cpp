@@ -20,20 +20,21 @@ namespace{
         // A single attenuation event, update the position and intensity of the current ray
         // Returns the next host and update the distance to that host
 
-        Shape* next = tree.nextShape(ray.position(), ray.direction(), ray.host(), s);
+        Shape* next = tree.nextShape(ray, s);
 #ifdef MONITOR
-    std::cout << "The ray intensity is " << ray.intensity() << ", ";
-    if (!ray.host()){
-        if (!next) std::cout << "Point " << ray.position() << " traveling at " << ray.direction() << " does not reach any other Shape.";
-        else std::cout << "Point " << ray.position() << " traveling at " << ray.direction() << " reaches " << *next << " after a distance of " << s << ".";
-    } else{
-        if (!next) std::cout << "Point " << ray.position() << " on " << *ray.host() << " traveling at " << ray.direction() << " does not reach any other Shape.";
-        else std::cout << "Point " << ray.position() << " on " << *ray.host() << " traveling at " << ray.direction() << " reaches " << *next << " after a distance of " << s << ".";
-    }
-    std::cout << std::endl;
+        std::cout << "The ray intensity is " << ray.intensity() << ", ";
+        if (!ray.host()){
+            if (!next) std::cout << "Point (" << ray.position().transpose() << ") traveling at " << ray.direction() << " does not reach any other Shape.";
+            else std::cout << "Point (" << ray.position().transpose() << ") traveling at " << ray.direction() << " reaches " << *next << " after a distance of " << s << ".";
+        } else{
+            if (!next) std::cout << "Point (" << ray.position().transpose() << ") on " << *ray.host() << " traveling at " << ray.direction() << " does not reach any other Shape.";
+            else std::cout << "Point (" << ray.position().transpose() << ") on " << *ray.host() << " traveling at " << ray.direction() << " reaches " << *next << " after a distance of " << s << ".";
+        }
+        std::cout << std::endl;
 #endif
         if (next){
-            ray.setPoistion(ray.position().advance(ray.direction(), s));
+            auto nextPosition = ray.position() += ray.direction().value()*s;
+            ray.setPoistion(nextPosition);
             if (ray.host() == next){
                 double alpha = 0.0;
                 if (next->hasProperty(Prop::attenuationCoefficient)){
@@ -72,20 +73,22 @@ namespace{
         } else{
             // particle travels within the same Node
             n1 = ray.host()->computeProperty(Prop::refractiveIndex, {ray.wavelength()});
-            auto pseudoNext = tree.nextShape(ray.position(), ray.direction(), ray.host(), s);
+            auto pseudoNext = tree.nextShape(ray, s);
             n2 = (s == 0) ? pseudoNext->computeProperty(Prop::refractiveIndex, {ray.wavelength()}) : 1.0;
         }
 
-        Direction normal = next->normal(ray.position());
-        Direction transmit = refracted(ray.direction(), normal, n1, n2);
-        Direction reflect = reflected(ray.direction(), normal);
+        auto normal = next->normal(ray.position());
+        auto transmit = ray.direction().refract(normal, n1, n2);
+        auto reflect = ray.direction().reflect(normal);
         
-        ray.setDirection(reflect);
-        if (!transmit) return {}; // Total internal reflection    
-        
+        if (!transmit){
+            ray.setDirection(reflect);
+            return {}; // Total internal reflection    
+        }
+
         // Transmission and reflection treatment
-        double cosi = fabs(reflect.dot(normal));
-        double cost = fabs(transmit.dot(normal));
+        double cosi = fabs(reflect.value().dot(normal.value()));
+        double cost = fabs(transmit.value().dot(normal.value()));
         double Rs = (n1*cosi - n2*cost)/(n1*cosi + n2*cost);
         double Rp = (n1*cost - n2*cosi)/(n1*cost + n2*cosi);
         double R = 0.5*(Rs*Rs + Rp*Rp);

@@ -3,7 +3,6 @@
 #include "catch2/catch2.hpp"
 
 #include "ConstantProperty.h"
-#include "Direction.h"
 #include "kdTree.h"
 #include "Material.h"
 #include "Ray.h"
@@ -35,7 +34,7 @@ TEST_CASE("roulette_test"){
 
     unsigned i = 0;
     while (i < N){
-        Point r0(xDist(rng), yDist(rng), zDist(rng));
+        Eigen::Vector3d r0{xDist(rng), yDist(rng), zDist(rng)};
         std::unique_ptr<Shape> sph = std::make_unique<Sphere>(r0, r, mat);
         bool overlaps = tree.leavesOverlap(*sph); // Check for collision
         if (!overlaps){
@@ -45,7 +44,7 @@ TEST_CASE("roulette_test"){
     }
 
      // Ray tracing
-    const Direction dir(1, 0, 0);
+    const UnitVector3d dir(1, 0, 0);
     double I1 = 0.0, I2 = 0.0;
     double x = tree.xMin() - L;
     double dy = (tree.yMax() - tree.yMin())/Ny;
@@ -54,11 +53,12 @@ TEST_CASE("roulette_test"){
     for (unsigned iy = 0; iy < Ny+1; iy++){
         double y = tree.root()->yMin() + dy*iy;
         for (unsigned iz = 0; iz < Ny+1; iz++){
-            double z = tree.root()->zMin() + dz*iz;                       
-            Ray ray(Point(x, y, z), dir);
+            double z = tree.root()->zMin() + dz*iz;
+            Eigen::Vector3d pos{x, y, z};                     
+            Ray ray(pos, dir);
             I1 += intensity(tree, ray, HopMode::Roulette);
 
-            ray = Ray(Point(x, y, z), dir);
+            ray = Ray(pos, dir);
             I2 += intensity(tree, ray, HopMode::Detailed);
         }
     }
