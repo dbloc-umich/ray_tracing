@@ -1,7 +1,7 @@
 #include "Sphere.h"
 #include "Box.h"
+#include "Constants.h"
 
-#define _USE_MATH_DEFINES
 #include <cmath>
 
 Sphere::Sphere(const Eigen::Vector3d& pt, double R, std::shared_ptr<Material> mat):
@@ -25,8 +25,8 @@ void Sphere::setRadius(double R){
     _radius = R;
 }
 
-double Sphere::surfaceArea() const noexcept{ return 4.0*M_PI*_radius*_radius; }
-double Sphere::volume() const noexcept{ return 4.0/3*M_PI*_radius*_radius*_radius; }
+double Sphere::surfaceArea() const noexcept{ return 4.0*mconst::pi*_radius*_radius; }
+double Sphere::volume() const noexcept{ return 4.0/3*mconst::pi*_radius*_radius*_radius; }
 
 bool Sphere::surfaceContains(const Eigen::Vector3d& p) const noexcept{
     return fabs((_origin - p).squaredNorm() - _radius*_radius) <= Shape::eps;

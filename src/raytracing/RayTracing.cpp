@@ -41,7 +41,7 @@ namespace{
                     alpha = next->computeProperty(Prop::attenuationCoefficient, {ray.wavelength()});
                 } else if (next->hasProperty(Prop::extinctionCoefficient)){
                     alpha = next->computeProperty(Prop::extinctionCoefficient, {ray.wavelength()});
-                    alpha *= 2.0 * ray.frequency() / constants::c;
+                    alpha *= 2.0 * ray.frequency() / pconst::c;
                 }
                 ray.setIntensity(ray.intensity()*exp(-alpha*s)); // moving within a Shape, implicit absorption;
             }

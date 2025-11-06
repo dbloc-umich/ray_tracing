@@ -25,7 +25,7 @@ void Ray::setIntensity(double I){
 
 double Ray::frequency() const noexcept{
     // angular frequency in units of radians/s
-    return 2.0 * M_PI * constants::c / _lambda;
+    return 2.0 * mconst::pi * pconst::c / _lambda;
 }
 
 void Ray::setWavelength(double lambda){

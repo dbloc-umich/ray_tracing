@@ -7,7 +7,6 @@
 
 #include "NodeBase.h"
 
-class Shape;
 class Node: public NodeBase<Node, 2>{
     public:
     using NodeBase<Node, 2>::NodeBase;

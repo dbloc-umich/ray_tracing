@@ -1,7 +1,12 @@
 #ifndef CONSTANTS
 #define CONSTANTS
 
-namespace constants{
+namespace mconst{
+    // Mathematical constants
+    constexpr double pi = 3.14159265358979323846;
+}
+
+namespace pconst{
     // Physical constants
     constexpr double c = 299792458; // Speed of light in vacuum [m/s]
     constexpr double e = 1.602176634e-19; // Elementary charge [C]

@@ -3,6 +3,7 @@
 #include "catch2/catch2.hpp"
 
 #include "ConstantProperty.h"
+#include "Constants.h"
 #include "kdTree.h"
 #include "Material.h"
 #include "Ray.h"
@@ -25,7 +26,7 @@ TEST_CASE("roulette_test"){
     mat->addProperty(Prop::attenuationCoefficient, std::make_unique<ConstantProperty>(0.3));
 
     // Create a random distribution of trees
-    double r = std::cbrt(V0*pf/N/(4.0*M_PI/3));
+    double r = std::cbrt(V0*pf/N/(4.0*mconst::pi/3));
     kdTree tree;
     std::default_random_engine rng(1);
     std::uniform_real_distribution<double> xDist(-(L-r), L-r);

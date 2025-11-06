@@ -11,7 +11,6 @@
 #include <vector>
 #include <utility>
 
-class Node;
 class UNode: public NodeBase<UNode, 8>{
     public:
     using NodeBase<UNode, 8>::NodeBase;

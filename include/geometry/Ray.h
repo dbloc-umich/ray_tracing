@@ -1,7 +1,7 @@
 #ifndef RAY_H
 #define RAY_H
 
-#include "UnitVector3d.h"
+#include "UnitVector.h"
 
 class Shape;
 class Ray{
