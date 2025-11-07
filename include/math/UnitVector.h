@@ -29,14 +29,14 @@ class UnitVector{
 #if __cplusplus >= 201703L
     template<typename First, typename... Rest,
             typename = std::enable_if_t<
-                std::is_convertible<std::decay_t<First>, type>::value &&
-                (std::is_convertible<std::decay_t<Rest>, type>::value && ...)
+                std::is_convertible_v<type, std::decay_t<First>> &&
+                (std::is_convertible_v<type, std::decay_t<Rest>> && ...)
                 >
             >
 #else
     template<typename First, typename... Rest,
             typename = std::enable_if_t<
-                std::is_convertible<std::decay_t<First>, type>::value &&
+                std::is_convertible<type, std::decay_t<First>>::value &&
                 all_convertible_to<type, std::decay_t<Rest>...>::value
                 >
             >    
