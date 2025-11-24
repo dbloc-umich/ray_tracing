@@ -5,11 +5,16 @@
 
 # Latex
 *.aux
+*.bib
+*.bbl
+*.bcf
+*.blg
 *.fdb*
 *.fls
 *.log
-*.gz
+*.synctex.gz
 *.tex
+*.xml
 
 # User directory
 user*

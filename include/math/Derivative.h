@@ -4,21 +4,22 @@
 #include "Eigen/Dense"
 #include <cmath>
 #include <limits>
+#include <iostream>
 
 // First derivative
 // Derivative of a single-variable function
-template<typename F, typename Scalar,
+template<typename Callable, typename Scalar,
          typename = std::enable_if_t<std::is_floating_point<Scalar>::value>>
-auto df(F&& f, Scalar x) -> decltype(f(x)) {
+auto df(Callable&& f, Scalar x) -> decltype(f(x)) {
     const auto eps = std::numeric_limits<Scalar>::epsilon();
     Scalar dx = std::cbrt(3*eps) * std::max(std::abs(x), 1.0);
     return (f(x+dx) - f(x-dx))/(2*dx);
 }
 
 // Partial derivative of a multi-variable function, with respect to variable x[ind]
-template<typename F, typename Scalar, int Rows, int Cols,
+template<typename Callable, typename Scalar, int Rows, int Cols,
          typename = std::enable_if_t<std::is_floating_point<Scalar>::value>>
-auto df(F&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x, Eigen::Index ind) -> decltype(f(x)){
+auto df(Callable&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x, Eigen::Index ind) -> decltype(f(x)){
     static_assert(Rows == 1 || Cols == 1, "Parameter x must be a row or column vector.");
     if (ind >= x.size()) throw std::invalid_argument("ERROR: Index out of bound.");
 
@@ -31,9 +32,9 @@ auto df(F&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x, Eigen::Index ind) -> 
 
 // First derivative operators
 // Gradient
-template<typename F, typename Scalar, int Rows, int Cols,
+template<typename Callable, typename Scalar, int Rows, int Cols,
          typename = std::enable_if_t<std::is_floating_point<Scalar>::value>>
-auto grad(F&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x){
+auto grad(Callable&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x){
     static_assert(Rows == 1 || Cols == 1, "Parameter x must be a row or column vector.");
     static_assert(std::is_floating_point<decltype(f(x))>::value, "Function must return a scalar.");
     
@@ -44,9 +45,9 @@ auto grad(F&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x){
 }
 
 // Divergent
-template<typename F, typename Scalar, int Rows, int Cols,
+template<typename Callable, typename Scalar, int Rows, int Cols,
          typename = std::enable_if_t<std::is_floating_point<Scalar>::value>>
-Scalar div(F&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x){
+Scalar div(Callable&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x){
     static_assert(Rows == 1 || Cols == 1, "Parameter x must be a row or column vector.");
     if (f(x).size() != x.size()) throw std::invalid_argument("ERROR: The domain and range dimensions must match.");
 
@@ -56,9 +57,9 @@ Scalar div(F&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x){
 }
 
 // Curl
-template<typename F, typename Scalar, int Rows, int Cols,
+template<typename Callable, typename Scalar, int Rows, int Cols,
          typename = std::enable_if_t<std::is_floating_point<Scalar>::value>>
-auto curl(F&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x){
+auto curl(Callable&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x){
     static_assert(Rows == 1 || Cols == 1, "Parameter x must be a row or column vector.");
     Eigen::Index domain = x.size();
     Eigen::Index range = f(x).size();
@@ -87,9 +88,9 @@ auto curl(F&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x){
 }
 
 // Jacobian
-template<typename F, typename Scalar, int Rows, int Cols,
+template<typename Callable, typename Scalar, int Rows, int Cols,
          typename = std::enable_if_t<std::is_floating_point<Scalar>::value>>
-auto Jacobian(F&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x){
+auto Jacobian(Callable&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x){
     static_assert(Rows == 1 || Cols == 1, "Parameter x must be a row or column vector.");
     Eigen::Index domain = x.size();
     Eigen::Index range = f(x).size();
@@ -104,18 +105,18 @@ auto Jacobian(F&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x){
 
 // Second derivative
 // Derivative of a single-variable function
-template<typename F, typename Scalar,
+template<typename Callable, typename Scalar,
          typename = std::enable_if_t<std::is_floating_point<Scalar>::value>>
-auto df2(F&& f, Scalar x) -> decltype(f(x)){
+auto df2(Callable&& f, Scalar x) -> decltype(f(x)){
     const auto eps = std::numeric_limits<Scalar>::epsilon();
     Scalar dx = std::sqrt(std::sqrt(48*eps)) * std::max(std::abs(x), 1.0);
     return (f(x+dx) - 2*f(x) + f(x-dx))/(dx*dx);
 }
 
 // Partial derivative of a multi-variable function, with respect to variable x[ind]
-template<typename F, typename Scalar, int Rows, int Cols,
+template<typename Callable, typename Scalar, int Rows, int Cols,
          typename = std::enable_if_t<std::is_floating_point<Scalar>::value>>
-auto df2(F&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x, Eigen::Index ind1, Eigen::Index ind2) -> decltype(f(x)){
+auto df2(Callable&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x, Eigen::Index ind1, Eigen::Index ind2) -> decltype(f(x)){
     static_assert(Rows == 1 || Cols == 1, "Parameter x must be a row or column vector.");
     if (ind1 >= x.size() || ind2 >= x.size()) throw std::invalid_argument("ERROR: Index out of bound.");
     
@@ -140,9 +141,9 @@ auto df2(F&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x, Eigen::Index ind1, E
 
 // Second derivative operators
 // Scalar Laplacian
-template<typename F, typename Scalar, int Rows, int Cols,
+template<typename Callable, typename Scalar, int Rows, int Cols,
          typename = std::enable_if_t<std::is_floating_point<Scalar>::value>>
-Scalar Laplacian(F&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x){
+Scalar Laplacian(Callable&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x){
     static_assert(Rows == 1 || Cols == 1, "Parameter x must be a row or column vector.");
     static_assert(std::is_floating_point<decltype(f(x))>::value, "Function must return a scalar.");
 
@@ -155,9 +156,9 @@ Scalar Laplacian(F&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x){
 }
 
 // Hessian
-template<typename F, typename Scalar, int Rows, int Cols,
+template<typename Callable, typename Scalar, int Rows, int Cols,
          typename = std::enable_if_t<std::is_floating_point<Scalar>::value>>
-auto Hessian(F&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x){
+auto Hessian(Callable&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x){
     static_assert(Rows == 1 || Cols == 1, "Parameter x must be a row or column vector.");
     static_assert(std::is_floating_point<decltype(f(x))>::value, "Function must return a scalar.");
 

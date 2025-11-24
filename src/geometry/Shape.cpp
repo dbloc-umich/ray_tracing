@@ -7,6 +7,11 @@ Shape::Shape(std::shared_ptr<Material> mat):
     _mat(mat)
 {}
 
+bool Shape::encloses(const Shape& other) const{
+    throw std::runtime_error("ERROR: Containment check cannot be done for non-Box classes.");
+    return false;
+}
+
 bool Shape::hasProperty(const Prop& name) const noexcept{
     return _mat->hasProperty(name);
 }

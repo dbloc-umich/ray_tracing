@@ -8,33 +8,31 @@ class Sphere: public Shape{
     explicit Sphere(double x=0.0, double y=0.0, double z=0.0, double R=1.0,
                     std::shared_ptr<Material> mat = nullptr);
 
-    Eigen::Vector3d origin() const noexcept{ return _origin; }
+    Eigen::Vector3d center() const noexcept{ return _center; }
     double radius() const noexcept{ return _radius; }
 
-    void setOrigin(const Eigen::Vector3d& point){ _origin = point; }
+    void setCenter(const Eigen::Vector3d& point){ _center = point; }
     void setRadius(double R);
 
-    double xMin() const noexcept override{ return _origin.x() - _radius; }
-    double xMax() const noexcept override{ return _origin.x() + _radius; }
-    double yMin() const noexcept override{ return _origin.y() - _radius; }
-    double yMax() const noexcept override{ return _origin.y() + _radius; }
-    double zMin() const noexcept override{ return _origin.z() - _radius; }
-    double zMax() const noexcept override{ return _origin.z() + _radius; }
+    double xMin() const noexcept override{ return _center.x() - _radius; }
+    double xMax() const noexcept override{ return _center.x() + _radius; }
+    double yMin() const noexcept override{ return _center.y() - _radius; }
+    double yMax() const noexcept override{ return _center.y() + _radius; }
+    double zMin() const noexcept override{ return _center.z() - _radius; }
+    double zMax() const noexcept override{ return _center.z() + _radius; }
 
     double surfaceArea() const noexcept override;
     double volume() const noexcept override;
 
     bool surfaceContains(const Eigen::Vector3d& p) const noexcept override;
     bool encloses(const Eigen::Vector3d& p) const noexcept override;
-    bool encloses(const Shape& other) const noexcept override;
     bool overlaps(const Shape& other) const noexcept override;
     double distanceToSurface(const Eigen::Vector3d& p, const UnitVector3d& dir) const noexcept override;
 
-    Eigen::Vector3d centroid() const noexcept override{ return _origin; }
     UnitVector3d normal(const Eigen::Vector3d& pos) const override;
 
     protected:
-    Eigen::Vector3d _origin;
+    Eigen::Vector3d _center;
     double _radius;
     std::ostream& print(std::ostream& os) const noexcept override;
 };

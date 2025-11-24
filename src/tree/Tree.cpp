@@ -34,8 +34,8 @@ template <class T>
 std::unique_ptr<Shape> Tree<T>::boundingBox(const_iterator begin, const_iterator end) const noexcept{
     double x0, y0, z0, x1, y1, z1;
     x0 = y0 = z0 = std::numeric_limits<double>::max();
-    x1 = y1 = z1 = std::numeric_limits<double>::min();
-    for (auto it = begin; it != end; it++){
+    x1 = y1 = z1 = std::numeric_limits<double>::lowest();
+    for (auto it = begin; it != end; ++it){
         x0 = std::min(x0, (*it)->xMin());
         y0 = std::min(y0, (*it)->yMin());
         z0 = std::min(z0, (*it)->zMin());

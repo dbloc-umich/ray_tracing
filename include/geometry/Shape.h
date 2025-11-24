@@ -25,7 +25,7 @@ class Shape{
 
     virtual bool surfaceContains(const Eigen::Vector3d& p) const noexcept = 0;
     virtual bool encloses(const Eigen::Vector3d& p) const noexcept = 0; // If this->surfaceContains(p) is true, then this->encloses(p) is false;
-    virtual bool encloses(const Shape& other) const noexcept = 0;
+    virtual bool encloses(const Shape& other) const;
     virtual bool overlaps(const Shape& other) const noexcept = 0;
     /***
      * if the Point is inside the Shape, the smallest (positive) distance to the surface(s)
@@ -34,7 +34,6 @@ class Shape{
     ***/
     virtual double distanceToSurface(const Eigen::Vector3d& p, const UnitVector3d& dir) const noexcept = 0;
 
-    virtual Eigen::Vector3d centroid() const noexcept = 0;
     virtual UnitVector3d normal(const Eigen::Vector3d& pos) const = 0; // outward unit normal vector
     friend std::ostream& operator<<(std::ostream& os, const Shape& shape);
 
@@ -43,7 +42,7 @@ class Shape{
 
     protected:
     std::shared_ptr<Material> _mat;
-    static constexpr double eps = 1e-9;
+    static constexpr double eps = 5.0e-7;
     virtual std::ostream& print(std::ostream& os) const noexcept = 0;
 };
 #endif // SHAPE_H

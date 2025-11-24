@@ -11,15 +11,15 @@
 #include "all_convertible_to.h"
 #endif
 
-template<typename type, int n>
+template<typename Scalar, int n>
 class UnitVector{
     public:
-    explicit UnitVector(std::nullptr_t){ _v.fill(std::nan("")); }
-    UnitVector(const Eigen::Matrix<type, n, 1>& v):
+    explicit UnitVector(std::nullptr_t){ _v.fill(std::numeric_limits<Scalar>::quiet_NaN()); }
+    UnitVector(const Eigen::Matrix<Scalar, n, 1>& v):
         _v(v)
     {
         double norm = _v.squaredNorm();
-        if (_v.squaredNorm() < eps) _v.fill(std::nan(""));
+        if (_v.squaredNorm() < eps) _v.fill(std::numeric_limits<Scalar>::quiet_NaN());
         else{
             norm = std::sqrt(norm);
             _v /= norm;
@@ -29,59 +29,71 @@ class UnitVector{
 #if __cplusplus >= 201703L
     template<typename First, typename... Rest,
             typename = std::enable_if_t<
-                std::is_convertible_v<type, std::decay_t<First>> &&
-                (std::is_convertible_v<type, std::decay_t<Rest>> && ...)
+                std::is_convertible_v<Scalar, std::decay_t<First>> &&
+                (std::is_convertible_v<Scalar, std::decay_t<Rest>> && ...)
                 >
             >
 #else
     template<typename First, typename... Rest,
             typename = std::enable_if_t<
-                std::is_convertible<type, std::decay_t<First>>::value &&
-                all_convertible_to<type, std::decay_t<Rest>...>::value
+                std::is_convertible<Scalar, std::decay_t<First>>::value &&
+                all_convertible_to<Scalar, std::decay_t<Rest>...>::value
                 >
             >    
 #endif
     explicit UnitVector(First&& first, Rest&&... rest)
-        : UnitVector(Eigen::Matrix<type, n, 1>{static_cast<type>(std::forward<First>(first)),
-                                               static_cast<type>(std::forward<Rest>(rest))...})
+        : UnitVector(Eigen::Matrix<Scalar, n, 1>{static_cast<Scalar>(std::forward<First>(first)),
+                                                 static_cast<Scalar>(std::forward<Rest>(rest))...})
     {
         static_assert(sizeof...(Rest) + 1 == n, "Number of arguments must match the dimension of the vector.");
     }
 
-    Eigen::Matrix<type, n, 1>& value() noexcept{ return _v; }
-    const Eigen::Matrix<type, n, 1>& value() const noexcept{ return _v; }
-    double operator[](std::size_t i) const noexcept{ return _v[i]; }
-    explicit operator Eigen::Matrix<type, n, 1>() const noexcept{ return _v; }
+    Eigen::Matrix<Scalar, n, 1>& value() noexcept{ return _v; }
+    const Eigen::Matrix<Scalar, n, 1>& value() const noexcept{ return _v; }
+    double operator[](Eigen::Index i) const noexcept{ return _v[i]; }
+    UnitVector<Scalar, n> operator-() const noexcept{
+        UnitVector<Scalar, n> other = *this;
+        other._v *= -1;
+        return other;
+    }
+    explicit operator Eigen::Matrix<Scalar, n, 1>() const noexcept{ return _v; }
     explicit operator bool() const noexcept{ return !_v.array().isNaN().all(); }
 
-    bool isOrthogonal(const UnitVector<type, n>& other) const{ return std::fabs(_v.dot(other._v)) < eps; }
-    bool isParallel(const UnitVector<type, n>& other) const{ return _v.cross(other._v).squaredNorm() < eps; }
+    bool operator==(const UnitVector<Scalar, n>& other) const noexcept{ return _v == other._v; }
+    bool operator==(const Eigen::Matrix<Scalar, n, 1>& other) const noexcept{ return _v == other; }
+    bool operator!=(const UnitVector<Scalar, n>& other) const noexcept{ return _v != other._v; }
+    bool operator!=(const Eigen::Matrix<Scalar, n, 1>& other) const noexcept{ return _v != other; }
+    bool isApprox(const UnitVector<Scalar, n>& other) const noexcept{ return _v.isApprox(other._v); }
+    bool isApprox(const Eigen::Matrix<Scalar, n, 1>& other) const noexcept{ return _v.isApprox(other); }
 
-    UnitVector<type, n> reflect(const UnitVector<type, n>& normal) const{
+    bool isOrthogonal(const UnitVector<Scalar, n>& other) const{ return std::abs(_v.dot(other._v)) < eps; }
+    bool isParallel(const UnitVector<Scalar, n>& other) const{ return _v.cross(other._v).squaredNorm() < eps; }
+
+    UnitVector<Scalar, n> reflect(const UnitVector<Scalar, n>& normal) const{
         auto res = _v - 2*(normal._v.dot(_v))*normal._v;
-        return UnitVector<type, n>(res);
+        return UnitVector<Scalar, n>(res);
     }
 
-    UnitVector<type, 3> refract(const UnitVector<type, 3>& normal, double n1, double n2) const{
+    UnitVector<Scalar, 3> refract(const UnitVector<Scalar, 3>& normal, double n1, double n2) const{
         if (_v.size() != 2 && _v.size() != 3){
             throw std::invalid_argument("ERROR: Refraction is only physically meaningful with 2- and 3-D vectors.");
         }
         if (_v.size() == 2){
-            UnitVector<type, 3> v2(_v[0], _v[1], 0); // recast to 3D vector
+            UnitVector<Scalar, 3> v2(_v[0], _v[1], 0); // recast to 3D vector
             return v2.refract(normal, n1, n2);
         }
 
         if (n1 == n2 || this->isOrthogonal(normal) || this->isParallel(normal)) return *this;
-        Eigen::Matrix<type, 3, 1> c = _v.cross(normal._v)*(n1/n2);
+        Eigen::Matrix<Scalar, 3, 1> c = _v.cross(normal._v)*(n1/n2);
         double cnorm = c.norm();
         if (cnorm <= 1.0){
-            Eigen::Matrix<type, 3, 1> ortho = normal._v.cross(c/cnorm); // component of the refracted vector that is orthogonal to normal
+            Eigen::Matrix<Scalar, 3, 1> ortho = normal._v.cross(c/cnorm); // component of the refracted vector that is orthogonal to normal
             int sgn = _v.dot(normal._v) > 0.0 ? 1 : -1;
             ortho *= cnorm;
             ortho += sgn*std::sqrt(1-cnorm*cnorm)*normal._v;
-            return UnitVector<type, 3>(ortho);
+            return UnitVector<Scalar, 3>(ortho);
         }
-        return UnitVector<type, 3>(nullptr);
+        return UnitVector<Scalar, 3>(nullptr);
     }
 
     template<typename T, int N>
@@ -89,7 +101,7 @@ class UnitVector{
 
     protected:
     static constexpr double eps = 1e-9;
-    Eigen::Matrix<type, n, 1> _v;
+    Eigen::Matrix<Scalar, n, 1> _v;
 };
 
 template<typename T, int N>

@@ -9,7 +9,7 @@
 InterpolatedProperty::InterpolatedProperty(std::string file)
 {
     loadFile(file);
-    for (auto it = _grid.begin(); it != std::prev(_grid.end()); it++){
+    for (auto it = _grid.begin(); it != std::prev(_grid.end()); ++it){
         if (*it >= *std::next(it))
             throw std::domain_error("ERROR: Independent variable values are not sorted in strictly ascending order.");
     }
@@ -28,7 +28,7 @@ double InterpolatedProperty::compute(const std::vector<double>& vars) const{
     if (x <= _grid[0]) return _val[0];
     if (x >= _grid.back()) return _val.back();
     std::size_t ind = 0;
-    for (auto it = _grid.crbegin(); it != _grid.crend(); it++){
+    for (auto it = _grid.crbegin(); it != _grid.crend(); ++it){
         if (*it <= x){
             ind = std::distance(_grid.begin(), it.base()) - 1;
             break;

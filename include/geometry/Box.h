@@ -35,7 +35,6 @@ class Box: public Shape{
     bool overlaps(const Shape& other) const noexcept override;
     double distanceToSurface(const Eigen::Vector3d& p, const UnitVector3d& dir) const noexcept override;
 
-    Eigen::Vector3d centroid() const noexcept override;
     UnitVector3d normal(const Eigen::Vector3d& pos) const override;
 
     protected:

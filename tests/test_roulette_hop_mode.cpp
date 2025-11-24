@@ -63,5 +63,5 @@ TEST_CASE("roulette_test"){
             I2 += intensity(tree, ray, HopMode::Detailed);
         }
     }
-    REQUIRE(fabs(I1-I2)/I2 < 1e-3);
+    REQUIRE(std::abs(I1-I2)/I2 < 1e-3);
 }

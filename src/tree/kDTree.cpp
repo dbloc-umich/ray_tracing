@@ -194,7 +194,7 @@ kdTree::iterator kdTree::medianNode(Box& box0, Box& box1, iterator begin, iterat
     else if (axis == 'y') uv[1] = box0.yMin();
     else uv[2] = box0.zMin();
 
-    for (auto& it = begin; it != median; it++){
+    for (auto& it = begin; it != median; ++it){
         if (axis == 'x' && (*it)->xMax() > uv.x()) uv[0] = (*it)->xMax();
         else if (axis == 'y' && (*it)->yMax() > uv.y()) uv[1] = (*it)->yMax();
         else if (axis == 'z' && (*it)->zMax() > uv.z()) uv[2] = (*it)->zMax();
@@ -215,7 +215,7 @@ void kdTree::construct(Node& current, iterator begin, iterator end, std::size_t 
 
     current.setLevel(level);
     if (end - begin <= 2){ // 1 or 2 pointers left
-        for (auto it = begin; it != end; it++){
+        for (auto it = begin; it != end; ++it){
             current[it-begin] = std::make_unique<Node>(std::move(*it));
             current[it-begin]->setLevel(level+1);
         }

@@ -87,8 +87,8 @@ namespace{
         }
 
         // Transmission and reflection treatment
-        double cosi = fabs(reflect.value().dot(normal.value()));
-        double cost = fabs(transmit.value().dot(normal.value()));
+        double cosi = std::abs(reflect.value().dot(normal.value()));
+        double cost = std::abs(transmit.value().dot(normal.value()));
         double Rs = (n1*cosi - n2*cost)/(n1*cosi + n2*cost);
         double Rp = (n1*cost - n2*cosi)/(n1*cost + n2*cosi);
         double R = 0.5*(Rs*Rs + Rp*Rp);

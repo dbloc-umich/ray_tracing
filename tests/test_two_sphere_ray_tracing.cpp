@@ -27,7 +27,7 @@ TEST_CASE("two spheres, streamline with normal incidence"){
     Ray ray(pos, dir);
     double I = intensity(tree, ray, HopMode::Streamline);
     double Itrue = exp(-2*alpha*(r1+r2));
-    REQUIRE(fabs(I-Itrue)/Itrue < 1e-6);
+    REQUIRE(std::abs(I-Itrue)/Itrue < 1e-6);
 }
 
 TEST_CASE("two spheres, refraction and reflection with normal incidence"){
@@ -51,7 +51,7 @@ TEST_CASE("two spheres, refraction and reflection with normal incidence"){
     double T = 1-R;
     double I = intensity(tree, ray, HopMode::Detailed);
     double Itrue = R + T*T*A/(1-R*A);
-    REQUIRE(fabs(I-Itrue)/Itrue < 1e-6);
+    REQUIRE(std::abs(I-Itrue)/Itrue < 1e-6);
 }
 
 TEST_CASE("two spheres, refraction and reflection with non-normal incidence"){
@@ -72,7 +72,7 @@ TEST_CASE("two spheres, refraction and reflection with non-normal incidence"){
     Ray ray(pos, dir);
     double I = intensity(tree, ray, HopMode::Detailed);
     double Itrue = 0.115967;
-    REQUIRE(fabs(I-Itrue)/Itrue < 1e-6);
+    REQUIRE(std::abs(I-Itrue)/Itrue < 1e-6);
 }
 
 TEST_CASE("two spheres, tangential incidence to both spheres"){
@@ -93,5 +93,5 @@ TEST_CASE("two spheres, tangential incidence to both spheres"){
     Ray ray(pos, dir);
     double I = intensity(tree, ray, HopMode::Detailed);
     double Itrue = 1.0;
-    REQUIRE(fabs(I-Itrue)/Itrue < 1e-6);
+    REQUIRE(std::abs(I-Itrue)/Itrue < 1e-6);
 }
