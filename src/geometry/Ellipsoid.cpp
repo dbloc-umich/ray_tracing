@@ -14,7 +14,6 @@ Ellipsoid::Ellipsoid(const Eigen::Vector3d& pt, double a, double b, double c, st
     Shape(mat),
     _center(pt),
     _M(), // empty; diagonal matrix with entries 1/a^2, 1/b^2, and 1/c^2
-    _Minv(), // empty; diagomatrix with entries a^2, b^2, and c^2
     _axes(), // empty; primary axes are i-hat, j-hat, and k-hat 
     _length(a, b, c)
 {
@@ -34,7 +33,6 @@ Ellipsoid::Ellipsoid(const Eigen::Vector3d& pt, const Eigen::Matrix3d& M, std::s
     _length = es.eigenvalues();
     if ((_length <= 0).any()) throw std::invalid_argument("ERROR: The input matrix must be symmetric positive definite.");
     _length = 1.0/(_length.sqrt());
-    _Minv = M.inverse();
 }
 
 double Ellipsoid::semiAxis(Eigen::Index i) const noexcept{
@@ -59,19 +57,46 @@ void Ellipsoid::setSemiAxis(Eigen::Index i, double L){
     _length[i] = L;
     if (_M.size() != 0){
         // Recalculates the matrix
-        Eigen::Matrix3d Lambda = Eigen::Matrix3d::Identity();
-        for (Eigen::Index i = 0; i < 3; i++) _M(i,i) = 1.0/(_length[i]*_length[i]);
+        Eigen::DiagonalMatrix<double, 3> Lambda{1.0 / _length / _length};
         _M = _axes * Lambda * _axes.transpose();
-        _Minv = _M.inverse();
     }
 }
 
-double Ellipsoid::xMin() const noexcept{ return _center[0] - (_M.size() == 0 ? _length[0] : std::sqrt(_Minv(0,0))); }
-double Ellipsoid::xMax() const noexcept{ return _center[0] + (_M.size() == 0 ? _length[0] : std::sqrt(_Minv(0,0))); }
-double Ellipsoid::yMin() const noexcept{ return _center[1] - (_M.size() == 0 ? _length[1] : std::sqrt(_Minv(1,1))); }
-double Ellipsoid::yMax() const noexcept{ return _center[1] + (_M.size() == 0 ? _length[1] : std::sqrt(_Minv(1,1))); }
-double Ellipsoid::zMin() const noexcept{ return _center[2] - (_M.size() == 0 ? _length[2] : std::sqrt(_Minv(2,2))); }
-double Ellipsoid::zMax() const noexcept{ return _center[2] + (_M.size() == 0 ? _length[2] : std::sqrt(_Minv(2,2))); }
+double Ellipsoid::xMin() const noexcept{
+    if (_M.size() == 0) return _center[0] - _length[0];
+    Eigen::Vector3d v = _length * _axes.row(0).transpose().array();
+    return _center[0] - std::sqrt(v.dot(v));
+}
+
+double Ellipsoid::xMax() const noexcept{
+    if (_M.size() == 0) return _center[0] + _length[0];
+    Eigen::Vector3d v = _length * _axes.row(0).transpose().array();
+    return _center[0] + std::sqrt(v.dot(v));
+}
+
+double Ellipsoid::yMin() const noexcept{
+    if (_M.size() == 0) return _center[1] - _length[1];
+    Eigen::Vector3d v = _length * _axes.row(1).transpose().array();
+    return _center[1] - std::sqrt(v.dot(v));
+}
+
+double Ellipsoid::yMax() const noexcept{
+    if (_M.size() == 0) return _center[1] + _length[1];
+    Eigen::Vector3d v = _length * _axes.row(1).transpose().array();
+    return _center[1] + std::sqrt(v.dot(v));
+}
+
+double Ellipsoid::zMin() const noexcept{
+    if (_M.size() == 0) return _center[2] - _length[2];
+    Eigen::Vector3d v = _length * _axes.row(2).transpose().array();
+    return _center[2] - std::sqrt(v.dot(v));
+}
+
+double Ellipsoid::zMax() const noexcept{
+    if (_M.size() == 0) return _center[2] + _length[2];
+    Eigen::Vector3d v = _length * _axes.row(2).transpose().array();
+    return _center[2] + std::sqrt(v.dot(v));
+}
 
 double Ellipsoid::surfaceArea() const noexcept{
     auto norm_normal = [this](double u, double v){
@@ -123,25 +148,19 @@ bool Ellipsoid::overlaps(const Shape& other) const noexcept{
             Binv = Eigen::Matrix3d::Identity() * sphere->radius() * sphere->radius();
             dr -= sphere->center();
         } else{
+            Binv = Eigen::DiagonalMatrix<double, 3>(ellipsoid->_length[0] * ellipsoid->_length[0],
+                                                    ellipsoid->_length[1] * ellipsoid->_length[1],
+                                                    ellipsoid->_length[2] * ellipsoid->_length[2]);
             dr -= ellipsoid->center();
-            if (ellipsoid->_M.size() == 0){
-                Binv = Eigen::Matrix3d::Identity();
-                Binv(0,0) = ellipsoid->_length[0] * ellipsoid->_length[0];
-                Binv(1,1) = ellipsoid->_length[1] * ellipsoid->_length[1];
-                Binv(2,2) = ellipsoid->_length[2] * ellipsoid->_length[2];
-            } else Binv = ellipsoid->_Minv;
+            if (ellipsoid->_M.size() != 0) Binv = ellipsoid->_axes * Binv * ellipsoid->_axes.transpose();
         }
         if (dr.squaredNorm() <= Shape::eps) return true; // centers overlap
 
         auto K = [this, &dr, &Binv](double lambda){
             Eigen::Matrix3d M = Binv/(1.0-lambda);
-            if (_Minv.size() == 0){
-                Eigen::Matrix3d Minv = Eigen::Matrix3d::Identity();
-                Minv(0,0) = _length[0] * _length[0];
-                Minv(1,1) = _length[1] * _length[1];
-                Minv(2,2) = _length[2] * _length[2];
-                M += Minv/lambda;
-            } else M += _Minv/lambda;
+            Eigen::Matrix3d Ainv = Eigen::DiagonalMatrix<double, 3>(_length[0]*_length[0], _length[1]*_length[1], _length[2]*_length[2]);
+            if (_M.size() != 0) Ainv = _axes * Ainv * _axes.transpose();
+            M += Ainv/lambda;
             Eigen::PartialPivLU<Eigen::Ref<Eigen::Matrix3d>> lu(M);
             return 1.0 - dr.dot(lu.solve(dr));
         };

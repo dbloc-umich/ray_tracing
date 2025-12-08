@@ -25,7 +25,7 @@ TEST_CASE("roulette_test"){
     mat->addProperty(Prop::refractiveIndex, std::make_unique<ConstantProperty>(1.3));
     mat->addProperty(Prop::attenuationCoefficient, std::make_unique<ConstantProperty>(0.3));
 
-    // Create a random distribution of trees
+    // Create a random distribution of droplets
     double r = std::cbrt(V0*pf/N/(4.0*mconst::pi/3));
     kdTree tree;
     std::default_random_engine rng(1);

@@ -40,7 +40,6 @@ class Ellipsoid: public Shape{
     protected:
     Eigen::Vector3d _center;
     Eigen::MatrixXd _M;
-    Eigen::MatrixXd _Minv; // inverse of M
     Eigen::MatrixXd _axes; // eigenvectors of _M, principal axis directions
     Eigen::Array3d _length; // inverse squares of eigenvalues of _M
     std::ostream& print(std::ostream& os) const noexcept override;

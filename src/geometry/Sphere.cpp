@@ -94,7 +94,7 @@ double Sphere::distanceToSurface(const Eigen::Vector3d& p, const UnitVector3d& d
         sp = C/sm;
     }
 
-    if (C > 0) return (sp > 0 ? std::min(sp,sm) : NAN); // particle is outside, the roots have the same sign
+    if (C > 0) return (sp > 0 ? std::min(sp,sm) : std::numeric_limits<double>::quiet_NaN()); // particle is outside, the roots have the same sign
     return (sp > 0 ? sp : sm); // the roots have opposite sign, take the positive one - particle is inside
 }
 
