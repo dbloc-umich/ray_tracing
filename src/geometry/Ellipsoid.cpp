@@ -1,7 +1,7 @@
 #include "Ellipsoid.h"
 #include "Box.h"
 #include "Constants.h"
-#include "NonlinearSolver.h"
+#include "NewtonSolver.h"
 #include "Sphere.h"
 
 #include "Eigen/Eigenvalues"
@@ -156,7 +156,7 @@ bool Ellipsoid::overlaps(const Shape& other) const noexcept{
         }
         if (dr.squaredNorm() <= Shape::eps) return true; // centers overlap
 
-        auto K = [this, &dr, &Binv](double lambda){
+        auto K = [this, &dr, &Binv](const double& lambda){
             Eigen::Matrix3d M = Binv/(1.0-lambda);
             Eigen::Matrix3d Ainv = Eigen::DiagonalMatrix<double, 3>(_length[0]*_length[0], _length[1]*_length[1], _length[2]*_length[2]);
             if (_M.size() != 0) Ainv = _axes * Ainv * _axes.transpose();
@@ -164,14 +164,19 @@ bool Ellipsoid::overlaps(const Shape& other) const noexcept{
             Eigen::PartialPivLU<Eigen::Ref<Eigen::Matrix3d>> lu(M);
             return 1.0 - dr.dot(lu.solve(dr));
         };
-        try{
-            double lambda = newton(K, 0.5); // Find a root of the K(lambda)
-            if (lambda > 0.0 && lambda < 1.0) return false; // root is found on (0, 1), no overlapping
-            return true; // no root found on (0, 1)
-        } catch(const NewtonSingularityError& ex){
-            return false; // double root is found
-        } catch(const NewtonMaxIterationsError& ex){
-            return true; // no root is found
+
+        NewtonSolver<1> solver(K);
+        double lambda = 0.5;
+        auto status = solver.solve(lambda);
+        
+        switch(status){
+            case(Status::Success):
+                if (lambda > 0.0 && lambda < 1.0) return false; // root is found on (0, 1), no overlapping
+                return true; // no root found on (0, 1)
+            case(Status::NoConvergence):
+                return true; // no root is found
+            default:
+                return false;
         }
     }
 

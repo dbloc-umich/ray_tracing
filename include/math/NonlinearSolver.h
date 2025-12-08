@@ -5,11 +5,11 @@
 #include <functional>
 #include <type_traits>
 
+enum class Status{ Success, InvalidGuess, InvalidArgument, SingularityError, NoConvergence };
 template<int Domain, int Range = Domain,
          typename = std::enable_if_t<(Domain == -1 || Domain >= 1) && (Range == -1 || Range >= Domain)>>
 class NonlinearSolver{
     public:
-    enum class Status{ Success, InvalidGuess, InvalidArgument, SolverError, NoConvergence };
     using DomainType = std::conditional_t<Domain == 1, double, Eigen::Matrix<double, Domain, 1>>;
     using RangeType = std::conditional_t<Range == 1, double, Eigen::Matrix<double, Range, 1>>;
     using Function = std::function<RangeType(const DomainType&)>;
@@ -24,10 +24,8 @@ class NonlinearSolver{
 
     virtual Status solve(DomainType&) const noexcept = 0;
     Status solve(DomainType&& x0) const noexcept{
-        DomainType x(std::move(x0));
-        Status stat = solve(f, x);
-        _result = std::move(x); // store the result in a member variable
-        return stat;
+        _result = std::move(x0); // bind the initial guess to _result, then update _resolve;
+        return solve(_result);
     }
     const DomainType& result() const noexcept{ return _result; }
 
@@ -51,7 +49,7 @@ class NonlinearSolver{
             return std::abs(dx/x) <= _xtol;
         }
         if (x.squaredNorm() == 0.0) return dx.squaredNorm() <= _xtol*_xtol;
-        Eigen::Matrix<double, D, 1> delta = dx;
+        Eigen::Matrix<double, Domain, 1> delta(dx);
         for (Eigen::Index i = 0; i < x.size(); i++) delta[i] /= (x[i] == 0.0 ? 1 : x[i]);
         return delta.squaredNorm() <= _xtol*_xtol;
     }
