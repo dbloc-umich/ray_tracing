@@ -1,5 +1,5 @@
 #include "ParametricSurfaceProperties.h"
-#include "NonlinearSolvers.h"
+#include "NonlinearSolver.h"
 #include <algorithm>
 
 ParametricSurfaceProperties::ParametricSurfaceProperties(const function_type& x, const function_type& y, const function_type& z,

@@ -1,5 +1,5 @@
 #include "ParametricSurface.h"
-#include "NonlinearSolvers.h"
+#include "NonlinearSolver.h"
 
 ParametricSurface::ParametricSurface(property_ptr prop, const Eigen::Matrix3d& M,
                                      const Eigen::Vector3d& dr, std::shared_ptr<Material> mat):

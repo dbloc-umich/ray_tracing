@@ -1,7 +1,7 @@
 #include "Ellipsoid.h"
 #include "Box.h"
 #include "Constants.h"
-#include "NonlinearSolvers.h"
+#include "NonlinearSolver.h"
 #include "Sphere.h"
 
 #include "Eigen/Eigenvalues"
