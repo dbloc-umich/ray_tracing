@@ -14,7 +14,7 @@ class ParametricSurfaceProperties : public FunctionShapeProperties<std::function
     using Hfunction_type = std::function<Eigen::Matrix2d(const Eigen::Vector2d&)>;
     explicit ParametricSurfaceProperties(const function_type& x, const function_type& y, const function_type& z,
                                          double uMin, double uMax, double vMin, double vMax,
-                                         //unsigned short uSymmetry=1, unsigned short vSymmetry=1,
+                                         unsigned short uSymmetry=1, unsigned short vSymmetry=1,
                                          const function_type& xu=nullptr, const function_type& yu=nullptr, const function_type& zu=nullptr,
                                          const function_type& xv=nullptr, const function_type& yv=nullptr, const function_type& zv=nullptr,
                                          const Hfunction_type& Hx=nullptr, const Hfunction_type& Hy=nullptr, const Hfunction_type& Hz=nullptr);
@@ -30,7 +30,7 @@ class ParametricSurfaceProperties : public FunctionShapeProperties<std::function
     protected:
     function_type _x, _y, _z;
     double _u0, _u1, _v0, _v1;
-    //unsigned short _uSym, _vSym; // number of intervals is u or v symmetric over
+    unsigned short _uSym, _vSym; // number of intervals is u or v symmetric over
     function_type _xu, _yu, _zu;
     function_type _xv, _yv, _zv;
     Hfunction_type _Hx, _Hy, _Hz;

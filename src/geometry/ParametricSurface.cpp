@@ -1,5 +1,6 @@
 #include "ParametricSurface.h"
 #include "NonlinearSolver.h"
+#include "Optimizer.h"
 
 ParametricSurface::ParametricSurface(property_ptr prop, const Eigen::Matrix3d& M,
                                      const Eigen::Vector3d& dr, std::shared_ptr<Material> mat):
@@ -80,9 +81,6 @@ void ParametricSurface::computeExtrema(){
         for (double u: {_prop->_u0, _prop->_u1}){
             for (double v: {_prop->_v0, _prop->_v1}){
                 double val = x({u, v});
-                if (i == 2){
-                    std::cout << "u = " << u << ", v = " << v << ", z = " << val << std::endl;
-                }
                 if (val < xMin) xMin = val;
                 if (val > xMax) xMax = val;
             }
@@ -100,19 +98,24 @@ void ParametricSurface::computeExtrema(){
 
         // Sample values of [u, v] to find all critical points
         std::vector<Eigen::Vector2d> critPts;
-        constexpr std::size_t Nu = 6;
-        constexpr std::size_t Nv = 6;
+        constexpr std::size_t Nu = 4;
+        constexpr std::size_t Nv = 4;
         // Using Newton's method to find all possible critical points
         for (std::size_t i = 0; i < Nu; i++){
             for (std::size_t j = 0; j < Nv; j++){
-                Eigen::Vector2d crit{_prop->_u0+(_prop->_u1-_prop->_u0)/(Nu-1)*i, _prop->_v0+(_prop->_v1-_prop->_v0)/(Nv-1)*j};
+                Eigen::Vector2d argmin{_prop->_u0+(_prop->_u1-_prop->_u0)/(Nu-1)*i, _prop->_v0+(_prop->_v1-_prop->_v0)/(Nv-1)*j};
+                Eigen::Vector2d argmax = argmin;
                 try{
-                    newton(grad, H, crit);
-                    if (crit[0] >= _prop->_u0 && crit[0] <= _prop->_u1 && crit[1] >= _prop->_v0 && crit[1] <= _prop->_v1 ){
-                        double val = x(crit);
-                        if (val < xMin) xMin = val;
-                        if (val > xMax) xMax = val;
-                    }
+                    projectedNewton(x, argmin, {_prop->_u0, _prop->_v0}, {_prop->_u1, _prop->_v1}, grad, H);
+                    double val = x(argmin);
+                    if (val < xMin) xMin = val;
+
+                    projectedNewton([&x](const auto& u){ return -x(u); },
+                                    argmax, {_prop->_u0, _prop->_v0}, {_prop->_u1, _prop->_v1},
+                                    [&grad](const auto& u) -> Eigen::Vector2d { return -grad(u); },
+                                    [&H](const auto& u) -> Eigen::Matrix2d { return -H(u); });
+                    val = x(argmax);
+                    if (val > xMax) xMax = val;
                 } catch(const std::runtime_error& ex){}
             }
         }
@@ -123,22 +126,31 @@ void ParametricSurface::computeExtrema(){
 }
 
 void ParametricSurface::computeSurfaceArea(){
-    auto dS = [this](const Eigen::Vector2d& u){ return (_M*_prop->ru(u)).cross(_M*_prop->rv(u)).norm(); };
+    auto dS = [this](const Eigen::Vector2d& u){
+        Eigen::Vector3d v = _prop->ru(u).cross(_prop->rv(u));
+        v[0] *= _sigma[1]*_sigma[2];
+        v[1] *= _sigma[0]*_sigma[2];
+        v[2] *= _sigma[0]*_sigma[1];
+        return v.norm();
+    };
     
     // Gauss-Legendre integration with 3 points
     _surfaceArea = 0.0;
+    double uub = _prop->_u0 + (_prop->_u1-_prop->_u0)/_prop->_uSym; // upper bound in u
+    double vub = _prop->_v0 + (_prop->_v1-_prop->_v0)/_prop->_vSym; // upper bound in v
     const Eigen::Array3d roots{-std::sqrt(3.0/5), 0.0, std::sqrt(3.0/5)};
     const Eigen::Array3d weights{5.0/9, 8.0/9, 5.0/9};
     
     for (Eigen::Index i = 0; i < 3; i++){
-        double u = ((_prop->_u1-_prop->_u0)*roots[i] + _prop->_u1+_prop->_u0)/2;
-        double wu = (_prop->_u1-_prop->_u0)/2 * weights[i];
+        double u = ((uub-_prop->_u0)*roots[i] + uub + _prop->_u0)/2;
+        double wu = (uub-_prop->_u0)/2 * weights[i];
         for (Eigen::Index j = 0; j < 3; j++){
-            double v = ((_prop->_v1-_prop->_v0)*roots[j] + _prop->_v1+_prop->_v0)/2;
-            double wv = (_prop->_v1-_prop->_v0)/2 * weights[j];
+            double v = ((vub-_prop->_v0)*roots[j] + vub + _prop->_v0)/2;
+            double wv = (vub-_prop->_v0)/2 * weights[j];
             _surfaceArea += wu * wv * dS({u,v});
         }
     }
+    _surfaceArea *= (_prop->_uSym*_prop->_vSym);
 }
 
 std::ostream& ParametricSurface::print(std::ostream& os) const noexcept{

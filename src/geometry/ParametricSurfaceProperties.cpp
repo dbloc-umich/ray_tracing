@@ -1,10 +1,11 @@
 #include "ParametricSurfaceProperties.h"
 #include "NonlinearSolver.h"
+#include "Optimizer.h"
 #include <algorithm>
 
 ParametricSurfaceProperties::ParametricSurfaceProperties(const function_type& x, const function_type& y, const function_type& z,
                                                         double uMin, double uMax, double vMin, double vMax,
-                                                        //unsigned short uSymmetry, unsigned short vSymmetry,
+                                                        unsigned short uSymmetry, unsigned short vSymmetry,
                                                         const function_type& xu, const function_type& yu, const function_type& zu,
                                                         const function_type& xv, const function_type& yv, const function_type& zv,
                                                         const Hfunction_type& Hx, const Hfunction_type& Hy, const Hfunction_type& Hz):
@@ -12,7 +13,7 @@ ParametricSurfaceProperties::ParametricSurfaceProperties(const function_type& x,
     _x(x), _y(y), _z(z),
     _u0(std::min(uMin, uMax)), _u1(std::max(uMin, uMax)),
     _v0(std::min(vMin, vMax)), _v1(std::max(vMin, vMax)),
-    //_uSym(uSymmetry), _vSym(vSymmetry),
+    _uSym(uSymmetry), _vSym(vSymmetry),
     _xu(xu ? xu : [this](auto& u){ return df(_x, u, 0); }),
     _yu(yu ? yu : [this](auto& u){ return df(_y, u, 0); }),
     _zu(zu ? zu : [this](auto& u){ return df(_z, u, 0); }),
@@ -81,20 +82,25 @@ void ParametricSurfaceProperties::computeExtrema(){
 
         // Sample values of [u, v] to find all critical points
         std::vector<Eigen::Vector2d> critPts;
-        constexpr std::size_t Nu = 6;
-        constexpr std::size_t Nv = 6;
+        constexpr std::size_t Nu = 4;
+        constexpr std::size_t Nv = 4;
 
         // Using Newton's method to find all possible critical points
         for (std::size_t i = 0; i < Nu; i++){
             for (std::size_t j = 0; j < Nv; j++){
-                Eigen::Vector2d crit{_u0+(_u1-_u0)/(Nu-1)*i, _v0+(_v1-_v0)/(Nv-1)*j};
+                Eigen::Vector2d argmin{_u0+(_u1-_u0)/(Nu-1)*i, _v0+(_v1-_v0)/(Nv-1)*j};
+                Eigen::Vector2d argmax = argmin;
                 try{
-                    newton(grad, H, crit);
-                    if (crit[0] >= _u0 && crit[0] <= _u1 && crit[1] >= _v0 && crit[1] <= _v1 ){
-                        double val = x(crit);
-                        if (val < xMin) xMin = val;
-                        if (val > xMax) xMax = val;
-                    }
+                    projectedNewton(x, argmin, {_u0, _v0}, {_u1, _v1}, grad, H);
+                    double val = x(argmin);
+                    if (val < xMin) xMin = val;
+
+                    projectedNewton([&x](const auto& u){ return -x(u); },
+                                    argmax, {_u0, _v0}, {_u1, _v1},
+                                    [&grad](const auto& u) -> Eigen::Vector2d { return -grad(u); },
+                                    [&H](const auto& u) -> Eigen::Matrix2d { return -H(u); });
+                    val = x(argmax);
+                    if (val > xMax) xMax = val;
                 } catch(const std::runtime_error& ex){};
             }
         }
@@ -117,13 +123,13 @@ void ParametricSurfaceProperties::computeSurfaceArea(){
     
     // Gauss-Legendre integration with 3 points
     _surfaceArea = 0.0;
-    double uub = _u1; //_u0 + (_u1-_u0)/_uSym; // upper bound in u
-    double vub = _v1; //_v0 + (_v1-_v0)/_vSym; // upper bound in v
+    double uub = _u0 + (_u1-_u0)/_uSym; // upper bound in u
+    double vub = _v0 + (_v1-_v0)/_vSym; // upper bound in v
     const Eigen::Array3d roots{-std::sqrt(3.0/5), 0.0, std::sqrt(3.0/5)};
     const Eigen::Array3d weights{5.0/9, 8.0/9, 5.0/9};
     
     for (Eigen::Index i = 0; i < 3; i++){
-        double u = ((uub-_u0)*roots[i] + uub+_u0)/2;
+        double u = ((uub-_u0)*roots[i] + uub + _u0)/2;
         double wu = (uub-_u0)/2 * weights[i];
         for (Eigen::Index j = 0; j < 3; j++){
             double v = ((vub-_v0)*roots[j] + vub+_v0)/2;
@@ -131,7 +137,7 @@ void ParametricSurfaceProperties::computeSurfaceArea(){
             _surfaceArea += wu * wv * dS({u,v});
         }
     }
-    //_surfaceArea *= _uSym*_vSym;
+    _surfaceArea *= (_uSym*_vSym);
 }
 
 void ParametricSurfaceProperties::computeVolume(){
@@ -139,19 +145,21 @@ void ParametricSurfaceProperties::computeVolume(){
 
     // Gauss-Legendre integration with 3 points
     _volume = 0.0;
+    double uub = _u0 + (_u1-_u0)/_uSym; // upper bound in u
+    double vub = _v0 + (_v1-_v0)/_vSym; // upper bound in v
     const Eigen::Array3d roots{-std::sqrt(3.0/5), 0.0, std::sqrt(3.0/5)};
     const Eigen::Array3d weights{5.0/9, 8.0/9, 5.0/9};
     
     for (Eigen::Index i = 0; i < 3; i++){
-        double u = ((_u1-_u0)*roots[i] + _u1+_u0)/2;
-        double wu = (_u1-_u0)/2 * weights[i];
+        double u = ((uub-_u0)*roots[i] + uub + _u0)/2;
+        double wu = (uub-_u0)/2 * weights[i];
         for (Eigen::Index j = 0; j < 3; j++){
-            double v = ((_v1-_v0)*roots[j] + _v1+_v0)/2;
-            double wv = (_v1-_v0)/2 * weights[j];
+            double v = ((vub-_v0)*roots[j] + vub+_v0)/2;
+            double wv = (vub-_v0)/2 * weights[j];
             _volume += wu * wv * dV({u,v});
         }
     }
-    _volume = std::abs(_volume);
+    _volume = std::abs(_volume)*(_uSym*_vSym);
 };
 
 bool ParametricSurfaceProperties::isPeriodic(Eigen::Index i, Eigen::Index j, const Eigen::VectorXd& arr){

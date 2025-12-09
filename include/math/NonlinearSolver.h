@@ -51,8 +51,6 @@ std::decay_t<InputType> newton(CallableF&& f, CallableJ&& J, InputType&& x, doub
     for (std::size_t iter = 0; iter < maxIter; iter++){
         auto fx = f(std::forward<InputType>(x));
         auto Jx = J(std::forward<InputType>(x));
-        std::cout << "iter = " << iter << ": x = " << x.transpose() << ", f(x) = " << fx.transpose() << std::endl;
-        std::cout << "Jx = " << std::endl << Jx << std::endl;
         if (!dimensionsChecked){
             // Check against dimension mismatch, for the first iteration only
             if (fx.size() < x.size() || fx.size() < Jx.rows())
@@ -65,7 +63,6 @@ std::decay_t<InputType> newton(CallableF&& f, CallableJ&& J, InputType&& x, doub
         auto dx = qr.solve(fx);
         x -= dx;
 
-        std::cout << "Error = " << dx.squaredNorm() / x.squaredNorm() << std::endl << std::endl;
         if (x.squaredNorm() == 0.0) {
             if (dx.squaredNorm() < tol*tol) return x;
         } else if (dx.squaredNorm() / x.squaredNorm() < tol*tol) return x;
