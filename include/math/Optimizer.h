@@ -38,7 +38,7 @@ std::decay_t<InputType> projectedNewton(CallableF&& f, InputType& x, const Input
             alpha = dx[i] > 0 ? std::min(alpha, (U[i]-x[i])/dx[i]) : std::min(alpha, (L[i]-x[i])/dx[i]);
         }
         auto fx1 = f(x+alpha*dx);
-        while (fx1 > fx0 + c*alpha*grad.dot(dx)){
+        while (fx1 > fx0 + c*alpha*grad.dot(dx)){ // Armijo–Goldstein condition
             alpha *= 0.5;
             fx1 = f(x+alpha*dx);
         }
