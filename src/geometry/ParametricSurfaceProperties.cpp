@@ -1,6 +1,5 @@
 #include "ParametricSurfaceProperties.h"
-#include "NonlinearSolver.h"
-#include "Optimizer.h"
+#include "ProjectedNewton.h"
 #include <algorithm>
 
 ParametricSurfaceProperties::ParametricSurfaceProperties(const function_type& x, const function_type& y, const function_type& z,
@@ -88,20 +87,19 @@ void ParametricSurfaceProperties::computeExtrema(){
         // Using Newton's method to find all possible critical points
         for (std::size_t i = 0; i < Nu; i++){
             for (std::size_t j = 0; j < Nv; j++){
+                // Minimize
                 Eigen::Vector2d argmin{_u0+(_u1-_u0)/(Nu-1)*i, _v0+(_v1-_v0)/(Nv-1)*j};
-                Eigen::Vector2d argmax = argmin;
-                try{
-                    projectedNewton(x, argmin, {_u0, _v0}, {_u1, _v1}, grad, H);
-                    double val = x(argmin);
-                    if (val < xMin) xMin = val;
+                Eigen::Vector2d argmax(argmin);
+                ProjectedNewton<2> optimizer(x, {_u0, _v0}, {_u1, _v1}, grad, H);
+                auto status = optimizer.minimize(argmin);
+                if (status == COStatus::Success) xMin = std::min(xMin, x(argmin));
 
-                    projectedNewton([&x](const auto& u){ return -x(u); },
-                                    argmax, {_u0, _v0}, {_u1, _v1},
-                                    [&grad](const auto& u) -> Eigen::Vector2d { return -grad(u); },
-                                    [&H](const auto& u) -> Eigen::Matrix2d { return -H(u); });
-                    val = x(argmax);
-                    if (val > xMax) xMax = val;
-                } catch(const std::runtime_error& ex){};
+                // Maximize
+                optimizer.setFunction([&x](const auto& u){ return -x(u); },
+                                      [&grad](const auto& u) -> Eigen::Vector2d { return -grad(u); },
+                                      [&H](const auto& u) -> Eigen::Matrix2d { return -H(u); });
+                status = optimizer.minimize(argmax);
+                if (status == COStatus::Success) xMax = std::max(xMax, x(argmax));
             }
         }
 

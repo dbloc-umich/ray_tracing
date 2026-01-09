@@ -1,80 +1,57 @@
-#include "Eigen/Dense"
-#include "Derivative.h"
-#include <cmath>
+#ifndef NONLINEAR_SOLVER_H
+#define NONLINEAR_SOLVER_H
+
+#include <Eigen/Dense>
+#include <functional>
 #include <type_traits>
 
-// Failure cases
-class NewtonSingularityError : public std::runtime_error {
-public:
-    explicit NewtonSingularityError(const std::string& msg) : std::runtime_error(msg) {}
-};
+enum class NLStatus{ Success, InvalidArgument, SingularityError, NoConvergence };
 
+template<int N, int M = N,
+         typename = std::enable_if_t<(N == Eigen::Dynamic || N >= 1) && (M == Eigen::Dynamic || M >= N)>,
+         typename... Args>
+class NonlinearSolver{
+    public:
+    using DomainType = std::conditional_t<N == 1, double, Eigen::Matrix<double, N, 1>>;
+    using RangeType = std::conditional_t<M == 1, double, Eigen::Matrix<double, M, 1>>;
+    using Function = std::function<RangeType(const DomainType&)>;
 
-// Thrown when Newton's method exceeds maximum allowed iterations
-class NewtonMaxIterationsError : public std::runtime_error {
-public:
-    explicit NewtonMaxIterationsError(const std::string& msg) : std::runtime_error(msg) {}
-};
+    explicit NonlinearSolver(const Function& func, double ftol=1.0e-6, double xtol=1.0e-6, std::size_t maxIter=100):
+        _f(func),
+        _ftol(ftol),
+        _xtol(xtol),
+        _maxIter(maxIter)    
+    {}
+    virtual ~NonlinearSolver() = default;
 
-// Newton's Method, scalar version
-template<typename CallableF, typename CallableDF, typename InputType,
-         typename = std::enable_if_t<std::is_floating_point<InputType>::value>>
-InputType newton(CallableF&& f, CallableDF&& df, InputType x, double tol=1.0e-6, std::size_t maxIter=20){
-    static_assert(std::is_floating_point<decltype(f(x))>::value, "Function must return a scalar.");
-    static_assert(std::is_floating_point<decltype(df(x))>::value, "Derivative function must return a scalar.");
-    for (std::size_t iter = 0; iter < maxIter; iter++){
-        InputType dfx = df(x);
-        if (dfx == 0.0) throw NewtonSingularityError("ERROR: Singularity encountered. Newton's method cannot continue.");
-        InputType dx = -f(x)/dfx;
-        x += dx;
-        if (x == 0.0){
-            if (std::abs(dx) < tol) return x;
-        } else if (std::abs(dx/x) < tol) return x;
+    virtual NLStatus solve(DomainType&, Args&&...) const noexcept = 0;
+    virtual void setFunction(const Function& f) const noexcept{ _f = f; }
+    void setFTol(double ftol) noexcept{ _ftol = ftol; }
+    void setXTol(double xtol) noexcept{ _xtol = xtol; }
+    void setMaxIter(std::size_t maxIter) noexcept{ _maxIter = maxIter; }
+
+    protected:
+    mutable Function _f;
+    double _ftol; // Tolerance in output
+    double _xtol; // Tolerance in input step size
+    std::size_t _maxIter;
+
+    bool outputConverged(const RangeType& fx) const noexcept{
+        if constexpr(M == 1) return std::abs(fx) <= _ftol;
+        else return fx.squaredNorm() <= _ftol*_ftol;
     }
-    throw NewtonMaxIterationsError("ERROR: Maximum number of iterations exceeded.");
-}
 
-template<typename Callable, typename InputType,
-         typename = std::enable_if_t<std::is_floating_point<InputType>::value>>
-InputType newton(Callable&& f, InputType x, double tol=1.0e-6, std::size_t maxIter=20){
-    return newton(std::forward<Callable>(f),
-                  [&f](InputType x0){ return df(std::forward<Callable>(f), x0); },
-                  x, tol, maxIter);
-}
-
-// Newton's method, vector version
-template<typename CallableF, typename CallableJ, typename InputType,
-         typename = std::enable_if_t<std::decay_t<InputType>::RowsAtCompileTime == 1
-                                    || std::decay_t<InputType>::ColsAtCompileTime == 1>>
-std::decay_t<InputType> newton(CallableF&& f, CallableJ&& J, InputType&& x, double tol=1.0e-6, std::size_t maxIter=20){
-    bool dimensionsChecked = false;
-    for (std::size_t iter = 0; iter < maxIter; iter++){
-        auto fx = f(std::forward<InputType>(x));
-        auto Jx = J(std::forward<InputType>(x));
-        if (!dimensionsChecked){
-            // Check against dimension mismatch, for the first iteration only
-            if (fx.size() < x.size() || fx.size() < Jx.rows())
-                throw std::invalid_argument("ERROR: Output dimension must not be less than input dimension.");
-            if (fx.size() != Jx.cols()) throw std::invalid_argument("ERROR: Function and derivative must have the same dimension.");
-            dimensionsChecked = true;
+    bool inputConverged(const DomainType& x, const DomainType& dx) const noexcept{
+        if constexpr(N == 1){
+            if (x == 0.0) return std::abs(dx) <= _xtol;
+            return std::abs(dx/x) <= _xtol;
         }
-        Eigen::ColPivHouseholderQR<Eigen::Ref<std::decay_t<decltype(Jx)> > > qr(Jx);
-        if (qr.rank() < fx.size()) throw NewtonSingularityError("ERROR: Singularity encountered. Newton's method cannot continue.");
-        auto dx = qr.solve(fx);
-        x -= dx;
-
-        if (x.squaredNorm() == 0.0) {
-            if (dx.squaredNorm() < tol*tol) return x;
-        } else if (dx.squaredNorm() / x.squaredNorm() < tol*tol) return x;
+        else{
+            if (x.squaredNorm() == 0.0) return dx.squaredNorm() <= _xtol*_xtol;
+            Eigen::Matrix<double, N, 1> delta(dx);
+            for (Eigen::Index i = 0; i < x.size(); i++) delta[i] /= (x[i] == 0.0 ? 1 : x[i]);
+            return delta.squaredNorm() <= _xtol*_xtol;
+        }
     }
-    throw NewtonMaxIterationsError("ERROR: Maximum number of iterations exceeded.");
-}
-
-template<typename Callable, typename InputType,
-         typename = std::enable_if_t<std::decay_t<InputType>::RowsAtCompileTime == 1
-                                    || std::decay_t<InputType>::ColsAtCompileTime == 1>>
-std::decay_t<InputType> newton(Callable&& f, InputType&& x, double tol=1.0e-6, std::size_t maxIter=20){
-    return newton(std::forward<Callable>(f),
-                  [&f](InputType x0){ return Jacobian(std::forward<Callable>(f), x0); },
-                  std::forward<InputType>(x), tol, maxIter);
-}
+};
+#endif

@@ -1,6 +1,6 @@
 #include "ParametricSurface.h"
-#include "NonlinearSolver.h"
-#include "Optimizer.h"
+#include "NewtonSolver.h"
+#include "ProjectedNewton.h"
 
 ParametricSurface::ParametricSurface(property_ptr prop, const Eigen::Matrix3d& M,
                                      const Eigen::Vector3d& dr, std::shared_ptr<Material> mat):
@@ -16,7 +16,7 @@ ParametricSurface::ParametricSurface(property_ptr prop, const Eigen::Matrix3d& M
 
 bool ParametricSurface::surfaceContains(const Eigen::Vector3d& p) const noexcept{
     // Least square problem to solve for
-    auto f = [this, &p](const Eigen::Vector2d& u){ return p - r(u); };
+    auto f = [this, &p](const Eigen::Vector2d& u) -> Eigen::Vector3d { return p - r(u); };
     auto Jf = [this](const Eigen::Vector2d& u){
         Eigen::Matrix<double, 3, 2> jac;
         jac.col(0) = ru(u);
@@ -24,19 +24,19 @@ bool ParametricSurface::surfaceContains(const Eigen::Vector3d& p) const noexcept
         return jac;
     };
     Eigen::Vector2d u{(_prop->_u0+_prop->_u1)/2, (_prop->_v0+_prop->_v1)/2};
-    try{
-        newton(f, Jf, u);
-        if (_prop->_u0 <= u[0] && _prop->_u1 >= u[0] && _prop->_v0 <= u[1] && _prop->_v1 >= u[1]
-            && f(u).squaredNorm() <= Shape::eps) return true;
-        return false;
-    } catch (const std::runtime_error&){
-        return false;
+    NewtonSolver<2, 3> solver(f, Jf);
+    auto status = solver.solve(u);
+    switch(status){
+        case (NLStatus::Success):
+            return (_prop->_u0 <= u[0] && _prop->_u1 >= u[0] && _prop->_v0 <= u[1] && _prop->_v1 >= u[1]
+                    && f(u).squaredNorm() <= Shape::eps * Shape::eps);
+        default:
+            return false;
     }
 }
 
 bool ParametricSurface::encloses(const Eigen::Vector3d& p) const noexcept{
-    if (!_prop->_isClosedSurface) return false;
-        // Checking if a point is inside is only defined for closed surfaces
+    if (!_prop->_isClosedSurface) return false; // Checking if a point is inside is only defined for closed surfaces
     
     UnitVector3d dir(p - r({_prop->_u0, _prop->_v0}));
     return distanceToSurface(p, dir) > Shape::eps && distanceToSurface(p, -dir) > Shape::eps;
@@ -47,7 +47,8 @@ bool ParametricSurface::overlaps(const Shape& other) const noexcept{
 }
 
 double ParametricSurface::distanceToSurface(const Eigen::Vector3d& p, const UnitVector3d& dir) const noexcept{
-    auto f = [this, &p, &dir](const Eigen::Vector3d& s){ return p + dir.value()*s[2] - r({s[0], s[1]}); };
+    auto f = [this, &p, &dir](const Eigen::Vector3d& s) -> Eigen::Vector3d
+        { return p + dir.value()*s[2] - r({s[0], s[1]}); };
     auto Jf = [this, &dir](const Eigen::Vector3d& s){
         Eigen::Matrix3d jac;
         jac.col(0) = -ru({s[0], s[1]});
@@ -56,15 +57,17 @@ double ParametricSurface::distanceToSurface(const Eigen::Vector3d& p, const Unit
         return jac;
     };
     Eigen::Vector3d s{(_prop->_u0+_prop->_u1)/2, (_prop->_v0+_prop->_v1)/2, xMax()-xMin()};
-    try{
-        newton(f, Jf, s);
-        if (_prop->_u0 <= s[0] && _prop->_u1 >= s[0] && _prop->_v0 <= s[1] && _prop->_v1 >= s[1])
+    NewtonSolver<3> solver(f, Jf);
+    auto status = solver.solve(s);
+    switch (status){
+        case (NLStatus::Success):
+            if (_prop->_u0 < s[0] && _prop->_u1 > s[0] && _prop->_v0 < s[1] && _prop->_v1 > s[1])
+                return std::numeric_limits<double>::quiet_NaN();
+            if (s[2] > Shape::eps) return s[2];
+            if (std::abs(s[2]) <= Shape::eps) return 0.0;
             return std::numeric_limits<double>::quiet_NaN();
-        if (s[2] > Shape::eps) return s[2];
-        if (std::abs(s[2]) <= Shape::eps) return 0.0;
-        return std::numeric_limits<double>::quiet_NaN();
-    } catch (const std::runtime_error&){
-        return std::numeric_limits<double>::quiet_NaN();
+        default:
+            return std::numeric_limits<double>::quiet_NaN();
     }
 }
 
@@ -103,20 +106,19 @@ void ParametricSurface::computeExtrema(){
         // Using Newton's method to find all possible critical points
         for (std::size_t i = 0; i < Nu; i++){
             for (std::size_t j = 0; j < Nv; j++){
+                // Minimize
                 Eigen::Vector2d argmin{_prop->_u0+(_prop->_u1-_prop->_u0)/(Nu-1)*i, _prop->_v0+(_prop->_v1-_prop->_v0)/(Nv-1)*j};
-                Eigen::Vector2d argmax = argmin;
-                try{
-                    projectedNewton(x, argmin, {_prop->_u0, _prop->_v0}, {_prop->_u1, _prop->_v1}, grad, H);
-                    double val = x(argmin);
-                    if (val < xMin) xMin = val;
+                Eigen::Vector2d argmax(argmin);
+                ProjectedNewton<2> optimizer(x, {_prop->_u0, _prop->_v0}, {_prop->_u1, _prop->_v1}, grad, H);
+                auto status = optimizer.minimize(argmin);
+                if (status == COStatus::Success) xMin = std::min(xMin, x(argmin));
 
-                    projectedNewton([&x](const auto& u){ return -x(u); },
-                                    argmax, {_prop->_u0, _prop->_v0}, {_prop->_u1, _prop->_v1},
-                                    [&grad](const auto& u) -> Eigen::Vector2d { return -grad(u); },
-                                    [&H](const auto& u) -> Eigen::Matrix2d { return -H(u); });
-                    val = x(argmax);
-                    if (val > xMax) xMax = val;
-                } catch(const std::runtime_error& ex){}
+                // Maximize
+                optimizer.setFunction([&x](const auto& u){ return -x(u); },
+                                      [&grad](const auto& u) -> Eigen::Vector2d { return -grad(u); },
+                                      [&H](const auto& u) -> Eigen::Matrix2d { return -H(u); });
+                status = optimizer.minimize(argmax);
+                if (status == COStatus::Success) xMax = std::max(xMax, x(argmax));
             }
         }
 
