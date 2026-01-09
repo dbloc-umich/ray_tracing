@@ -157,6 +157,7 @@ bool Ellipsoid::overlaps(const Shape& other) const noexcept{
         if (dr.squaredNorm() <= Shape::eps) return true; // centers overlap
 
         auto K = [this, &dr, &Binv](const double& lambda){
+            if (lambda == 0.0 || lambda == 1.0) return 1.0;
             Eigen::Matrix3d M = Binv/(1.0-lambda);
             Eigen::Matrix3d Ainv = Eigen::DiagonalMatrix<double, 3>(_length[0]*_length[0], _length[1]*_length[1], _length[2]*_length[2]);
             if (_M.size() != 0) Ainv = _axes * Ainv * _axes.transpose();
@@ -170,10 +171,10 @@ bool Ellipsoid::overlaps(const Shape& other) const noexcept{
         auto status = solver.solve(lambda);
         
         switch(status){
-            case(Status::Success):
+            case(NLStatus::Success):
                 if (lambda > 0.0 && lambda < 1.0) return false; // root is found on (0, 1), no overlapping
                 return true; // no root found on (0, 1)
-            case(Status::NoConvergence):
+            case(NLStatus::NoConvergence):
                 return true; // no root is found
             default:
                 return false;

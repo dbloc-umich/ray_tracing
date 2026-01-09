@@ -5,16 +5,18 @@
 #include <functional>
 #include <type_traits>
 
-enum class Status{ Success, InvalidGuess, InvalidArgument, SingularityError, NoConvergence };
-template<int Domain, int Range = Domain,
-         typename = std::enable_if_t<(Domain == -1 || Domain >= 1) && (Range == -1 || Range >= Domain)>>
+enum class NLStatus{ Success, InvalidArgument, SingularityError, NoConvergence };
+
+template<int N, int M = N,
+         typename = std::enable_if_t<(N == Eigen::Dynamic || N >= 1) && (M == Eigen::Dynamic || M >= N)>,
+         typename... Args>
 class NonlinearSolver{
     public:
-    using DomainType = std::conditional_t<Domain == 1, double, Eigen::Matrix<double, Domain, 1>>;
-    using RangeType = std::conditional_t<Range == 1, double, Eigen::Matrix<double, Range, 1>>;
+    using DomainType = std::conditional_t<N == 1, double, Eigen::Matrix<double, N, 1>>;
+    using RangeType = std::conditional_t<M == 1, double, Eigen::Matrix<double, M, 1>>;
     using Function = std::function<RangeType(const DomainType&)>;
 
-    explicit NonlinearSolver(const Function& func=nullptr, double ftol=1.0e-6, double xtol=1.0e-6, std::size_t maxIter=100):
+    explicit NonlinearSolver(const Function& func, double ftol=1.0e-6, double xtol=1.0e-6, std::size_t maxIter=100):
         _f(func),
         _ftol(ftol),
         _xtol(xtol),
@@ -22,36 +24,34 @@ class NonlinearSolver{
     {}
     virtual ~NonlinearSolver() = default;
 
-    virtual Status solve(DomainType&) const noexcept = 0;
-    Status solve(DomainType&& x0) const noexcept{
-        _result = std::move(x0); // bind the initial guess to _result, then update _resolve;
-        return solve(_result);
-    }
-    const DomainType& result() const noexcept{ return _result; }
-
-    void setFunction(const Function& f) const noexcept{ _f = f; }
+    virtual NLStatus solve(DomainType&, Args&&...) const noexcept = 0;
+    virtual void setFunction(const Function& f) const noexcept{ _f = f; }
+    void setFTol(double ftol) noexcept{ _ftol = ftol; }
+    void setXTol(double xtol) noexcept{ _xtol = xtol; }
+    void setMaxIter(std::size_t maxIter) noexcept{ _maxIter = maxIter; }
 
     protected:
     mutable Function _f;
     double _ftol; // Tolerance in output
-    double _xtol; // Tolerance in input between two successive iterations
+    double _xtol; // Tolerance in input step size
     std::size_t _maxIter;
-    mutable DomainType _result; // stores the result of the solver
 
-    bool outputConverged(const RangeType& fx){
-        if constexpr(Range == 1) return std::abs(fx) <= _ftol;
-        return fx.squaredNorm() <= _ftol*_ftol;
+    bool outputConverged(const RangeType& fx) const noexcept{
+        if constexpr(M == 1) return std::abs(fx) <= _ftol;
+        else return fx.squaredNorm() <= _ftol*_ftol;
     }
 
-    bool inputConverged(const DomainType& x, const DomainType& dx){
-        if constexpr(Domain == 1){
-            if (x == 0) return std::abs(dx) <= _xtol;
+    bool inputConverged(const DomainType& x, const DomainType& dx) const noexcept{
+        if constexpr(N == 1){
+            if (x == 0.0) return std::abs(dx) <= _xtol;
             return std::abs(dx/x) <= _xtol;
         }
-        if (x.squaredNorm() == 0.0) return dx.squaredNorm() <= _xtol*_xtol;
-        Eigen::Matrix<double, Domain, 1> delta(dx);
-        for (Eigen::Index i = 0; i < x.size(); i++) delta[i] /= (x[i] == 0.0 ? 1 : x[i]);
-        return delta.squaredNorm() <= _xtol*_xtol;
+        else{
+            if (x.squaredNorm() == 0.0) return dx.squaredNorm() <= _xtol*_xtol;
+            Eigen::Matrix<double, N, 1> delta(dx);
+            for (Eigen::Index i = 0; i < x.size(); i++) delta[i] /= (x[i] == 0.0 ? 1 : x[i]);
+            return delta.squaredNorm() <= _xtol*_xtol;
+        }
     }
 };
 #endif
