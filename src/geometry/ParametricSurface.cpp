@@ -1,4 +1,5 @@
 #include "ParametricSurface.h"
+#include "GaussLegendre.h"
 #include "NewtonSolver.h"
 #include "ProjectedNewton.h"
 
@@ -137,22 +138,11 @@ void ParametricSurface::computeSurfaceArea(){
     };
     
     // Gauss-Legendre integration with 3 points
-    _surfaceArea = 0.0;
     double uub = _prop->_u0 + (_prop->_u1-_prop->_u0)/_prop->_uSym; // upper bound in u
     double vub = _prop->_v0 + (_prop->_v1-_prop->_v0)/_prop->_vSym; // upper bound in v
-    const Eigen::Array3d roots{-std::sqrt(3.0/5), 0.0, std::sqrt(3.0/5)};
-    const Eigen::Array3d weights{5.0/9, 8.0/9, 5.0/9};
-    
-    for (Eigen::Index i = 0; i < 3; i++){
-        double u = ((uub-_prop->_u0)*roots[i] + uub + _prop->_u0)/2;
-        double wu = (uub-_prop->_u0)/2 * weights[i];
-        for (Eigen::Index j = 0; j < 3; j++){
-            double v = ((vub-_prop->_v0)*roots[j] + vub + _prop->_v0)/2;
-            double wv = (vub-_prop->_v0)/2 * weights[j];
-            _surfaceArea += wu * wv * dS({u,v});
-        }
-    }
-    _surfaceArea *= (_prop->_uSym*_prop->_vSym);
+    GaussLegendre<2> GL(5); // Gauss-Legendre integration with 5 points
+    GaussLegendre<2>::IntegrationDomain D{_prop->_u0, uub, _prop->_v0, vub};
+    _surfaceArea = GL.integrate(dS, D) * (_prop->_uSym*_prop->_vSym);
 }
 
 std::ostream& ParametricSurface::print(std::ostream& os) const noexcept{

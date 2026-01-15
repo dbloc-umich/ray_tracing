@@ -4,9 +4,8 @@
 #include "NonlinearSolver.h"
 #include "Derivative.h"
 
-template<int N, int M = N,
-         typename = std::enable_if_t<(N == Eigen::Dynamic || N >= 1) && (M == Eigen::Dynamic || M >= N)>>
-class NewtonSolver : NonlinearSolver<N, M>{
+template<int N, int M = N>
+class NewtonSolver : public NonlinearSolver<N, M>{
     public:
     using typename NonlinearSolver<N, M>::DomainType;
     using typename NonlinearSolver<N, M>::RangeType;
@@ -32,7 +31,8 @@ class NewtonSolver : NonlinearSolver<N, M>{
                 if (dfx == 0.0) return NLStatus::SingularityError;
                 DomainType dx = this->_f(x)/dfx;
                 x -= dx;
-                if (this->inputConverged(x, dx)) return NLStatus::Success;
+                RangeType fx = this->_f(x);
+                if (this->inputConverged(x, dx) || this->outputConverged(fx)) return NLStatus::Success;
             }
             return NLStatus::NoConvergence;
         }
@@ -41,17 +41,15 @@ class NewtonSolver : NonlinearSolver<N, M>{
             RangeType fx = this->_f(x);
             DerivativeType Jx = _df(x);
             if (N == Eigen::Dynamic || M == Eigen::Dynamic){
-                if (fx.size() < x.size() || fx.size() < Jx.rows()) return NLStatus::InvalidArgument;
-                if (fx.size() != Jx.cols()) return NLStatus::InvalidArgument;
+                if (fx.size() < x.size() || fx.size() < Jx.rows() || fx.size() != Jx.cols()) return NLStatus::InvalidArgument;
             }
             for (std::size_t iter = 0; iter < this->_maxIter; iter++){
                 Eigen::ColPivHouseholderQR<Eigen::Ref<DerivativeType>> qr(Jx);
                 if (qr.rank() < fx.size()) return NLStatus::SingularityError;
                 auto dx = qr.solve(fx);
                 x -= dx;
-                
-                if (this->inputConverged(x, dx) || this->outputConverged(fx)) return NLStatus::Success;
                 fx = this->_f(x);
+                if (this->inputConverged(x, dx) || this->outputConverged(fx)) return NLStatus::Success;
                 Jx = _df(x);
             }
             return NLStatus::NoConvergence;

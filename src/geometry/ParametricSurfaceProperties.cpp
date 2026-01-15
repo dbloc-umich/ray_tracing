@@ -1,4 +1,5 @@
 #include "ParametricSurfaceProperties.h"
+#include "GaussLegendre.h"
 #include "ProjectedNewton.h"
 #include <algorithm>
 
@@ -118,46 +119,20 @@ void ParametricSurfaceProperties::computeExtrema(){
 
 void ParametricSurfaceProperties::computeSurfaceArea(){
     auto dS = [this](const Eigen::Vector2d& u){ return ru(u).cross(rv(u)).norm(); };
-    
-    // Gauss-Legendre integration with 3 points
-    _surfaceArea = 0.0;
     double uub = _u0 + (_u1-_u0)/_uSym; // upper bound in u
     double vub = _v0 + (_v1-_v0)/_vSym; // upper bound in v
-    const Eigen::Array3d roots{-std::sqrt(3.0/5), 0.0, std::sqrt(3.0/5)};
-    const Eigen::Array3d weights{5.0/9, 8.0/9, 5.0/9};
-    
-    for (Eigen::Index i = 0; i < 3; i++){
-        double u = ((uub-_u0)*roots[i] + uub + _u0)/2;
-        double wu = (uub-_u0)/2 * weights[i];
-        for (Eigen::Index j = 0; j < 3; j++){
-            double v = ((vub-_v0)*roots[j] + vub+_v0)/2;
-            double wv = (vub-_v0)/2 * weights[j];
-            _surfaceArea += wu * wv * dS({u,v});
-        }
-    }
-    _surfaceArea *= (_uSym*_vSym);
+    GaussLegendre<2> GL(5); // Gauss-Legendre integration with 5 points
+    GaussLegendre<2>::IntegrationDomain D{_u0, uub, _v0, vub};
+    _surfaceArea = GL.integrate(dS, D) * (_uSym*_vSym);
 }
 
 void ParametricSurfaceProperties::computeVolume(){
     auto dV = [this](const Eigen::Vector2d& u){ return _z(u)*(_xu(u)*_yv(u) - _yu(u)*_xv(u)); };
-
-    // Gauss-Legendre integration with 3 points
-    _volume = 0.0;
     double uub = _u0 + (_u1-_u0)/_uSym; // upper bound in u
     double vub = _v0 + (_v1-_v0)/_vSym; // upper bound in v
-    const Eigen::Array3d roots{-std::sqrt(3.0/5), 0.0, std::sqrt(3.0/5)};
-    const Eigen::Array3d weights{5.0/9, 8.0/9, 5.0/9};
-    
-    for (Eigen::Index i = 0; i < 3; i++){
-        double u = ((uub-_u0)*roots[i] + uub + _u0)/2;
-        double wu = (uub-_u0)/2 * weights[i];
-        for (Eigen::Index j = 0; j < 3; j++){
-            double v = ((vub-_v0)*roots[j] + vub+_v0)/2;
-            double wv = (vub-_v0)/2 * weights[j];
-            _volume += wu * wv * dV({u,v});
-        }
-    }
-    _volume = std::abs(_volume)*(_uSym*_vSym);
+    GaussLegendre<2> GL(5); // Gauss-Legendre integration with 5 points
+    GaussLegendre<2>::IntegrationDomain D{_u0, uub, _v0, vub};
+    _volume = std::abs(GL.integrate(dV, D))*(_uSym*_vSym);
 };
 
 bool ParametricSurfaceProperties::isPeriodic(Eigen::Index i, Eigen::Index j, const Eigen::VectorXd& arr){

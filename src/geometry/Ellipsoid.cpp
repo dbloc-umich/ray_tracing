@@ -1,6 +1,7 @@
 #include "Ellipsoid.h"
 #include "Box.h"
 #include "Constants.h"
+#include "GaussLegendre.h"
 #include "NewtonSolver.h"
 #include "Sphere.h"
 
@@ -99,29 +100,17 @@ double Ellipsoid::zMax() const noexcept{
 }
 
 double Ellipsoid::surfaceArea() const noexcept{
-    auto norm_normal = [this](double u, double v){
-        auto cos2v = std::cos(v);
+    auto norm_normal = [this](const Eigen::Vector2d& u){
+        auto cos2v = std::cos(u[1]);
         cos2v *= cos2v;
-        return std::sqrt(xdotMy(Eigen::Vector3d{1.0-u*u, 1.0-u*u, u*u}, Eigen::Vector3d{cos2v, 1-cos2v, 1}));
+        return std::sqrt(xdotMy(Eigen::Vector3d{1.0-u[0]*u[0], 1.0-u[0]*u[0], u[0]*u[0]}, Eigen::Vector3d{cos2v, 1-cos2v, 1}));
     };
 
-    // Gauss-Legendre integration with 3 points
-    double S = 0.0;
-    const Eigen::Array3d roots{-std::sqrt(3.0/5), 0.0, std::sqrt(3.0/5)};
-    const Eigen::Array3d weights{5.0/9, 8.0/9, 5.0/9};
-    for (Eigen::Index i = 0; i < 3; i++){
-        // Integrating over u in [0, 1]
-        double u = 0.5 * (roots[i] + 1);
-        double wu = 0.5 * weights[i];
-        for (Eigen::Index j = 0; j < 3; j++){
-            // Integrating over v in [0, PI/2]
-            double v = mconst::pi/4 * (roots[j] + 1);
-            double wv = mconst::pi/4 * weights[j];
-            S += wu * wv * norm_normal(u, v);
-        }
-    }
-    return 8*_length[0]*_length[1]*_length[2]*S;
+    GaussLegendre<2> GL(3); // Gauss-Legendre integration with 3 points
+    GaussLegendre<2>::IntegrationDomain D{0.0, 1.0, 0.0, mconst::pi/2};
+    return 8*_length[0]*_length[1]*_length[2]*GL.integrate(norm_normal, D);
 }
+
 double Ellipsoid::volume() const noexcept{ return 4.0/3*mconst::pi*_length[0]*_length[1]*_length[2]; }
 
 bool Ellipsoid::surfaceContains(const Eigen::Vector3d& p) const noexcept{
