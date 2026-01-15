@@ -7,11 +7,10 @@
 
 enum class NLStatus{ Success, InvalidArgument, SingularityError, NoConvergence };
 
-template<int N, int M = N, typename... Args>
+template<int N, int M = N,
+         typename = std::enable_if_t<(N == Eigen::Dynamic || N >= 1) && (M == Eigen::Dynamic || M >= N)>,
+         typename... Args>
 class NonlinearSolver{
-    static_assert(N == Eigen::Dynamic || N >= 1, "N must be Eigen::Dynamic or >= 1");
-    static_assert(M == Eigen::Dynamic || M >= N, "M must be Eigen::Dynamic or >= N");
-
     public:
     using DomainType = std::conditional_t<N == 1, double, Eigen::Matrix<double, N, 1>>;
     using RangeType = std::conditional_t<M == 1, double, Eigen::Matrix<double, M, 1>>;
