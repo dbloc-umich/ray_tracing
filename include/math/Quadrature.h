@@ -6,7 +6,7 @@
 #include <variant>
 #include <vector>
 
-template<int N, int M,
+template<int N = 1, int M = 1,
         typename = std::enable_if_t<(N == Eigen::Dynamic || N >= 1) && (M == Eigen::Dynamic || M >= 1)>>
 class Quadrature{
     public:

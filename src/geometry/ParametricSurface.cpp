@@ -1,5 +1,5 @@
 #include "ParametricSurface.h"
-#include "GaussLegendre.h"
+#include "GaussKronrod.h"
 #include "NewtonSolver.h"
 #include "ProjectedNewton.h"
 
@@ -137,11 +137,11 @@ void ParametricSurface::computeSurfaceArea(){
         return v.norm();
     };
     
-    // Gauss-Legendre integration with 3 points
+    // Gauss-Kronrod integration with 15 points
     double uub = _prop->_u0 + (_prop->_u1-_prop->_u0)/_prop->_uSym; // upper bound in u
     double vub = _prop->_v0 + (_prop->_v1-_prop->_v0)/_prop->_vSym; // upper bound in v
-    GaussLegendre<2> GL(5); // Gauss-Legendre integration with 5 points
-    GaussLegendre<2>::IntegrationDomain D{_prop->_u0, uub, _prop->_v0, vub};
+    GaussKronrod<2> GL(7); // Gauss-Legendre integration with 5 points
+    GaussKronrod<2>::IntegrationDomain D{_prop->_u0, uub, _prop->_v0, vub};
     _surfaceArea = GL.integrate(dS, D) * (_prop->_uSym*_prop->_vSym);
 }
 

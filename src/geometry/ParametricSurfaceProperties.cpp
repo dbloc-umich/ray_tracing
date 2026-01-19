@@ -1,5 +1,5 @@
 #include "ParametricSurfaceProperties.h"
-#include "GaussLegendre.h"
+#include "GaussKronrod.h"
 #include "ProjectedNewton.h"
 #include <algorithm>
 
@@ -121,8 +121,8 @@ void ParametricSurfaceProperties::computeSurfaceArea(){
     auto dS = [this](const Eigen::Vector2d& u){ return ru(u).cross(rv(u)).norm(); };
     double uub = _u0 + (_u1-_u0)/_uSym; // upper bound in u
     double vub = _v0 + (_v1-_v0)/_vSym; // upper bound in v
-    GaussLegendre<2> GL(5); // Gauss-Legendre integration with 5 points
-    GaussLegendre<2>::IntegrationDomain D{_u0, uub, _v0, vub};
+    GaussKronrod<2> GL(7); // Gauss-Kronrod integration with 15 points
+    GaussKronrod<2>::IntegrationDomain D{_u0, uub, _v0, vub};
     _surfaceArea = GL.integrate(dS, D) * (_uSym*_vSym);
 }
 
@@ -130,8 +130,8 @@ void ParametricSurfaceProperties::computeVolume(){
     auto dV = [this](const Eigen::Vector2d& u){ return _z(u)*(_xu(u)*_yv(u) - _yu(u)*_xv(u)); };
     double uub = _u0 + (_u1-_u0)/_uSym; // upper bound in u
     double vub = _v0 + (_v1-_v0)/_vSym; // upper bound in v
-    GaussLegendre<2> GL(5); // Gauss-Legendre integration with 5 points
-    GaussLegendre<2>::IntegrationDomain D{_u0, uub, _v0, vub};
+    GaussKronrod<2> GL(7); // Gauss-Kronrod integration with 5 points
+    GaussKronrod<2>::IntegrationDomain D{_u0, uub, _v0, vub};
     _volume = std::abs(GL.integrate(dV, D))*(_uSym*_vSym);
 };
 
