@@ -11,10 +11,6 @@ class GaussKronrodBase : public GaussLegendreBase{
     // Dummy class to store the nodes and weights
     public:
     virtual ~GaussKronrodBase() = default;
-    /**
-     * If x0 is a node then -x0 is also a node with the same weight.
-     * For even orders, the zero Gauss-Kronod node is implied and not stored explicitly. Its weight is still included.
-    **/
 
     // Weights associated with the Gauss-Legendre nodes used in Gauss-Kronrod routines.
     inline static const std::vector<Eigen::ArrayXd> _Lweights =
@@ -147,13 +143,17 @@ class GaussKronrod : public GaussianQuadrature<N, M>, GaussKronrodBase{
         double err = error(GL.integrate(f, D), sum);
 
         // Not yet converged, do adaptive quadrature
-        if (err > tol && tol > 1e-9){
+        if (err > tol){
             if constexpr (N == 1){
-                auto mid = midpoint(D[0], D[1]);
-                sum = recursiveIntegral(f, {D[0], mid}, tol/2, d) + recursiveIntegral(f, {mid, D[1]}, tol/2, d);
+                double L = std::get<double>(D[0]);
+                double U = std::get<double>(D[1]);
+                std::size_t m = std::ceil(std::pow(err/tol, 1.0/(3*this->_n+1))); // number of subintervals
+                double dx = (U-L)/m;
+                sum *= 0; // reset the accumulator
+                for (std::size_t i = 0; i < m; i++) sum += recursiveIntegral(f, {L+i*dx, L+(i+1)*dx}, tol/m, d);
             } else{
                 constexpr std::size_t dim = (N != Eigen::Dynamic) ? N : D.size();
-                std::size_t numSplits = std::ceil(std::log2(err/tol) / (3*this->_n+3)); // number of dimensions to split
+                std::size_t numSplits = std::ceil(std::log2(err/tol) / (3*this->_n+1)); // number of dimensions to split
                 if (numSplits > dim) numSplits = dim;
                 std::vector<IntegrationBound> midpoints(dim, std::numeric_limits<double>::quiet_NaN()); // stores the midpoints of the split dimensions
                 for (std::size_t ns = 0; ns < numSplits; ns++){
@@ -161,11 +161,11 @@ class GaussKronrod : public GaussianQuadrature<N, M>, GaussKronrodBase{
                     d = (d+1) % dim;
                 }
 
-                std::size_t ps = std::pow(2, numSplits);
-                std::vector<IntegrationDomain> newDomains(ps, IntegrationDomain(2*dim));
-                recursiveSplitDomain(newDomains, D, midpoints, 0, 0, ps);
+                std::size_t m = std::pow(2, numSplits); // number of subdomains
+                std::vector<IntegrationDomain> newDomains(m, IntegrationDomain(2*dim));
+                recursiveSplitDomain(newDomains, D, midpoints, 0, 0, m);
                 sum *= 0.0; // reset the accumulator
-                for (auto domain: newDomains) sum += recursiveIntegral(f, domain, tol/ps, d);
+                for (auto domain: newDomains) sum += recursiveIntegral(f, domain, tol/m, d);
             }
         }
             

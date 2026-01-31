@@ -14,10 +14,8 @@ class BroydenSolver : public BroydenSolverBase<N>{
     using typename BroydenSolverBase<N>::Function;
     using DerivativeType = Eigen::Matrix<double, N, N>&;
 
-    explicit BroydenSolver(const Function& func, bool good=true, double ftol=1.0e-6, double xtol=1.0e-6, std::size_t maxIter=20):
-        BroydenSolverBase<N>(func, ftol, xtol, maxIter),
-        _good(good)
-    {}
+    explicit BroydenSolver(const Function& func, bool, double ftol=1.0e-6, double xtol=1.0e-6, std::size_t maxIter=20):
+        BroydenSolverBase<N>(func, ftol, xtol, maxIter){}
 
     NLStatus solve(DomainType& x, DerivativeType& Jinv) const noexcept override{
         DomainType f = this->_f(x);
@@ -34,22 +32,15 @@ class BroydenSolver : public BroydenSolverBase<N>{
             if (this->inputConverged(x, dx) || this->outputConverged(f1)) return NLStatus::Success;
             
             // Update the inverse Jacobian and the function value
-            if (_good){ // "Good" Broyden method
-                double denom = dx.dot(Jinv*df);
-                if (denom == 0.0) return NLStatus::SingularityError;
-                Jinv += ((dx - Jinv*df).outer(dx) / denom) * Jinv;
-            } else{ // "Bad" Broyden method
-                double denom = df.squaredNorm();
-                if (denom == 0.0) return NLStatus::SingularityError;
-                Jinv += (dx - Jinv*df).outer(df) / denom;
-            }
-            f = f1;
+            DomainType Jinvdf = Jinv*df;
+            double denom = dx.dot(Jinvdf);
+            if (denom == 0.0) return NLStatus::SingularityError;
+            Eigen::Matrix<double, N, N> updateMatrix = (dx - Jinvdf).outer(dx) / denom;
+            for (Eigen::Index i = 0; i < dx.size(); i++) updateMatrix(i,i) += 1; 
+            Jinv = updateMatrix * Jinv;
         }
         return NLStatus::NoConvergence;
     }
-
-    protected:
-    bool _good; // whether to use "good" or "bad" Broyden method
 };
 
 #endif

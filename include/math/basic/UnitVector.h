@@ -4,12 +4,7 @@
 #include "Eigen/Dense"
 #include <cmath>
 #include <iostream>
-
-#if __cplusplus >= 201703L
 #include <type_traits>
-#else
-#include "all_convertible_to.h"
-#endif
 
 template<typename Scalar, int n>
 class UnitVector{
@@ -26,21 +21,12 @@ class UnitVector{
         }
     }
 
-#if __cplusplus >= 201703L
     template<typename First, typename... Rest,
             typename = std::enable_if_t<
                 std::is_convertible_v<Scalar, std::decay_t<First>> &&
                 (std::is_convertible_v<Scalar, std::decay_t<Rest>> && ...)
                 >
             >
-#else
-    template<typename First, typename... Rest,
-            typename = std::enable_if_t<
-                std::is_convertible<Scalar, std::decay_t<First>>::value &&
-                all_convertible_to<Scalar, std::decay_t<Rest>...>::value
-                >
-            >    
-#endif
     explicit UnitVector(First&& first, Rest&&... rest)
         : UnitVector(Eigen::Matrix<Scalar, n, 1>{static_cast<Scalar>(std::forward<First>(first)),
                                                  static_cast<Scalar>(std::forward<Rest>(rest))...})
