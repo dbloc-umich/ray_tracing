@@ -27,7 +27,7 @@ bool ParametricSurface::surfaceContains(const Eigen::Vector3d& p) const noexcept
     Eigen::Vector2d u{(_prop->_u0+_prop->_u1)/2, (_prop->_v0+_prop->_v1)/2};
     NewtonSolver<2, 3> solver(f, Jf);
     auto status = solver.solve(u);
-    switch(status){
+    switch (status){
         case (NLStatus::Success):
             return (_prop->_u0 <= u[0] && _prop->_u1 >= u[0] && _prop->_v0 <= u[1] && _prop->_v1 >= u[1]
                     && f(u).squaredNorm() <= Shape::eps * Shape::eps);

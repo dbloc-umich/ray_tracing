@@ -18,8 +18,8 @@ class ExplicitMidpoint: public ODE_IVPSolver<M>{
         Eigen::Index m;
         if constexpr(M == Eigen::Dynamic) m = ic.size();
         else m = M;
-        if (this->_u.rows() != m || this->_u.cols() != steps) return ODEStatus::InvalidArgument;
 
+        if (this->_u.rows() != m || this->_u.cols() != steps) return ODEStatus::InvalidArgument;
         this->_u.col(0) = ic; // Initialize the "state" vector
 
         // Solve
@@ -37,8 +37,8 @@ class ExplicitMidpoint: public ODE_IVPSolver<M>{
             }
 
             if (!Eigen::isfinite(this->_u.col(n)).all()){
-                this->_t = this->_t.head(n);
-                this->_u = this->_u.topLeftCorner(m,n);
+                this->_t = this->_t.head(n+1);
+                this->_u = this->_u.topLeftCorner(m,n+1);
                 return ODEStatus::FailureToSolve;
             }
         }

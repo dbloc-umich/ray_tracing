@@ -3,16 +3,22 @@
 
 #include "NonlinearSolver.h"
 
-class SecantSolver : public NonlinearSolver<1, 1, double>{
+class SecantSolver : public NonlinearSolver<1, 1>{
     public:
-    using typename NonlinearSolver<1, 1, double>::DomainType;
-    using typename NonlinearSolver<1, 1, double>::RangeType;
-    using typename NonlinearSolver<1, 1, double>::Function;
+    using typename NonlinearSolver<1, 1>::DomainType;
+    using typename NonlinearSolver<1, 1>::RangeType;
+    using typename NonlinearSolver<1, 1>::Function;
 
-    explicit SecantSolver(const Function& func, double ftol=1.0e-6, double xtol=1.0e-6, std::size_t maxIter=30):
-        NonlinearSolver<1, 1, double>(func, ftol, xtol, maxIter) {};
+    explicit SecantSolver(const Function& func, double x0, double ftol=1.0e-6, double xtol=1.0e-6, std::size_t maxIter=30):
+        NonlinearSolver<1, 1>(func, ftol, xtol, maxIter),
+        _x0(x0) // first initial guess
+    {};
     
-    NLStatus solve(DomainType& x0, double&& x1) const noexcept override{
+    NLStatus solve(DomainType& x1) const noexcept override{
+        return solve(_x0, x1);
+    }
+
+    NLStatus solve(DomainType& x0, DomainType& x1) const noexcept{
         double f0 = this->_f(x0);
         double f1 = this->_f(x1);
 
@@ -31,6 +37,9 @@ class SecantSolver : public NonlinearSolver<1, 1, double>{
         }
         return NLStatus::NoConvergence;
     }
+
+    protected:
+    mutable double _x0;
 };
 
 #endif

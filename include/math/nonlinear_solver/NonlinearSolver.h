@@ -5,19 +5,17 @@
 #include <functional>
 #include <type_traits>
 
-enum class NLStatus{ Success, InvalidArgument, SingularityError, NoConvergence };
+enum class NLStatus{ Success, MissingFunction, InvalidArgument, SingularityError, NoConvergence };
 
-template<int N, int M, typename... Args>
+template<int N, int M = N,
+         typename = std::enable_if_t<(N == Eigen::Dynamic || N >= 1) && (M == Eigen::Dynamic || M >= N)>>
 class NonlinearSolver{
-    static_assert(N == Eigen::Dynamic || N >= 1, "N must be Eigen::Dynamic or >= 1");
-    static_assert(M == Eigen::Dynamic || M >= N, "M must be Eigen::Dynamic or >= N");
-
     public:
     using DomainType = std::conditional_t<N == 1, double, Eigen::Matrix<double, N, 1>>;
     using RangeType = std::conditional_t<M == 1, double, Eigen::Matrix<double, M, 1>>;
     using Function = std::function<RangeType(const DomainType&)>;
 
-    explicit NonlinearSolver(const Function& func, double ftol=1.0e-6, double xtol=1.0e-6, std::size_t maxIter=100):
+    explicit NonlinearSolver(const Function& func=nullptr, double ftol=1.0e-6, double xtol=1.0e-6, std::size_t maxIter=100):
         _f(func),
         _ftol(ftol),
         _xtol(xtol),
@@ -25,7 +23,7 @@ class NonlinearSolver{
     {}
     virtual ~NonlinearSolver() = default;
 
-    virtual NLStatus solve(DomainType&, Args&&...) const noexcept = 0;
+    virtual NLStatus solve(DomainType&) const noexcept = 0;
     virtual void setFunction(const Function& f) const noexcept{ _f = f; }
     void setFTol(double ftol) noexcept{ _ftol = ftol; }
     void setXTol(double xtol) noexcept{ _xtol = xtol; }

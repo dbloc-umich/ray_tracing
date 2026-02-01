@@ -17,7 +17,6 @@ class ODESolver{
 
     ODESolver() = default;
     ODESolver(double t0, double t1, double dt){ makeGrid(t0, t1, dt); }
-    ODESolver(double t0, double t1, Eigen::Index steps){ makeGrid(t0, t1, steps); }
     ODESolver(const Eigen::Array2d& t){ makeGrid(t); }
     virtual ~ODESolver() = default;
 
@@ -25,16 +24,6 @@ class ODESolver{
         assert(dt != 0 && t1 != t0);
         assert((t1 > t0 && dt > 0) || (t1 < t0 && dt < 0));
         Eigen::Index steps = ceil((t1-t0)/dt);
-        _t.resize(steps);
-        _t[0] = t0;
-        _t[steps-1] = t1;
-        for (Eigen::Index i = 1; i < steps-1; i++) _t[i] = _t[i-1] + dt;
-        _u.resize(M == Eigen::Dynamic ? 1 : M, steps);
-    }
-
-    void makeGrid(double t0, double t1, Eigen::Index steps) const noexcept{
-        assert(steps > 0 && t1 != t0);
-        double dt = (t1-t0)/steps;
         _t.resize(steps+1);
         _t[0] = t0;
         _t[steps] = t1;

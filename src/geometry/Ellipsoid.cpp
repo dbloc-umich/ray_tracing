@@ -159,7 +159,7 @@ bool Ellipsoid::overlaps(const Shape& other) const noexcept{
         double lambda = 0.5;
         auto status = solver.solve(lambda);
         
-        switch(status){
+        switch (status){
             case(NLStatus::Success):
                 if (lambda > 0.0 && lambda < 1.0) return false; // root is found on (0, 1), no overlapping
                 return true; // no root found on (0, 1)

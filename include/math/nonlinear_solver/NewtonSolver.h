@@ -13,7 +13,7 @@ class NewtonSolver : public NonlinearSolver<N, M>{
     using DerivativeType = std::conditional_t<M == 1, double, Eigen::Matrix<double, M, N>>;
     using DFunction = std::function<DerivativeType(const DomainType&)>;
 
-    explicit NewtonSolver(const Function& func, const DFunction& dfunc=nullptr,
+    explicit NewtonSolver(const Function& func=nullptr, const DFunction& dfunc=nullptr,
                           double ftol=1.0e-6, double xtol=1.0e-6, std::size_t maxIter=20):
         NonlinearSolver<N, M>(func, ftol, xtol, maxIter),
         _df(dfunc)
@@ -25,6 +25,7 @@ class NewtonSolver : public NonlinearSolver<N, M>{
     }
 
     NLStatus solve(DomainType& x) const noexcept override{
+        if (!this->_f) return NLStatus::MissingFunction;
         if constexpr(N == 1){
             for (std::size_t iter = 0; iter < this->_maxIter; iter++){
                 DerivativeType dfx = _df(x);
