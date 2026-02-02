@@ -1,5 +1,5 @@
 /**
- * Solves the system of differential equations u'(t) = f(t, u)
+ * Solves the system of differential equations u'(t) = f(t, u), with initial condition u(0)
 */
 #ifndef ODE_IVP_SOLVER_H
 #define ODE_IVP_SOLVER_H

@@ -7,20 +7,16 @@
 
 enum class NLStatus{ Success, MissingFunction, InvalidArgument, SingularityError, NoConvergence };
 
-template<int N, int M = N,
-         typename = std::enable_if_t<(N == Eigen::Dynamic || N >= 1) && (M == Eigen::Dynamic || M >= N)>>
+template<int N, int M = N>
 class NonlinearSolver{
+    static_assert(N == Eigen::Dynamic || N >= 1);
+    static_assert(M == Eigen::Dynamic || M >= N);
     public:
     using DomainType = std::conditional_t<N == 1, double, Eigen::Matrix<double, N, 1>>;
     using RangeType = std::conditional_t<M == 1, double, Eigen::Matrix<double, M, 1>>;
     using Function = std::function<RangeType(const DomainType&)>;
 
-    explicit NonlinearSolver(const Function& func=nullptr, double ftol=1.0e-6, double xtol=1.0e-6, std::size_t maxIter=100):
-        _f(func),
-        _ftol(ftol),
-        _xtol(xtol),
-        _maxIter(maxIter)    
-    {}
+    explicit NonlinearSolver(const Function& func=nullptr, double ftol=1.0e-6, double xtol=1.0e-6, std::size_t maxIter=100);
     virtual ~NonlinearSolver() = default;
 
     virtual NLStatus solve(DomainType&) const noexcept = 0;
@@ -35,22 +31,9 @@ class NonlinearSolver{
     double _xtol; // Tolerance in input step size
     std::size_t _maxIter;
 
-    bool outputConverged(const RangeType& fx) const noexcept{
-        if constexpr(M == 1) return std::abs(fx) <= _ftol;
-        else return fx.squaredNorm() <= _ftol*_ftol;
-    }
-
-    bool inputConverged(const DomainType& x, const DomainType& dx) const noexcept{
-        if constexpr(N == 1){
-            if (x == 0.0) return std::abs(dx) <= _xtol;
-            return std::abs(dx/x) <= _xtol;
-        }
-        else{
-            if (x.squaredNorm() == 0.0) return dx.squaredNorm() <= _xtol*_xtol;
-            Eigen::Matrix<double, N, 1> delta(dx);
-            for (Eigen::Index i = 0; i < x.size(); i++) delta[i] /= (x[i] == 0.0 ? 1 : x[i]);
-            return delta.squaredNorm() <= _xtol*_xtol;
-        }
-    }
+    bool outputConverged(const RangeType& fx) const noexcept;
+    bool inputConverged(const DomainType& x, const DomainType& dx) const noexcept;
 };
+
+#include "NonlinearSolver.tpp"
 #endif
