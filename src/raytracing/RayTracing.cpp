@@ -16,7 +16,7 @@ namespace{
     static std::uniform_real_distribution<double> dist(0.0, 1.0);
     
     template<typename T>
-    Shape* attenuate(const Tree<T>& tree, Ray& ray, double& s){
+    Shape* attenuate(const Tree<T>& tree, Ray& ray, double temp, double& s){
         // A single attenuation event, update the position and intensity of the current ray
         // Returns the next host and update the distance to that host
 
@@ -36,11 +36,15 @@ namespace{
             auto nextPosition = ray.position() += ray.direction().value()*s;
             ray.setPoistion(nextPosition);
             if (ray.host() == next){
+                Material::PropVars varmap{
+                    {PropVariable::temperature, temp},
+                    {PropVariable::wavelength, ray.wavelength()}
+                };
                 double alpha = 0.0;
                 if (next->hasProperty(Prop::attenuationCoefficient)){
-                    alpha = next->computeProperty(Prop::attenuationCoefficient, {ray.wavelength()});
+                    alpha = next->computeProperty(Prop::attenuationCoefficient, varmap);
                 } else if (next->hasProperty(Prop::extinctionCoefficient)){
-                    alpha = next->computeProperty(Prop::extinctionCoefficient, {ray.wavelength()});
+                    alpha = next->computeProperty(Prop::extinctionCoefficient, varmap);
                     alpha *= 2.0 * ray.frequency() / pconst::c;
                 }
                 ray.setIntensity(ray.intensity()*exp(-alpha*s)); // moving within a Shape, implicit absorption;
@@ -50,7 +54,7 @@ namespace{
     }
 
     template<typename T>
-    std::vector<Ray> penetrate(const Tree<T>& tree, Ray& ray, Shape* next, double s, const HopMode& mode){
+    std::vector<Ray> penetrate(const Tree<T>& tree, Ray& ray, double temp, Shape* next, double s, const HopMode& mode){
         /**
          * A single penetration event at the interface between two medium
          * If an empty vector is returned, the ray only takes the one path updated in ray
@@ -59,22 +63,26 @@ namespace{
         **/
 
         double n1, n2;
+        Material::PropVars varmap{
+            {PropVariable::temperature, temp},
+            {PropVariable::wavelength, ray.wavelength()}
+        }; 
         if (!ray.host()){ // current points to empty space
             n1 = 1.0;
-            n2 = next->computeProperty(Prop::refractiveIndex, {ray.wavelength()});
+            n2 = next->computeProperty(Prop::refractiveIndex, varmap);
         } else if (s == 0.0){
             // particle enters directly from current to next
-            n1 = ray.host()->computeProperty(Prop::refractiveIndex, {ray.wavelength()});
-            n2 = next->computeProperty(Prop::refractiveIndex, {ray.wavelength()});
+            n1 = ray.host()->computeProperty(Prop::refractiveIndex, varmap);
+            n2 = next->computeProperty(Prop::refractiveIndex, varmap);
         } else if (ray.host() != next){
             // particle travels from one Node to another with vacuum in between them
             n1 = 1.0;
-            n2 = next->computeProperty(Prop::refractiveIndex, {ray.wavelength()});
+            n2 = next->computeProperty(Prop::refractiveIndex, varmap);
         } else{
             // particle travels within the same Node
-            n1 = ray.host()->computeProperty(Prop::refractiveIndex, {ray.wavelength()});
+            n1 = ray.host()->computeProperty(Prop::refractiveIndex, varmap);
             auto pseudoNext = tree.nextShape(ray, s);
-            n2 = (s == 0) ? pseudoNext->computeProperty(Prop::refractiveIndex, {ray.wavelength()}) : 1.0;
+            n2 = (s == 0) ? pseudoNext->computeProperty(Prop::refractiveIndex, varmap) : 1.0;
         }
 
         auto normal = next->normal(ray.position());
@@ -107,22 +115,22 @@ namespace{
 }
 
 template<typename T>
-double intensity(const Tree<T>& tree, Ray& ray, const HopMode& mode) noexcept{
+double intensity(const Tree<T>& tree, Ray& ray, double temp, const HopMode& mode) noexcept{
     if (!tree) return ray.intensity();
     if (ray.intensity() == 0.0) return 0.0;
     
     double I0 = ray.intensity();
     if (mode != HopMode::Detailed){
         double s;
-        Shape* next = attenuate(tree, ray, s);
+        Shape* next = attenuate(tree, ray, temp, s);
         while(next){
             if (ray.intensity() < IThreshold*I0){
                 if (dist(rng) < ray.intensity()/I0) ray.setIntensity(IThreshold*I0);
                 else return 0.0;
             }
-            if (mode == HopMode::Roulette) penetrate(tree, ray, next, s, mode);
+            if (mode == HopMode::Roulette) penetrate(tree, ray, temp, next, s, mode);
             ray.setHost(next);
-            next = attenuate(tree, ray, s);
+            next = attenuate(tree, ray, temp, s);
         }
         return ray.intensity();
     }
@@ -140,10 +148,10 @@ double intensity(const Tree<T>& tree, Ray& ray, const HopMode& mode) noexcept{
         }
 
         double s; // placeholder
-        Shape* next = attenuate(tree, ray, s);
+        Shape* next = attenuate(tree, ray, temp, s);
         if (!next) sum += ray.intensity();
         else{
-            auto ray2 = penetrate(tree, ray, next, s, mode);
+            auto ray2 = penetrate(tree, ray, temp, next, s, mode);
             ray.setHost(next);
             stack.push(std::move(ray));
             if (!ray2.empty()){
@@ -157,7 +165,7 @@ double intensity(const Tree<T>& tree, Ray& ray, const HopMode& mode) noexcept{
 
 // Explicit instantiations
 #include "Node.h"
-template double intensity(const Tree<Node>&, Ray&, const HopMode&);
+template double intensity(const Tree<Node>&, Ray&, double, const HopMode&);
 
 #include "UNode.h"
-template double intensity(const Tree<UNode>&, Ray&, const HopMode&);
+template double intensity(const Tree<UNode>&, Ray&, double, const HopMode&);

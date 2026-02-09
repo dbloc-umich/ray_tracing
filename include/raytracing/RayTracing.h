@@ -16,6 +16,6 @@ template<typename T> class Tree;
 enum class HopMode{ Streamline, Roulette, Detailed };
 
 template<typename T>
-double intensity (const Tree<T>& tree, Ray& ray, const HopMode& mode = HopMode::Roulette) noexcept;
+double intensity (const Tree<T>& tree, Ray& ray, double temp=300, const HopMode& mode = HopMode::Roulette) noexcept;
 
 #endif

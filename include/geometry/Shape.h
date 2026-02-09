@@ -1,12 +1,14 @@
 #ifndef SHAPE_H
 #define SHAPE_H
 
+#include <map>
 #include <memory>
 #include <vector>
 #include "UnitVector.h"
 
 class Material;
 enum class Prop;
+enum class PropVariable;
 
 class Shape{
     public:
@@ -38,7 +40,7 @@ class Shape{
     friend std::ostream& operator<<(std::ostream& os, const Shape& shape);
 
     bool hasProperty(const Prop&) const noexcept;
-    double computeProperty(const Prop&, const std::vector<double>& vars={}) const;
+    double computeProperty(const Prop&, const std::map<PropVariable, double>& vars={}) const;
 
     protected:
     std::shared_ptr<Material> _mat;

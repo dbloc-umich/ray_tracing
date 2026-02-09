@@ -16,7 +16,7 @@ bool Shape::hasProperty(const Prop& name) const noexcept{
     return _mat->hasProperty(name);
 }
 
-double Shape::computeProperty(const Prop& name, const std::vector<double>& vars) const{
+double Shape::computeProperty(const Prop& name, const Material::PropVars& vars) const{
     return _mat->computeProperty(name, vars);
 }
 

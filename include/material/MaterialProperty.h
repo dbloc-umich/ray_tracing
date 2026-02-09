@@ -1,18 +1,24 @@
 #ifndef MATERIAL_PROPERTY_H
 #define MATERIAL_PROPERTY_H
 
-#include <vector>
+#include <map>
 
+class Material;
+enum class PropVariable;
 class MaterialProperty{
     public:
     MaterialProperty() {};
     MaterialProperty(const MaterialProperty&) = delete;
-    MaterialProperty(MaterialProperty&&) = default;
+    MaterialProperty(MaterialProperty&&){};
     virtual ~MaterialProperty() = default;
     MaterialProperty& operator=(const MaterialProperty&) = delete;
-    MaterialProperty& operator=(MaterialProperty&&) = default;
+    MaterialProperty& operator=(MaterialProperty&&){ return *this; }
 
-    virtual double compute(const std::vector<double>& = {}) const = 0;
+    void setMaterial(const Material* mat) noexcept{ _mat = mat; }
+    virtual double compute(const std::map<PropVariable, double>& = {}) const = 0;
+
+    protected:
+    const Material* _mat; // pointer to a const "parent" Material object
 };
 
 #endif
