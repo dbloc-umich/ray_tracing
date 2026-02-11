@@ -5,9 +5,16 @@
 
 #include "FVResidual.h"
 
+class FVBoundaryCondition;
 class FVDiffusion: public FVResidual{
     public:
-    FVDiffusion(std::shared_ptr<Material> mat, PropVariable var): FVResidual(mat, var) {}
-    FVStateMesh computeResidual(const FVStateMesh& u) const override;
+    FVDiffusion(const std::vector<std::shared_ptr<FVBoundaryCondition>>&,
+                std::shared_ptr<Material> mat, PropVariable var, Prop prop=Prop::none);
+    Eigen::ArrayXd computeResidual(const FVStateMesh& u) const override;
+
+    protected:
+    std::vector<std::shared_ptr<FVBoundaryCondition>> _bc;
+    Prop _prop; // diffusion coefficient
+    std::vector<bool> _periodic;
 };
 #endif

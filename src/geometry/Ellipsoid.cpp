@@ -283,7 +283,7 @@ double Ellipsoid::distanceToSurface(const Eigen::Vector3d& p, const UnitVector3d
 
     double discr = B*B - A*C;
     if (discr < 0) return NAN; // particle is outside and will never enters the Ellipsoid
-    double sp, sm; // two roots of the solutions
+    double sp, sm; // two roots of the quadratic equation
     if (B < 0){
         sp = (-B + std::sqrt(discr))/A;
         sm = C/A/sp; 

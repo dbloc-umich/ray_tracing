@@ -85,7 +85,7 @@ double Sphere::distanceToSurface(const Eigen::Vector3d& p, const UnitVector3d& d
     
     double discr = B*B - C;
     if (discr < 0) return NAN; // particle is outside and will never enters the Sphere
-    double sp, sm; // two roots of the solutions
+    double sp, sm; // two roots of the quadratic equation
     if (B < 0){
         sp = -B + std::sqrt(discr);
         sm = C/sp; 

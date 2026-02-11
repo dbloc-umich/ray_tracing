@@ -8,7 +8,7 @@ class Shape;
 class FVLaserSource: public FVResidual{
     public:
     FVLaserSource(std::shared_ptr<Material> mat, Ray& ray, Shape* shape);
-    FVStateMesh computeResidual(const FVStateMesh& u) const override;
+    Eigen::ArrayXd computeResidual(const FVStateMesh& u) const override;
 
     protected:
     Ray& _ray;
