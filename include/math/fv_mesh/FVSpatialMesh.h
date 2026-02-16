@@ -10,6 +10,7 @@ class FVSpatialMesh{
     FVSpatialMesh(const std::array<Eigen::ArrayXd, 3>& axes);
     virtual ~FVSpatialMesh() = default;
 
+    Eigen::ArrayXd& axis(Eigen::Index varID) noexcept{ return _axes[varID]; }
     const Eigen::ArrayXd& axis(Eigen::Index varID) const noexcept{ return _axes[varID]; }
     Eigen::Index axisSize(Eigen::Index varID) const noexcept{ return _axes[varID].size(); }
 

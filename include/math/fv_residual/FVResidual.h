@@ -12,7 +12,7 @@ class FVResidual{
     public:
     FVResidual(std::shared_ptr<Material> mat, PropVariable var): _mat(mat), _var(var) {}
     virtual ~FVResidual() = default;
-    virtual Eigen::ArrayXd computeResidual(const FVStateMesh& u) const = 0;
+    virtual Eigen::VectorXd computeResidual(const FVStateMesh& u) const = 0;
 
     protected:
     std::shared_ptr<Material> _mat;

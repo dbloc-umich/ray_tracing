@@ -10,9 +10,9 @@
 enum class IVPStatus{ Success, InvalidArgument, FailureToSolve };
 class FVTimeIntegrator{
     public:
-    using Function = std::function<Eigen::ArrayXd(double, const Eigen::ArrayXd&)>;
+    using Function = std::function<Eigen::VectorXd(double, const Eigen::VectorXd&)>;
     virtual ~FVTimeIntegrator() = default;
-    virtual IVPStatus integrate(const Function& f, Eigen::ArrayXd& ic, double t, double dt) const noexcept = 0;
+    virtual IVPStatus integrate(const Function& f, Eigen::VectorXd& ic, double t, double dt) const noexcept = 0;
 };
 
 #endif

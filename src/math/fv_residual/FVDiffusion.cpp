@@ -19,8 +19,8 @@ FVDiffusion::FVDiffusion(const std::vector<std::shared_ptr<FVBoundaryCondition>>
     }
 }
 
-Eigen::ArrayXd FVDiffusion::computeResidual(const FVStateMesh& u) const{
-    auto mesh = u.meshPtr();
+Eigen::VectorXd FVDiffusion::computeResidual(const FVStateMesh& u) const{
+    auto mesh = u.mesh();
     Eigen::Index Nx = mesh->axisSize(0)-1; // number of cells on the 1st axis
     Eigen::Index Ny = mesh->axisSize(1)-1; // number of cells on the 2nd axis
     Eigen::Index Nz = mesh->axisSize(2)-1; // number of cells on the 3rd axis
@@ -117,5 +117,5 @@ Eigen::ArrayXd FVDiffusion::computeResidual(const FVStateMesh& u) const{
         }
     }
 
-    return F.array();
+    return F.matrix();
 }

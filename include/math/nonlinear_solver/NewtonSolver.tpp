@@ -1,6 +1,5 @@
 #include "NewtonSolver.h"
 #include "Derivative.h"
-#include <iostream>
 
 template<int N, int M>
 NewtonSolver<N, M>::NewtonSolver(const Function& func, const DFunction& dfunc,
@@ -41,9 +40,6 @@ NLStatus NewtonSolver<N, M>::solve(DomainType& x) const noexcept{
             auto dx = qr.solve(fx);
             x -= dx;
             fx = this->_f(x);
-            std::cout << "Iter: " << iter << std::endl;
-            std::cout << "x = " << x.transpose() << std::endl;
-            std::cout << "f(x) = " << fx.transpose() << std::endl;
             if (this->inputConverged(x, dx) || this->outputConverged(fx)) return NLStatus::Success;
             Jx = _df(x);
         }

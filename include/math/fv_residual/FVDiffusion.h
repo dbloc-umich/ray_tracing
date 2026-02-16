@@ -10,7 +10,7 @@ class FVDiffusion: public FVResidual{
     public:
     FVDiffusion(const std::vector<std::shared_ptr<FVBoundaryCondition>>&,
                 std::shared_ptr<Material> mat, PropVariable var, Prop prop=Prop::none);
-    Eigen::ArrayXd computeResidual(const FVStateMesh& u) const override;
+    Eigen::VectorXd computeResidual(const FVStateMesh& u) const override;
 
     protected:
     std::vector<std::shared_ptr<FVBoundaryCondition>> _bc;

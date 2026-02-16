@@ -5,7 +5,7 @@
 
 class FVExplicitMidpoint: public FVTimeIntegrator{
     public:
-    IVPStatus integrate(const Function& f, Eigen::ArrayXd& ic, double t, double dt) const noexcept override;
+    IVPStatus integrate(const Function& f, Eigen::VectorXd& ic, double t, double dt) const noexcept override;
 };
 
 #endif
