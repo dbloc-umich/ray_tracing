@@ -1,5 +1,5 @@
 #include "FVDiffusion.h"
-#include "FVBoundaryCondition.h"
+#include "FVPeriodicBC.h"
 #include "FVSpatialMesh.h"
 #include "FVStateMesh.h"
 
@@ -11,8 +11,8 @@ FVDiffusion::FVDiffusion(const std::vector<std::shared_ptr<FVBoundaryCondition>>
     assert(_bc.size() == 6);
     assert(var == PropVariable::temperature || var == PropVariable::velocity);
     for (std::size_t i = 0; i < 3; i++){
-        FVBoundaryCondition* pL = dynamic_cast<FVBoundaryCondition*>(_bc[2*i].get());
-        FVBoundaryCondition* pU = dynamic_cast<FVBoundaryCondition*>(_bc[2*i+1].get());
+        auto pL = dynamic_cast<FVPeriodicBC*>(_bc[2*i].get());
+        auto pU = dynamic_cast<FVPeriodicBC*>(_bc[2*i+1].get());
         if (pL && pU) _periodic.push_back(true);
         else if (!pL && !pU) _periodic.push_back(false);
         else throw std::invalid_argument("ERROR: The two boundaries of a variable have to be either both periodic or both non-periodic.");
