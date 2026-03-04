@@ -71,3 +71,5 @@ double WaterMaterial::computeProperty(Prop name, const PropVars& vars) const{
             return Material::computeProperty(name, vars);
     }
 }
+
+double WaterMaterial::T_from_H(double H) const{ return _eos->T(H); }

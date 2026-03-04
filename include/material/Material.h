@@ -20,7 +20,12 @@ enum class Prop{none,
                 viscosity
                 };
 
-enum class PropVariable{concentration, pressure, temperature, velocity, wavelength};
+enum class PropVariable{concentration,
+                        density,
+                        pressure,
+                        temperature,
+                        velocity,
+                        wavelength};
 
 class Material{
     public:
@@ -34,7 +39,7 @@ class Material{
     Material& operator=(Material&&);
     // the unique_ptr does not have access to a default deleter of an incomplete class yet,
     // so any automatically generated functions cannot be defined until the class is complete.
-    
+
     bool hasProperty(Prop name) const noexcept;
 
     void addProperty(Prop name) const;
@@ -49,17 +54,8 @@ class Material{
     void removeProperty(Prop name) noexcept;
     virtual double computeProperty(Prop name, const PropVars& vars = {}) const;
 
-    // // Functions from eos
-    // double rho(double P, double T) const noexcept; // density
-    // double drho_dP(double P, double T) const noexcept; // pressure-derivative of density
-    // double drho_dT(double P, double T) const noexcept; // temperature-derivative of density
-    // double beta(double P, double T) const noexcept; // thermal expansion coefficient
-    // double Cp(double P, double T) const noexcept; // specific heat capacity at constant pressure
-    // double dCp_dT(double P, double T) const noexcept; // temperature-derivative of heat capacity
-    // double k(double P, double T) const noexcept; // thermal conductivity
-    // double mu(double P, double T) const noexcept; // dynamic viscosity
-    // double Pr(double P, double T) const noexcept; // Prandt number
-    // double H(double P, double T) const noexcept; // specific enthalpy
+    // Functions from eos
+    virtual double T_from_H(double H) const = 0;
 
     protected:
     mutable std::map<Prop, std::unique_ptr<MaterialProperty>> _props;

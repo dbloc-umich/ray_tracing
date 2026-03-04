@@ -16,6 +16,7 @@ class EquationOfState{
     virtual double mu(double P, double T) const noexcept = 0; // dynamic viscosity
     virtual double Pr(double P, double T) const noexcept{ return Cp(P,T)/(mu(P,T)*k(P,T)); } // Prandt number
     virtual double H(double P, double T) const noexcept = 0; // specific enthalpy
+    virtual double T(double H) const noexcept = 0; // temperature from enthalpy
 };
 
 #endif
