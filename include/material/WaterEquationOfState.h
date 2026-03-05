@@ -5,6 +5,7 @@
 
 class WaterEquationOfState: public EquationOfState{
     public:
+    double M() const noexcept override{ return 0.018; } // molecular mass
     double rho(double P, double T) const noexcept override; // density
     double drho_dP(double P, double T) const noexcept override; // pressure-derivative of density
     double drho_dT(double P, double T) const noexcept override; // temperature-derivative of density

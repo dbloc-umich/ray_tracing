@@ -1,5 +1,5 @@
-#ifndef CONSTANTS
-#define CONSTANTS
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
 
 namespace mconst{
     // Mathematical constants
@@ -14,6 +14,7 @@ namespace pconst{
     constexpr double k_B = 1.380649e-23; // Boltzmann constant [J/kg]
     constexpr double m_e = 9.10938371393e-31; // Electron mass [kg]
     constexpr double m_n = 1.67492750056e-27; // Neutron mass [kg]
+    constexpr double N_A = 6.0221408e+23; // Avogadro's number [mol-1]
     constexpr double R = 8.31446261815324; // Universal gas constant [J/mol K]
 }
 

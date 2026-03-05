@@ -46,6 +46,10 @@ double WaterMaterial::computeProperty(Prop name, const PropVars& vars) const{
             return _eos->Cp(P,T);
         case Prop::heatCapacityTemperatureDerivative:
             return _eos->dCp_dT(P,T);
+        case Prop::numberDensity:
+            return _eos->rho(P,T) / _eos->M() * pconst::N_A;
+        case Prop::photoionizationCrossSection:
+            return 6.30e+6; // in barns 
         case Prop::refractiveIndex: {
             double T_bar = T/273.15;
             double rho_bar = _eos->rho(P,T) / 1000;

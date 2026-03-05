@@ -6,6 +6,7 @@ class EquationOfState{
     virtual ~EquationOfState() = default;
 
     // Required fluid properties
+    virtual double M() const noexcept = 0; // molecular mass
     virtual double rho(double P, double T) const noexcept = 0; // density
     virtual double drho_dP(double P, double T) const noexcept = 0; // pressure-derivative of density
     virtual double drho_dT(double P, double T) const noexcept = 0; // temperature-derivative of density

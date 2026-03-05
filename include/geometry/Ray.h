@@ -27,7 +27,7 @@ class Ray{
     protected:
     Eigen::Vector3d _p;
     UnitVector3d _dir;
-    double _I;
+    double _I; // intensity [W/m2]
     double _lambda; // vacuum wavelength, [m]
     Shape* _host;
 };
