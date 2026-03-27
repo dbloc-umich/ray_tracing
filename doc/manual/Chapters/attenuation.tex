@@ -1,0 +1,69 @@
+Light is a manifestation of travelling electric and magnetic field. The two fields oscillate perpendicular to each other and to the direction at which light travels. They both have
+wavenumber $k$ and frequency $\omega$. Let $x$ be the direction of propogation of the eletric field, the field can be expressed as
+\begin{equation}
+    \mathbf{E}(x,t) = \mathbf{E}_0 \Re \left[ {e^{i (kx - \omega t)}} \right]
+    \label{eqn:E_field}
+\end{equation}
+
+To be precise, the term "wavenumber" refers to the angular wavenumber and is defined as the number of radians per unit length. In a vacuum with no attenuation, it is related to the phase velocity $v_p$ as
+\begin{equation}
+    k = \frac{\omega}{v_p}.
+\end{equation}
+
+Since the phase velocity is a fraction $n$ lower than the speed of light in vacuum $c$, the relation between wavenumber and refractive index is
+\begin{equation}
+    k = \frac{\omega n}{c}
+\end{equation}
+
+In an unattenuated medium, $k$ is a real number, and the variable $n$ is known as the refractive index. This only holds in vacuum; in any other material, $k$ is a complex number, with its imaginary part accounting
+for the extent of attenuation. $n$ therefore must also be a complex number. From now on, the variable $n$ refers the real part of $n + i\kappa$, and the imaginary part $\kappa$ is called the extinction coefficient.
+In other words,
+\begin{equation}
+    k = \frac{\omega}{c} (n+i\kappa)
+\end{equation}
+
+To show that attenuation is accounted for by the imaginary component, Equation \ref{eqn:E_field} can be expanded as
+\begin{align*}
+    \mathbf{E}(x,t) &= \mathbf{E}_0 \Re \left[ \exp \left[-\frac{\omega}{c}\kappa x + i\left(\frac{\omega}{c}nx - \omega t \right) \right] \right] \\
+    &= \mathbf{E}_0 \exp \left(-\frac{\omega}{c}\kappa x\right) \cos\left( \frac{\omega}{c}nx - \omega t \right) \numberthis
+\end{align*}
+
+Here, the electric field strength falls off exponentially with distance travelled, and the decay extent is characterized by the extinction coefficient. This resembles the linear
+attenuation of light intensity
+\begin{equation}
+    I(x) = I_0 e^{-\sigma x},
+\end{equation}
+and the two equations are in fact related. Since the medium of interest is non-magnetic, $\mathbf{B} \approx \mu\mathbf{H}$, and the magnetic permeability $\mu$ can be readily approximated
+as its vacuum value $\mu_0 = 4\pi \times 10^{-7}$ H/m. The Poynting vector, defined as
+\begin{equation}
+    \mathbf{S} \equiv \mathbf{E} \times \mathbf{H},
+\end{equation}
+can be written in terms of the $\mathbf{B}$ field:
+\begin{equation}
+    \mathbf{S} = \frac{1}{\mu} \mathbf{E} \times \mathbf{B}.
+\end{equation}
+
+Thanks to Maxwell's Equations, the $\mathbf{E}$ and $\mathbf{B}$ are in phase in both spatial and temporal domains. In terms of magnitude, the two fields are proportional by a factor of
+$c/n$, or the wave speed. As a result,
+\begin{align}
+    \mathbf{S}(x,t) = \frac{n}{\mu c} \Vert \mathbf{E}_0 \Vert^2 \exp \left(-\frac{2\omega}{c}\kappa x \right) \cos^2\left(\frac{\omega}{c}nx - \omega t \right) \mathbf{\hat{x}}.
+\end{align}
+
+The light intensity is defined as the time-averaged magnitude of the Poynting vector:
+\begin{align}
+    I(x) &= \langle \Vert \mathbf{S}(x,t) \Vert \rangle \\
+    &= \frac{n}{\mu c} \Vert \mathbf{E}_0 \Vert^2 \exp \left[-\frac{2\omega}{c}\kappa x \right] \cdot \frac{1}{T} \int_{0}^{T} \cos^2\left(\frac{\omega}{c}nx - \omega t \right) dt.
+    \label{eqn:intensity_calc}
+\end{align}
+
+Assume the integrating time $T$ is much larger than the wave period - i.e. $\displaystyle T \gg \frac{2\pi}{\omega}$, then the averaging integral in Equation \ref{eqn:intensity_calc} will
+approach the average value over one single period, which is $\displaystyle \frac{1}{2}$. Therefore,
+
+\begin{equation}
+    I(x) = \frac{n}{2\mu c} \Vert \mathbf{E}_0 \Vert^2 \exp \left[-\frac{2\omega}{c}\kappa x \right].
+\end{equation}
+
+The relation between the attenuation coefficient $\sigma$ and the extinction coefficient $\kappa$ is then
+\begin{equation}
+    \boxed{ \sigma = \frac{2\omega \kappa}{c} }.
+\end{equation}

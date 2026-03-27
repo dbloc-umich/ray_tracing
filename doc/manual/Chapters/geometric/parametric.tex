@@ -1,0 +1,119 @@
+A parametric surface is described by a function $\bm{r}(u,v): \mathbb{R}^2 \rightarrow \mathbb{R}^3 = x(u,v)\bm{\hat{\imath}} + y(u,v)\bm{\hat{\jmath}} + z(u,v)\bm{\hat{k}}$, defined over $u \in [u_0, u_1]$ and $v \in [v_0, v_1]$.
+It is assumed that $\bm{r}(u,v)$ is of class $C^2$, so the partial derivatives $\displaystyle \bm{r}_u = \frac{\partial r}{\partial u}$, $\displaystyle \bm{r}_v = \frac{\partial r}{\partial v}$,
+$\bm{H}_x = \nabla \otimes \nabla x$, $\bm{H}_y = \nabla \otimes \nabla y$, and $\bm{H}_z = \nabla \otimes \nabla z$ exist. They can be provided by the user or calculated numerically.
+
+Because of the extensive use of derivative and integral operators, repeatedly calculating some properties of similar shapes can be expensive. All parametric surfaces have shared pointer to a common base shape
+$\bm{r}(u,v)$, provided that they are defined by a set related parametric equations $\bm{r}'(u,v) = \bm{M}\bm{r}(u,v) + \bm{r}_0$, where $\bm{M}$ is an invertible linear transformation matrix in $\mathbb{R}^{3\times3}$,
+and $\bm{r}_0$ is a translation vector.
+
+\subsection{Extreme points}
+Determining the extreme points in any Cartesian direction is a constrained optimization problem, since they must occur at either at the boundary or a critical point within. Take the x-coordinate of a base parametric
+surface for example, this involves locating the global minimum of $x(u,v)$ on the box interval $[u_0, u_1] \times [v_0, v_1]$.
+
+Because of the low dimensionality of the functions (2), computing the Hessian (of $x(u,v)$, for example) is cheap. The method of choice is the projected Newton's method. Similar to the Levenberg–Marquardt least-square
+algorithm, an addition of $\alpha \bm{I}$ (for an $\alpha \geq 0$) to the Hessian may be needed to ensure that it is positive definite. At every iteration, a backtracking line search along the search direction
+$(\bm{H} + \alpha\bm{I})^{-1} \nabla x$ is needed to ensure that the solution stays constrained while satisfying the Armijo condition.
+
+For a transformed shape, the x-component and its derivative functions are given as
+\begin{align}
+    x'(u,v) &= \bm{M}_0\bm{r}(u,v) + x_0 \\
+    \left(\nabla x'\right)^T &= \bm{M}_0
+    \begin{bmatrix}
+        \bm{r}_u & \bm{r}_v
+    \end{bmatrix}
+    \\
+    \bm{H}_{x'} &= M_{00}\bm{H}_x + M_{01}\bm{H}_y + M_{02}\bm{H}_z
+\end{align}
+where $\bm{M}_0$ is the row vector corresponding to the first row of $\bm{M}$.
+
+If $\bm{M}$ is a scaling matrix that scales the x-coordinate by a scalar $k_x$, then the extrema points of $x'$ are $x'_{\text{min}} = k_x x_{\text{min}} + x_0$ and $x'_{\text{max}} = k_x x_{\text{max}} + x_0$.
+
+Similar procedures can be followed for the y and z coordinates.
+
+\subsection{Surface area}
+The surface area of a base parametric surface is
+\begin{equation}
+    S = \int_{v_0}^{v_1} \int_{u_0}^{u_1} \Vert \bm{r}_u \times \bm{r}_v \Vert du dv.
+    \label{eqn:base_parametric_surface_area}
+\end{equation}
+
+Rotation and reflection do not alter the surface area. Uniform scaling by a scalar $K$ scales the surface area by $K^2$. Any other transformation will require a re-evaluation of the integral in Equation 
+\ref{eqn:base_parametric_surface_area} as
+\begin{equation}
+    S = \int_{v_0}^{v_1} \int_{u_0}^{u_1} \Vert \bm{M}\bm{r}_u \times \bm{M}\bm{r}_v \Vert du dv.
+\end{equation}
+
+\subsection{Volume}
+The volume is only defined for a closed surface, since we can take advantage of the Divergence Theorem
+\begin{equation}
+    \iiint_\Gamma \left( \nabla \cdot \bm{F} \right) dV = \oiint_{\partial\Gamma} \bm{F} \cdot d\bm{S}.
+\end{equation}
+
+Rather than integrating over a volume, the better alternative is to find an $\bm{F}$ such that $\nabla \cdot \bm{F} = 1$ and integrate it over the surface. From Equation \ref{eqn:base_parametric_surface_area},
+if we follow the convention
+\begin{equation}
+    S = \oiint_{\partial \Gamma} dS = \oiint_{\partial \Gamma} \bm{\hat{n}} \cdot d\bm{S},
+\end{equation}
+the unit normal vector $\bm{\hat{n}}$ and the differential surface area $d\bm{S}$ can be defined as
+\begin{align}
+    \bm{\hat{n}} &\equiv \frac{\bm{r}_u \times \bm{r}_v}{\Vert \bm{r}_u \times \bm{r}_v \Vert} \label{eqn:n_parametric} \\
+    d\bm{S} &\equiv \left( \bm{r}_u \times \bm{r}_v \right) dudv. \label{eqn:dS_parametric}
+\end{align}
+
+The last task to to find a function $\bm{F}$ such that $\nabla \cdot \bm{F} = 1$. The most obvious candidates are $\bm{F} = x \bm{\hat{\imath}}$, $\bm{F} = y \bm{\hat{\jmath}}$, and $\bm{F} = z \bm{\hat{k}}$.
+Choosing the last candidate, the expression for the volume is:
+\begin{align*}
+    V &= \int_{v_0}^{v_1} \int_{u_0}^{u_1} z \hat{k} \cdot \left( \bm{r}_u \times \bm{r}_v \right) dudv \\
+    &= \int_{v_0}^{v_1} \int_{u_0}^{u_1} z \left( \frac{\partial x}{\partial u}\frac{\partial y}{\partial v} - \frac{\partial x}{\partial v}\frac{\partial y}{\partial u} \right) dudv. \numberthis
+    \label{eqn:V_parametric}
+\end{align*}
+
+The volume of a transformed shape is that of the base shape scaled by $\lvert \det \bm{M} \rvert$.
+
+\subsection{Checking if a point on the surface}
+A point $\bm{p}$ is on the parametric surface $\bm{r}(u,v)$ (regardless of if it's a base or transformed surface) if there exists a pair $(u,v)$ that satisfies the system of equation
+\begin{equation}
+    \bm{p} - \bm{r}(u,v) = \bm{0}.
+    \label{eqn:point_on_parametric_surface}
+\end{equation}
+
+This is a non-linear least square problem, since the system has 3 equations but only 2 unknowns. Given the least-square solution $(u^*, v^*)$ to Equation \ref{eqn:point_on_parametric_surface}, then $\bm{p}$ is on
+the parametric surface if
+\begin{equation}
+    \Vert \bm{p} - \bm{r}(u^*,v^*) \Vert = 0.
+\end{equation}
+In other words, $(u^*, v^*)$ has to satisfy Equation \ref{eqn:point_on_parametric_surface} exactly (or within a numerical tolerance) rather than merely minimizing the residual.
+
+\subsection{Checking if a point is inside}
+The concept of "inside" (and by extension "outside") is only well-defined if the surface is closed. For simplicity, the surface is assumed convex. A point $\bm{p}$ is inside the volume enclosed by the parametric
+surface if regardless of the direction at which it travels, there is a positive distance to the surface. This problem reduces to two distance calculation problems, one with a direction $\bm{\hat{\omega}}$ and the
+other with $-\bm{\hat{\omega}}$, and checking whether both distances are positive. The choice of $\bm{\hat{\omega}}$ is arbitrary. Refer to section \ref{sect:distance_to_parametric_surface} for the actual distance
+calculation.
+
+\subsection{Checking if another volume overlaps}
+\subsection{Distance to surface}
+\label{sect:distance_to_parametric_surface}
+Given a point $\bm{p}$ travelling at direction $\bm{\hat{\omega}}$, the distance $s$ to surface of the sphere satisfies the equation
+$$
+    \bm{p} + \bm{\hat{\omega}}s = \bm{M}\bm{r}(u,v) + \bm{r}_0.
+$$
+
+This can be arranged into an objective function of three variables:
+\begin{equation}
+    \bm{F}(u,v,s) = \bm{p}_0 + \bm{\hat{\omega}}s - \bm{M}\bm{r}(u,v) - \bm{r}_0,
+\end{equation}
+and the goal is to solve for the solution vector $\bm{s} = [u, v, s]^T$ such that $\bm{F}(\bm{s}) = \bm{0}$.
+
+Since the Jacobian of $\bm{F}$ is known
+\begin{equation}
+    \bm{J} =
+    \begin{bmatrix}
+        -\bm{M}\bm{r}_u & -\bm{M}\bm{r}_v & \bm{\hat{\omega}}
+    \end{bmatrix},
+\end{equation}
+Newton's method can be used to solve for $\bm{s}$. The solution is permissible if $u$ and $v$ are both in bound, and $s \geq 0$.
+
+\subsection{Outward normal vector}
+The outward normal vector is defined in Equation \ref{eqn:n_parametric}.
+
+\section{Shape defined by an implicit function}

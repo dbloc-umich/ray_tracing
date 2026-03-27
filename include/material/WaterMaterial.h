@@ -8,11 +8,11 @@ class WaterEquationOfState;
 class WaterMaterial: public Material{
     public:
     WaterMaterial();
-    double computeProperty(Prop name, const PropVars& vars = {}) const override;
+    double computeProperty(const std::string& name, const PropVars& vars = {}) const override;
     double T_from_H(double H) const override;
 
     protected:
-    static const std::unique_ptr<WaterEquationOfState> _eos;
+    static const std::shared_ptr<WaterEquationOfState> _eos;
     // For interpolating extinction coefficients
     inline static const Eigen::ArrayXd _lambda{ // wavelength in m
         {2.00e-7,  2.25e-7, 2.50e-7, 2.75e-7, 3.00e-7, 3.25e-7, 3.50e-7, 3.75e-7, 4.00e-7, 4.25e-7, 4.50e-7,

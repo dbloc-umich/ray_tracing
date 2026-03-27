@@ -1,0 +1,115 @@
+The del operator of a scalar-valued function in ellipsoidal coordinates is
+\begin{equation}
+    \nabla = A_r \mathbf{e}_r + A_\mu \mathbf{e}_\mu + A_\varphi \mathbf{e}_\varphi,
+    \label{eqn:gradient_evectors}
+\end{equation}
+where the $A$ factors are found through taking the directional derivative with respect to each of the basis variables.
+
+\begin{subequations}
+    \begin{align}
+        \frac{\partial}{\partial r} &= \mathbf{e}_r \cdot \nabla = A_s \mathbf{e}_r \cdot \mathbf{e}_r + A_\mu \mathbf{e}_r \cdot \mathbf{e}_\mu + A_\varphi \mathbf{e}_r \cdot \mathbf{e}_\varphi \\
+        \frac{\partial}{\partial \mu} &= \mathbf{e}_\mu \cdot \nabla = A_s \mathbf{e}_\mu \cdot \mathbf{e}_r + A_\mu \mathbf{e}_\mu \cdot \mathbf{e}_\mu + A_\varphi \mathbf{e}_\mu \cdot \mathbf{e}_\varphi \\
+        \frac{\partial}{\partial \varphi} &= \mathbf{e}_\varphi \cdot \nabla = A_s \mathbf{e}_\varphi \cdot \mathbf{e}_r + A_\mu \mathbf{e}_\varphi \cdot \mathbf{e}_\mu + A_\varphi \mathbf{e}_\varphi \cdot \mathbf{e}_\varphi,
+    \end{align}
+\end{subequations}
+
+which is equivalent to
+\begin{equation}
+    \begin{bmatrix}
+        A_r \\ A_\mu \\ A_\varphi
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        \mathbf{e}_r \cdot \mathbf{e}_r    & \mathbf{e}_r \cdot \mathbf{e}_\mu & \mathbf{e}_r \cdot \mathbf{e}_\varphi \\
+        \mathbf{e}_\mu \cdot \mathbf{e}_r  & \mathbf{e}_\mu \cdot \mathbf{e}_\mu & \mathbf{e}_\mu \cdot \mathbf{e}_\varphi \\
+        \mathbf{e}_\varphi \cdot \mathbf{e}_r & \mathbf{e}_\varphi \cdot \mathbf{e}_\mu & \mathbf{e}_\varphi \cdot \mathbf{e}_\varphi
+    \end{bmatrix}^{-1}
+    \begin{bmatrix}
+        \frac{\partial}{\partial r} \\ \frac{\partial}{\partial \mu} \\ \frac{\partial}{\partial \varphi}
+    \end{bmatrix}.
+\end{equation}
+
+In terms of the basis vectors and partial derivatives, Equation \ref{eqn:gradient_evectors} can therefore be written as
+\begin{equation}
+    \nabla =
+    \underbrace{
+        \begin{bmatrix}
+            \mathbf{e}_r & \mathbf{e}_\mu & \mathbf{e}_\varphi
+        \end{bmatrix}
+    }_{\mathbf{J}}
+    \underbrace{
+        \begin{bmatrix}
+            \mathbf{e}_r \cdot \mathbf{e}_r    & \mathbf{e}_r \cdot \mathbf{e}_\mu & \mathbf{e}_r \cdot \mathbf{e}_\varphi \\
+            \mathbf{e}_\mu \cdot \mathbf{e}_r  & \mathbf{e}_\mu \cdot \mathbf{e}_\mu & \mathbf{e}_\mu \cdot \mathbf{e}_\varphi \\
+            \mathbf{e}_\varphi \cdot \mathbf{e}_r & \mathbf{e}_\varphi \cdot \mathbf{e}_\mu & \mathbf{e}_\varphi \cdot \mathbf{e}_\varphi
+        \end{bmatrix}^{-1}
+    }_{\mathbf{G}^{-1}}
+    \begin{bmatrix}
+        \frac{\partial}{\partial r} \\ \frac{\partial}{\partial \mu} \\ \frac{\partial}{\partial \varphi}
+    \end{bmatrix}.
+    \label{eqn:ellipsoidal_exact_grad}
+\end{equation}
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.5]{Figures/ellipsoidal_derivative.png}
+    \caption{The gradient is assumed constant throughout the blue surface $(i+1/2,j,k)$, assuming its value at $(r_{i+1/2}, \mu_j, \varphi_k)$, marked in blue. The partial derivative in $r$ can be evaluated from
+             cell-averaged states, marked in green. The other partial derivatives are evaluated using surface states, marked in red; these values are not explicitly stored and will have to be reconstructed.}
+    \label{fig:ellipsoidal_stencil}
+\end{figure}
+
+The finite volume method presented in this work is second-order, where the gradient on every surface is approximated as constant. The basis vectors $\mathbf{e}_r$, $\mathbf{e}_\mu$, and
+$\mathbf{e}_\varphi$ that appear in Equation \ref{eqn:ellipsoidal_exact_grad} are then evaluated at the surface centroid. 
+
+The partial derivatives are typically approximated using a central-difference formula; however, the fact that the gradient on any cell surface where a variable is constant includes derivatives in all other variables
+requires further approximation. For example, take a representative surface $(i+1/2,j,k)$ that borders cells $(i,j,k)$ and $(i+1,j,k)$, as shown in Figure \ref{fig:ellipsoidal_stencil}. The $r$-derivative is easily
+computed directly from the two neighboring cells, assuming each cell-averaged value occurs at the respective cell centroid.
+
+\begin{equation}
+    \left. \frac{\partial u}{\partial r} \right|_{i + 1/2, j, k} \approx \frac{u_{i+1,j,k} - u_{ijk}}{\frac{1}{2}(r_{i+3/2} - r_{i-1/2})},
+\end{equation}
+where $u_{ijk}$ is short-hand for the state variable $u$ evaluated at point $(r_i, \mu_j, \varphi_k)$.
+
+The $\mu$-derivative,
+\begin{equation}
+    \left. \frac{\partial u}{\partial \mu} \right|_{i + 1/2, j, k} \approx \frac{u_{i+1/2,j+1/2,k} - u_{i+1/2,j-1/2,k}}{\Delta \mu_j},
+\end{equation}
+requires states on the surface $r=r_{i+1/2}$ rather than cell-averaged states, and therefore not stored. Those values can be reconstructed from the fact that the gradient
+on that surface, $\left. \nabla u \right|_{i+1/2,j,k}$, has been assumed constant.
+\begin{subequations}
+    \begin{align}
+        u_{i+1/2,j+1/2,k} &\approx u_{i+1/2,j,k} + \left. \nabla u \right|_{i+1/2,j,k} \cdot \left( \mathbf{r}_{i+1/2,j+1/2,k} - \mathbf{r}_{i+1/2,j,k} \right) \\
+        u_{i+1/2,j-1/2,k} &\approx u_{i+1/2,j,k} + \left. \nabla u \right|_{i+1/2,j,k} \cdot \left( \mathbf{r}_{i+1/2,j-1/2,k} - \mathbf{r}_{i+1/2,j,k} \right)
+    \end{align}
+\end{subequations}
+
+Therefore,
+\begin{equation}
+    \left. \frac{\partial u}{\partial \mu} \right|_{i+1/2, j, k} \approx \frac{ \left. \nabla u \right|_{i+1/2,j,k} \cdot \Delta_j \mathbf{r}_{i+1/2,k} }{\Delta \mu_j},
+    \label{eqn:ellipsoidal_dudmu}
+\end{equation}
+where the short-hand
+\begin{equation}
+    \Delta_j \mathbf{r}_{i+1/2,k} = \mathbf{r}_{i+1/2,j+1/2,k} - \mathbf{r}_{i+1/2,j-1/2,k}
+\end{equation}
+is used.
+
+Similarly,
+\begin{equation}
+    \left. \frac{\partial u}{\partial \varphi} \right|_{i+1/2, j, k} \approx \frac{ \left. \nabla u \right|_{i+1/2,j,k} \cdot \Delta_k \mathbf{r}_{i+1/2,j} }{\Delta \varphi_k}
+    \label{eqn:ellipsoidal_dudpsi}.
+\end{equation}
+
+Note that in Equation \ref{eqn:ellipsoidal_exact_grad}, the partial derivatives are used to calculate the gradient, while in Equations \ref{eqn:ellipsoidal_dudmu} and \ref{eqn:ellipsoidal_dudpsi}, the opposite occurs.
+This results in the following implicit, yet linear, system of equations to solve for in order to obtain the gradient on surface $(i+1/2,j,k)$:
+\begin{equation}
+    \nabla u = \mathbf{J} \mathbf{G}^{-1}
+    \begin{bmatrix}
+        \displaystyle \frac{ 2(u_{i+1,j,k} - u_{ijk}) }{r_{i+3/2} - r_{i-1/2}} \\
+        \displaystyle \frac{ \nabla u \cdot \Delta_j \mathbf{r}_{i+1/2,k} }{\Delta \mu_j} \\
+        \displaystyle \frac{ \nabla u \cdot \Delta_k \mathbf{r}_{i+1/2,j} }{\Delta \varphi_k}
+    \end{bmatrix}.
+    \label{eqn:ellipsoidal_approx_grad}
+\end{equation}
+
+Note that the matrices $\mathbf{J}$ and $\mathbf{G}$ in Equation \ref{eqn:ellipsoidal_approx_grad} are evaluated at $(r_{i+1/2}, \mu_j, \varphi_k)$. The gradient on the other surfaces can be computed using similar derivations.

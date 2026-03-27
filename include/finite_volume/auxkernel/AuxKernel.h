@@ -1,12 +1,14 @@
-// #ifndef AUXKERNEL_H
-// #define AUXKERNEL_H
+// An auxiliary kernel computes a quantity of interest given a state vector within a cell
+#ifndef AUXKERNEL_H
+#define AUXKERNEL_H
 
-// #include "StateMesh.h"
-// class InputParameters;
-// class AuxKernel{
-//     public:
-//     AuxKernel(const InputParameters& param) {}
-//     virtual double computeValue(const ConstCell& u) const = 0;
-// };
+#include "StateMesh.h"
+class AuxKernel{
+    public:
+    AuxKernel() {}
+    virtual ~AuxKernel() = default;
+    // Best if the map is returned by StateMesh::matProp
+    virtual double computeValue(const std::map<std::string, double>& u) const = 0;
+};
 
-// #endif
+#endif

@@ -11,7 +11,7 @@ namespace pconst{
     constexpr double c = 299792458; // Speed of light in vacuum [m/s]
     constexpr double e = 1.602176634e-19; // Elementary charge [C]
     constexpr double h = 6.62607015e-34; // Planck constant [J s]
-    constexpr double k_B = 1.380649e-23; // Boltzmann constant [J/kg]
+    constexpr double k_B = 1.380649e-23; // Boltzmann constant [J/K]
     constexpr double m_e = 9.10938371393e-31; // Electron mass [kg]
     constexpr double m_n = 1.67492750056e-27; // Neutron mass [kg]
     constexpr double N_A = 6.0221408e+23; // Avogadro's number [mol-1]

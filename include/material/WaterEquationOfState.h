@@ -15,6 +15,8 @@ class WaterEquationOfState: public EquationOfState{
     double mu(double P, double T) const noexcept override{ return 8.90e-4; } // dynamic viscosity
     double H(double P, double T) const noexcept override{ return 4184*(T - 273.15); } // specific enthalpy
     double T(double H) const noexcept override{ return H/4184 + 273.15; } // temperature from enthalpy
+    double Pref() const noexcept override{ return 101325; }; // reference pressure
+    double Tref() const noexcept override{ return 273.15; }; // reference temperature
 };
 
 #endif

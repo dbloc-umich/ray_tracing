@@ -1,0 +1,69 @@
+The \verb|intensity| function calculates the outgoing intensity of a single ray travelling through a system, represented by a \verb|Tree| object. Refraction and reflection flags
+exist to give users the option to decide whether each phenomenon is considered. With both flags disabled, the ray streamlines through the system without any change in direction,
+so it is a purely attenuation problem. With both flags enabled, the simulation becomes a binary recursion problem, as the ray splits into two rays every time it enters the interface
+between two media. The calculated value is the sum of all rays that manage to escape the system.
+
+Each of the test cases below compares the calculated intensity upon existing a sphere of radius $R = 2$, attenuation coefficient $\mu = 0.3$, and index of refraction $n = 1.3$ to the
+corresponding known analytical solution.
+
+\section{Streamline at normal incidence}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.5]{Figures/attenuation_case1.png}
+    \caption{Schematic plot of Test Case 1}
+    \label{fig:att_case1}
+\end{figure}
+
+In a sphere, normal incidence requires that the ray enters along the sphere radius and crosses the center. This is the simpliest case, as the path length of the ray is exactly equal
+to the diameter. Therefore, the intensity has been reduced to a factor of $A = e^{-2\mu r} = 0.301194$. The calculated value is exactly the same.
+
+\section{Refraction and reflection at normal incidence}
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.4]{Figures/attenuation_case2.png}
+    \caption{Schematic plot of Test Case 2.}
+    \label{fig:att_case2}
+\end{figure}
+
+If a ray has normal incidence, the transmitted ray is not refraction, and the reflected direction is the opposite of incident. The reflectance and transmittance, defined as the ratio
+between the reflected and transmitted ray intensity, respectively, to the incident intensity, is defined as:
+\begin{align*}
+    R &= \left( \frac{n_1 - n_2}{n_1 + n_2} \right)^2 \\
+    T &= 1 - R
+\end{align*}
+
+In this case, the reflectance does not depend on whether the ray travels from medium 1 to 2 or vice versa. Taking $n_1 = 1.0$ to be vacuum and $n_2 = 1.3$, $R = 0.0170$ and
+$T = 0.9830$.
+
+Refer to Figure \ref{fig:att_case2} for a schematic plot. The events in this case are as followed:
+\begin{enumerate}
+    \item A normally incident ray enters the sphere with unit intensity.
+    \item The ray splits into a reflected ray with intensity $R$ and a transmitted ray with intensity $T$. The reflected ray is collected (hence marked red), while the transmitted
+    ray travels across the sphere and is attenuated to an intensity of $TA$.
+    \item The uncollected ray splits into a reflected ray with intensity $TRA$ and a transmitted ray with intensity $T^2A$. The transmitted ray is collected, while the reflected ray
+    travels across the sphere in the other direction and is attenuated to an intensity of $TRA^2$.
+    \item The uncollected ray splits into a reflected ray with intensity $TR^2A^2$ and a transmitted ray with intensity $T^2RA^2$. The transmitted ray is collected, while the
+    reflected ray travels across the sphere in the other direction and is attenuated to an intensity of $TR^2A^3$.
+    \item Follow similar paths for Steps 5 and 6.
+\end{enumerate}
+
+The total outgoing intensity can be written as
+\begin{align*}
+    I &= R + T^2A + T^2RA^2 + T^2R^2A^3 + T^2R^3A^4 + \dots \\
+    &= R + T^2A \sum_{i=0}^{\infty} (RA)^i \\
+    &= R + \frac{T^2A}{1 - RA}
+\end{align*}
+
+Substituting in the values of $A$, $R$, and $T$, the true outgoing intensity is about $0.309545$. The calculated value is accurate to 6 significant digits and have a relative error
+of $1.2716 \times 10^{-7}$.
+
+\section{Streamline at non-normal incidence}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.5]{Figures/attenuation_case3.png}
+    \caption{Schematic plot of Test Case 3}
+    \label{fig:att_case3}
+\end{figure}
+In this test case, the chosen direction is $\hat{\imath}$, incident upon the sphere at position $\displaystyle \left[\frac{\sqrt{3}r}{2}, \frac{r}{2}, 0 \right]^T$. The path length
+is therefore $\sqrt{3}r$, and the intensity is attenuated to $e^{-\sqrt{3}\mu r} = 0.353727$ upon exiting the sphere. Again, the value calculated by the \verb|intensity| function is
+identical to the analytical solution.

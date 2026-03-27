@@ -6,7 +6,7 @@
 class Shape;
 class Ray{
     public:
-    Ray(Eigen::Vector3d p, UnitVector3d dir, double I=1.0, double lambda=325e-9, Shape* host=nullptr);
+    Ray(Eigen::Vector3d p, UnitVector3d dir, double I, double lambda, double A, Shape* host=nullptr);
 
     Eigen::Vector3d position() const noexcept{ return _p; }
     void setPoistion(const Eigen::Vector3d& p) noexcept{ _p = p; }
@@ -18,8 +18,12 @@ class Ray{
     void setIntensity(double I);
 
     double wavelength() const noexcept{ return _lambda; }
-    double frequency() const noexcept;
+    double frequency() const noexcept; // angular frequency in radians/s
     void setWavelength(double lambda);
+
+    double area() const noexcept{ return _A; }
+    double power() const noexcept{ return _I*_A; }
+    void setArea(double A);
 
     Shape* host() const noexcept{ return _host; }
     void setHost(Shape* host);
@@ -29,6 +33,7 @@ class Ray{
     UnitVector3d _dir;
     double _I; // intensity [W/m2]
     double _lambda; // vacuum wavelength, [m]
+    double _A; // cross-section area, [m2]
     Shape* _host;
 };
 

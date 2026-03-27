@@ -1,0 +1,272 @@
+The \lstinline|Ellipsoid| class represents a shape centered at $\bm{r_0}$, of which the surface is given as
+\begin{equation}
+    (\bm{r} - \bm{r}_0) \cdot \bm{M}(\bm{r} - \bm{r}_0) = 1,
+    \label{eqn:general_ellipsoid}
+\end{equation}
+where $\bm{M}$ is a symmetric positive definite (SPD) matrix in $\mathbb{R}^3$ that holds the orientation and magnitude of the ellipsoid. Its unit eigenvectors -- denoted as  $\bm{\hat{e}}_0$, $\bm{\hat{e}}_1$, and
+$\bm{\hat{e}}_2$ -- form an orthonormal basis that corresponds to the direction of the three primary axes. The corresponding eigenvalues are the inverse square of the respective semi-axis. In other words, if $a$, $b$,
+and $c$ are the semi-axes, and $\lambda_i$ is the $i$\textsuperscript{th} eigenvalue of $\bm{M}$, then $\displaystyle \lambda_0 = \frac{1}{a^2}$, $\displaystyle \lambda_1 = \frac{1}{b^2}$, and $\displaystyle \lambda_2 = \frac{1}{c^2}$.
+
+If the three axes are aligned to Cartesian coordinates, then Equation \ref{eqn:general_ellipsoid} can be expanded as
+\begin{equation}
+    \left( \frac{x - x_0}{a} \right)^2 + \left( \frac{y - y_0}{b} \right)^2 + \left( \frac{z - z_0}{c} \right)^2 = 1,
+    \label{eqn:axis_aligned_ellipsoid}
+\end{equation}
+and the matrix $\bm{M}$ is
+\begin{equation}
+    \bm{M} =
+    \begin{bmatrix}
+        \frac{1}{a^2} & 0 & 0 \\
+        0 & \frac{1}{b^2} & 0 \\
+        0 & 0 & \frac{1}{c^2}
+    \end{bmatrix}.
+\end{equation}
+Such ellipsoid is called axis-aligned, similar to the \lstinline{Box} class.
+
+A sphere can also be represented by the \lstinline|Ellipsoid| class, in which case $a = b = c = R$, and $\bm{M} = \displaystyle \frac{1}{R^2} \bm{I}$.
+
+\subsection{Extreme points}
+This is a constrained optimization problem. Take the $x$ coordinate for example, the problem is to maximize or minimize $f(\bm{r}) = x = \bm{\hat{\imath}} \cdot \bm{r}$ subject to the constraint in Equation
+\ref{eqn:general_ellipsoid}, i.e. $g(\bm{r}) = (\bm{r} - \bm{r}_0) \cdot \bm{M}(\bm{r} - \bm{r}_0) = 1$. This problem is solvable through the Lagrange multipliers method, where $\nabla f$ and $\nabla g$ are required:
+\begin{align}
+    \nabla f(\bm{r}) &= \bm{\hat{\imath}} \\
+    \nabla g(\bm{r}) &= 2\bm{M}(\bm{r} - \bm{r}_0).
+\end{align}
+
+The following a system of 4 equations is formulated to solve for $\bm{r}$ and $\lambda$:
+\begin{align*}
+    2\lambda \bm{M}(\bm{r} - \bm{r}_0) \numberthis \label{eqn:lagrange_ellipsoid} &= \bm{\hat{\imath}} \\
+    g(\bm{r}) &= 1.
+\end{align*}
+
+Equation \ref{eqn:lagrange_ellipsoid} is used to solve for $\bm{r}$ in terms of $\lambda$:
+\begin{equation}
+    \bm{r} = \bm{r}_0 + \frac{1}{2\lambda} \bm{M}^{-1} \bm{\hat{\imath}}, \label{eqn:r_extreme_ellipsoid}
+\end{equation}
+and this expression can be substituted back to the constraint in Equation \ref{eqn:general_ellipsoid} to solve for $\lambda$:
+\begin{align}
+    \frac{1}{2\lambda} \bm{M}^{-1} \bm{\hat{\imath}} \cdot \frac{1}{2\lambda} \bm{M} \bm{M}^{-1} \bm{\hat{\imath}} &= 1 \\
+    \frac{1}{4\lambda^2} \bm{\hat{\imath}} \cdot \bm{M}^{-1} \bm{\hat{\imath}} &= 1 \\
+    \lambda &= \frac{\pm 1}{2} \sqrt{\bm{\hat{\imath}} \cdot \bm{M}^{-1} \bm{\hat{\imath}}} \label{eqn:lambda_ellipsoid}.
+\end{align}
+
+There are two possible values for $\lambda$, as expected, as the minimum and maximum $x$ points are collinear with the ellipsoid center. Subtituting the expression for $\lambda$ in Equation \ref{eqn:lambda_ellipsoid}
+back to Equation \ref{eqn:r_extreme_ellipsoid} to obtain
+\begin{equation}
+    \bm{r} = \bm{r}_0 \pm \frac{\bm{M}^{-1} \bm{\hat{\imath}}}{\sqrt{\bm{\hat{\imath}} \cdot \bm{M}^{-1} \bm{\hat{\imath}}}},
+\end{equation}
+the objective function $f(\bm{r}) = \bm{\hat{\imath}} \cdot \bm{r}$ can finally be optimized:
+\begin{equation}
+    x = \bm{\hat{\imath}} \cdot \bm{r} = x_0 \pm \sqrt{\bm{\hat{\imath}} \cdot \bm{M}^{-1} \bm{\hat{\imath}}} \label{eqn:extrema_ellipsoid}
+\end{equation}
+
+Since $\bm{M}$ is required to be SPD, its inverse can be easily computed. The eigendecomposition of $\bm{M}$, which has to be carried out regardless in order to obtain the principal axes and their respective length, is
+\begin{equation}
+    \bm{M} = \bm{E} \bm{\Lambda} \bm{E}^{T},
+\end{equation}
+and from there the inverse matrix $\bm{M}^{-1}$ is
+\begin{equation}
+    \bm{M}^{-1} = \bm{E} \bm{\Lambda}^{-1} \bm{E}^{T},
+    \label{eqn:ellipsoid_Minv}
+\end{equation}
+where $\bm{\Lambda}^{-1}$ is a diagonal matrix whose entries are the reciprocal of those in $\bm{\Lambda}$. In terms of the semi-axes, the entries of $\bm{\Lambda}^{-1}$ are $a^2$, $b^2$, and $c^2$.
+
+For the purpose of finding the extreme points, the entire inverse matrix is not needed. Note that $\bm{\hat{\imath}} \cdot \bm{M}^{-1} \bm{\hat{\imath}}$ is simply the first-row, first-column entry of $M^{-1}$. Using
+the decomposition in Equation \ref{eqn:ellipsoid_Minv}, this entry can be obtained by:
+
+\begin{align*}
+    \bm{\hat{\imath}} \cdot \bm{M}^{-1} \bm{\hat{\imath}} &= \bm{\hat{\imath}} \cdot \bm{E}^T \bm{\Lambda}^{-1} \bm{E} \bm{\hat{\imath}} \\
+    &= \left( \bm{E}^T \bm{\hat{\imath}}\right) \cdot \bm{\Lambda}^{-1} \bm{E}^T \bm{\hat{\imath}} \\
+    &= a^2 E_{0,0}^2 + b^2 E_{0,1}^2 + c^2 E_{0,2}^2
+\end{align*}
+
+Similar approaches can be carried out to find the minima and maxima in the other coordinates. The results are as follows:
+\begin{align}
+    x_{\text{min}/\text{max}} &= x_0 \pm \sqrt{a^2 E_{0,0}^2 + b^2 E_{0,1}^2 + c^2 E_{0,2}^2} \label{eqn:x_extrema_ellipsoid} \\
+    y_{\text{min}/\text{max}} &= y_0 \pm \sqrt{a^2 E_{1,0}^2 + b^2 E_{1,1}^2 + c^2 E_{1,2}^2} \\
+    z_{\text{min}/\text{max}} &= z_0 \pm \sqrt{a^2 E_{2,0}^2 + b^2 E_{2,1}^2 + c^2 E_{2,2}^2} \label{eqn:z_extrema_ellipsoid}
+\end{align}
+
+For an axis-aligned ellipsoid, since $E_{i,j} = \delta_{i,j}$, Equations \ref{eqn:x_extrema_ellipsoid} through \ref{eqn:z_extrema_ellipsoid} do simplify to $x_0 \pm a$, $y_0 \pm b$, and $z_0 \pm c$, respectively.
+
+\subsection{Surface area}
+There are no analytic forms of an ellipsoid surface area; it generally involves computing elliptic integrals. The exact formulation is given in \cite{Tee2005SurfaceAO}:
+\begin{equation}
+    S = 2\pi c^2 + \frac{2\pi ab}{\sqrt{\delta}} \left[(1-\delta) F\left(\sqrt{\delta} \left| \frac{\epsilon}{\delta} \right.\right) + \delta E\left(\sqrt{\delta} \left| \frac{\epsilon}{\delta} \right.\right) \right],
+\end{equation}
+where $F(x|k)$ and $E(x|k)$ are the incomplete ellpitic integrals of the first and second kind, respectively. The parameters $\delta$ and $\epsilon$
+are defined assuming that $c \leq b \leq a$:
+\begin{align}
+    \delta &= 1 - \frac{c^2}{a^2}\\
+    \epsilon &= 1 - \frac{c^2}{b^2}.
+\end{align}
+
+The elliptical integrals are undefined when $a = b = c$, since both $\epsilon$ and $\delta$ are in an indeterminate form. Obviously the spherical case is a useful benchmark,
+so a different integral has to be derived.
+
+The surface of an ellipsoid octant where all coordinates are non-negative can be parametrized as
+\begin{align*}
+    \bm{r}(u,v) &= a\sqrt{1-u^2} \cos(v) \bm{\hat{e}}_0 + b\sqrt{1-u^2} \sin(v) \bm{\hat{e}}_1 + cu \bm{\hat{e}}_2 \\
+    &0 \leq u \leq 1, 0 \leq v \leq \frac{\pi}{2}.
+\end{align*}
+
+Using these parametrizations, the surface area of the entire ellipsoid (which is 8 times that of an octant) can be computed as
+\begin{equation}
+    S = 8abc \int_{0}^{\frac{\pi}{2}} \int_{0}^{1} \sqrt{ \frac{(1-u^2) \cos^2(v)}{a^2} + \frac{(1-u^2) \sin^2(v)}{b^2} + \frac{u^2}{c^2} } du dv
+\end{equation}
+
+\subsection{Volume}
+The volume is $\displaystyle \frac{4}{3}\pi abc$.
+
+\subsection{Checking if a point on the surface}
+A point with coordinates $\bm{r} = [x, y, z]^T$ is on the ellipsoid surface if it satisfies Equation \ref{eqn:general_ellipsoid}. For an axis-aligned ellipsoid, Equation
+\ref{eqn:general_ellipsoid} is simplified to Equation \ref{eqn:axis_aligned_ellipsoid}. 
+
+\subsection{Checking if a point is inside}
+\label{sect:point_test_ellipsoid}
+A point with coordinates $\bm{r}$ is inside the ellipsoid if it satisfies the inequality
+$$
+    (\bm{r} - \bm{r}_0) \cdot \bm{M}(\bm{r} - \bm{r}_0) < 1.
+$$
+The case of an axis-aligned ellipsoid is defined similarly.
+
+\subsection{Checking if another volume overlaps}
+\label{sect:collision_test_ellipsoid}
+\subsubsection{Ellipsoid and sphere}
+\begin{figure}[!h]
+    \centering
+    \includegraphics{Figures/ellipsoid_collision_test.png}
+    \caption{Ellipsoid collision test demonstrated $K(\lambda)$ plotted on the right. It can be seen that the two ellipsoids are non-overllaping if and only if
+             $\min K(\lambda) \leq 0$. Figure from \cite{Gilitschenski}.}
+    \label{fig:K_lambda}
+\end{figure}
+
+The collision detection test between two ellipsoids (which can also extend to spheres) is implemented from the algorithm proposed by Gilitschenski \cite{Gilitschenski}, with a minor modification (see below).
+Let $\Delta\bm{r}$ be the vector connecting the two centers, and $\bm{A}$ and $\bm{B}$ be the matrices that define the two ellipsoids. A convex function $K(\lambda): (0, 1) \rightarrow \mathbb{R}$ can be defined as
+\begin{equation}
+    K(\lambda) = 1 - \Delta\bm{r} \cdot \left(\frac{1}{\lambda} \bm{A}^{-1} + \frac{1}{1 - \lambda} \bm{B}^{-1} \right)^{-1} \Delta\bm{r}.
+\end{equation}
+
+The two ellipsoids are non-overlapping if there exists a $\lambda \in (0, 1)$ such that $K(\lambda) \leq 0$. Because of the convexity, it also means that $\min K(\lambda) \leq 0$. In the special case of
+$\min K(\lambda) = 0$, the region of intersection is a single point, and the two shapes are also considered non-overlapping per the definition of this function. Instead of finding where $\min K$ occurs, this problem
+is approached as a root-solving problem.
+
+Gilitschenski proposes that instead of finding what the minimum is, a root-finding problem can be used to find if $K(\lambda)$ has two distinct real roots on the interval (0, 1) \cite{Gilitschenski}.
+This is equivalent to $\min K(\lambda) \leq 0$, since $K(\lambda)$ is a convex function on (0, 1). The algorithm implemented in this code involves finding only one of two possible roots, called $\lambda_0$, and
+if it is found, the two ellipsoids do not overlap. This is also true for the special case of a double root, since the intersection is a single point and the two ellipsoids are still considered non-overlapping.
+
+\subsubsection{Box}
+The collision detection test between an ellipsoid and a box is implemented from the algorithm proposed by Eberly \cite{Eberly}; however, the edge and face tests described below are slightly modified. The main idea
+is still to check whether the ellipsoid intersects with the box centroid, if not then any of its vertices, then any of its edges, and finally any of its faces. The point checks can be refered back to Section
+\ref{sect:point_test_ellipsoid}.
+
+An edge can be represented parametrically by its two endpoints $\bm{r}_0$ and $\bm{r}_1$ through the equation $\bm{e}(t) = \bm{p}_0 + (\bm{p}_1 - \bm{p}_0)t$ for $t \in [0, 1]$. Define $K(t)$ as
+\begin{equation}
+    K(t) = (\bm{e}(t) - \bm{r}_0) \cdot \bm{M}(\bm{e}(t) - \bm{r}_0),
+\end{equation} 
+which expands into
+\begin{equation}
+    K(t) = At^2 + 2Bt + C,
+\end{equation}
+where
+\begin{align}
+    A &= (\bm{p}_1 - \bm{p}_0) \cdot \bm{M} (\bm{p}_1 - \bm{p}_0) \\
+    B &= (\bm{p}_1 - \bm{p}_0) \cdot \bm{M} (\bm{p}_0 - \bm{r}_0) \\
+    C &= (\bm{p}_0 - \bm{r}_0) \cdot \bm{M}(\bm{p}_0 - \bm{r}_0).
+\end{align}
+
+Since $\bm{p}_0$ and $\bm{p}_1$ are both outside the ellipsoid (otherwise this test would not be needed), $K(0) > 1$ and $K(1) > 1$. If $\bm{e}(t)$ does intersect the ellipsoid, and is not just tangential to it, 
+there also must exist a $t$ where $K(t) < 1$, and by the Intermediate Value Theorem, the intersections exist and satisfy $K(t) = 1$. In fact, the minimum value of $K(t)$ must be less than 1 in order for the edge
+to intersect the ellipsoid. This optimization problem is easy to solve for since the function of interest is quadratic. The derivative is given by:
+\begin{equation}
+    \frac{1}{2}\frac{dK}{dt} = At + B = 0. 
+\end{equation}
+
+It is worth noting that the second derivative of $K(t)$ -- $2A$ -- is strictly positive since $\bm{M}$ is an SPD matrix. Therefore, $K(t)$ has a global minimum at the critical point $\displaystyle t = \frac{-B}{A}$, $K(t)$.
+It is also important to check that this critical point is bounded by the domain $[0, 1]$.
+
+In summary, the conditions for an edge to intersect the ellipsoid are as follows
+\begin{align}
+    &-1 \leq \frac{B}{A} \leq 0 \\
+    &K\left(\frac{-B}{A} \right) < 1
+\end{align}
+
+Similarly, a face can be defined by three of its four endpoints $\bm{p}_0$, $\bm{p}_1$, and $\bm{p}_2$, where $(\bm{p}_1 - \bm{p}_0) \cdot (\bm{p}_2 - \bm{p}_0) = 0$. The parametric equation for a face is
+\begin{align*}
+    &\bm{f}(u,v) = \bm{p}_0 + (\bm{p}_1 - \bm{p}_0)u + (\bm{p}_2 - \bm{p}_0)v \\
+    &(u, v) \in [0, 1]^2.
+\end{align*}
+
+Define
+\begin{equation}
+    K(u,v) = (\bm{f}(u,v) - \bm{r}_0) \cdot \bm{M}(\bm{f}(u,v) - \bm{r}_0),
+\end{equation}
+which expands into 
+\begin{equation}
+    K(u,v) = Au^2 + 2Buv + Cv^2 + 2Du + 2Ev + F,
+\end{equation}
+where
+\begin{align}
+    A &= (\bm{p}_1 - \bm{p}_0) \cdot \bm{M} (\bm{p}_1 - \bm{p}_0) \\
+    B &= (\bm{p}_1 - \bm{p}_0) \cdot \bm{M} (\bm{p}_2 - \bm{p}_0) \\
+    C &= (\bm{p}_2 - \bm{p}_0) \cdot \bm{M} (\bm{p}_2 - \bm{p}_0) \\
+    D &= (\bm{p}_1 - \bm{p}_0) \cdot \bm{M} (\bm{p}_0 - \bm{r}_0) \\
+    E &= (\bm{p}_2 - \bm{p}_0) \cdot \bm{M} (\bm{p}_0 - \bm{r}_0) \\
+    F &= (\bm{p}_0 - \bm{r}_0) \cdot \bm{M} (\bm{p}_0 - \bm{r}_0).
+\end{align}
+
+$K(u,v)$ is minimzed if
+\begin{equation}
+    \frac{1}{2}\nabla K =
+    \begin{bmatrix} A & B \\ B & C \end{bmatrix}
+    \begin{bmatrix} u \\ v \end{bmatrix}
+    + \begin{bmatrix} D \\ E \end{bmatrix}
+    = \bm{0},
+\end{equation}
+which occurs at
+\begin{align*}
+    \begin{bmatrix} u \\ v \end{bmatrix} &= -\begin{bmatrix} A & B \\ B & C \end{bmatrix}^{-1} \begin{bmatrix} D \\ E \end{bmatrix} \\
+    \begin{bmatrix} u \\ v \end{bmatrix} &= \frac{1}{B^2 - AC} \begin{bmatrix} C & -B \\ -B & A \end{bmatrix} \begin{bmatrix} D \\ E \end{bmatrix} \\
+    \begin{bmatrix} u \\ v \end{bmatrix} &= \frac{1}{B^2 - AC} \begin{bmatrix} CD - BE \\ AE - BD \end{bmatrix} \numberthis
+\end{align*}
+
+Therefore, the conditions for a face to intersect the ellipsoid are as follows
+\begin{align}
+    &B^2 - AC \neq 0 \\
+    &0 \leq \frac{CD - BE}{B^2 - AC} \leq 1 \\
+    &0 \leq \frac{AE - BD}{B^2 - AC} \leq 1 \\
+    &K\left(\frac{CD - BE}{B^2 - AC}, \frac{AE - BD}{B^2 - AC} \right) < 1
+\end{align}
+
+If a box does not overlap with the ellipsoid, it has overgone the centroid containment test, 8 vertex containment tests, 12 edge overlap tests, and 6 face overlap tests. Eberly proposes a closest-features testing
+
+
+\subsection{Distance to surface}
+Given a point $\bm{r}$ travelling at direction $\bm{\hat{\omega}}$, the distance $s$ to surface of the ellipsoid satisfies the equation
+\begin{equation}
+    \left( \bm{r} + \bm{\hat{\omega}}s - \bm{r}_0 \right) \cdot \bm{M} \left(\bm{r} + \bm{\hat{\omega}}s - \bm{r}_0 \right) = 1.
+    \label{eqn:distance_ellipsoid}
+\end{equation}
+
+Equation \ref{eqn:distance_ellipsoid} can be written in a quadratic form in $s$:
+\begin{equation}
+    As^2 + 2Bs + C = 0,
+\end{equation}
+where the coefficients $A$, $B$ and $C$ are defined as
+\begin{align}
+    A &= \bm{\hat{\omega}} \cdot \bm{M}\bm{\hat{\omega}} \\
+    B &= \bm{\hat{\omega}} \cdot \bm{M}(\bm{r}-\bm{r}_0) \\
+    C &= (\bm{r}-\bm{r}_0) \cdot \bm{M}(\bm{r}-\bm{r}_0) - 1.
+\end{align}
+
+\subsection{Outward normal vector}
+Given the explicit form $f(\bm{r}) = (\bm{r} - \bm{r}_0) \cdot \bm{M}(\bm{r} - \bm{r}_0)$, the normal vector at a point $\bm{r}$ on the surface is parallel to $\nabla f(\bm{r})$. Therefore,
+\begin{equation}
+    \bm{\hat{n}} (\bm{r}) = \frac{\nabla f(\bm{r})}{\Vert \nabla f(\bm{r}) \Vert} = \frac{\bm{M}(\bm{r} - \bm{r}_0)}{\Vert \bm{M}(\bm{r} - \bm{r}_0) \Vert}
+    \label{eqn:normal_vector_ellipsoid}
+\end{equation}
+
+For an axis-aligned ellipsoid, Equation \ref{eqn:normal_vector_ellipsoid} simplifies to:
+\begin{equation}
+    \bm{\hat{n}} (\bm{r}) = \frac{1}{\sqrt{\left(\frac{x-x_0}{a^2}\right)^2 + \left(\frac{y-y_0}{b^2}\right)^2 + \left(\frac{z-z_0}{c^2}\right)^2}} \left[\frac{x-x_0}{a^2} \bm{\hat{\imath}} + \frac{y-y_0}{b^2} \bm{\hat{\jmath}} + \frac{z-z_0}{c^2} \bm{\hat{k}} \right]
+\end{equation}

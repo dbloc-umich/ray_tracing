@@ -2,21 +2,25 @@
 #ifndef DIRICHLET_BC_H
 #define DIRICHLET_BC_H
 
-#include "UnivariateBC.h"
+#include "BoundaryCondition.h"
+#include <string>
 
+class Material;
 class SpatialMesh;
-class DirichletBC: public UnivariateBC{
+class DirichletBC: public BoundaryCondition{
     public:
     DirichletBC(const std::function<double(const Eigen::Vector3d&)>& f,
                   std::shared_ptr<SpatialMesh> mesh, Eigen::Index surfID,
-                  std::shared_ptr<Material> mat, PropVariable var, Prop prop=Prop::none);
+                  std::shared_ptr<Material> mat, std::string var, std::string prop="none");
     double computeFlux(double u, const Eigen::Vector3d& r) const override;
     double computeBoundaryState(double u, const Eigen::Vector3d& r) const override;
 
     protected:
     std::function<double(const Eigen::Vector3d&)> _ub;
     std::shared_ptr<SpatialMesh> _mesh;
-    Prop _prop; // used to scale the flux if needed
+    std::shared_ptr<Material> _mat;
+    std::string _var;
+    std::string _prop; // used to scale the flux if needed
 };
 
 #endif

@@ -1,4 +1,5 @@
 #include "RobinBC.h"
+#include "Material.h"
 #include "SpatialMesh.h"
 #include "NewtonSolver.h"
 #include "Eigen/Cholesky"
@@ -7,13 +8,15 @@ RobinBC::RobinBC(const std::function<double(const Eigen::Vector3d&)>& f,
                      const std::function<double(const Eigen::Vector3d&)>& a,
                      const std::function<double(const Eigen::Vector3d&)>& b,
                      std::shared_ptr<SpatialMesh> mesh, Eigen::Index surfID,
-                     std::shared_ptr<Material> mat, PropVariable var, Prop prop):
-    UnivariateBC(mat, var, surfID),
+                     std::shared_ptr<Material> mat, std::string var, std::string prop):
+    BoundaryCondition(surfID),
     _f(f),
     _a(a),
     _b(b),
     _mesh(mesh),
-    _prop(prop)
+    _mat(mat),
+    _var(std::move(var)),
+    _prop(std::move(prop))
 {}
 
 double RobinBC::computeFlux(double u, const Eigen::Vector3d& r) const{
@@ -22,7 +25,7 @@ double RobinBC::computeFlux(double u, const Eigen::Vector3d& r) const{
     double b = _b(r) * (_surfID%2 == 0 ? -1 : 1); // lower surface, invert the normal
     double f = _f(r);
 
-    double scale = (_prop == Prop::none) ? 1.0 : _mat->computeProperty(_prop, {{_var, u}});
+    double scale = (_prop == "none") ? 1.0 : _mat->computeProperty(_prop, {{_var, u}});
     double ug; // ghost-cell value
     double dr = (_mesh->ghostLength(_surfID) - _mesh->axis(_surfID/2)[_mesh->axis(_surfID/2).size()-2])/2;
     Eigen::Index i = std::upper_bound(_mesh->axis(0).cbegin(), _mesh->axis(0).cend(), r[0]) - _mesh->axis(0).cbegin() - 1;
@@ -83,7 +86,7 @@ double RobinBC::computeFlux(double u, const Eigen::Vector3d& r) const{
         throw std::runtime_error("ERROR: Unable to solve for the gradient and ghost-cell value.");
     }
 
-    double scaleg = (_prop == Prop::none) ? 1.0 : _mat->computeProperty(_prop, {{_var, ug}});
+    double scaleg = (_prop == "none") ? 1.0 : _mat->computeProperty(_prop, {{_var, ug}});
     double du = scaleg*ug - scale*u;
     return _mesh->gradientDotN(du/dr, i, j, k, _surfID);
 }

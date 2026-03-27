@@ -9,11 +9,15 @@
 *.bbl
 *.bcf
 *.blg
+*.dvi
 *.fdb*
 *.fls
+*.ilg
 *.log
+*.nlo
+*.nls
 *.synctex.gz
-*.tex
+*.toc
 *.xml
 
 # User directory
@@ -25,3 +29,5 @@ plots*
 
 # Vscode settings
 *.json
+
+*-SAVE-ERROR

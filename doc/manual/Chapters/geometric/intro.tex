@@ -1,0 +1,25 @@
+Geometric classes are represents objects in three-dimensional space. These include points, directions, and 3D volumes. Points are implemented as \lstinline|Eigen::Vector3d| objects (the \lstinline|3d| here means the
+vector contains 3 \lstinline|double|s). Directions are represented by the \lstinline|UnitVector3d| class, which encapsulates a normalized \lstinline|Eigen::Vector3d| member. In this section, \lstinline|Point| is an alias for
+\lstinline|Eigen::Vector3d| and \lstinline|Direction| is an alias for \lstinline|UnitVector3d|.
+
+3D volumes are derived from the abstract \lstinline|Shape| class. They must have the following functions overridden in order to be instantiated:
+\begin{enumerate}
+    \item \lstinline|xMin()|, \lstinline|xMax()|, and so on: locate the extreme points in each of the three Cartesian coordinates.
+    \item \lstinline|surfaceArea()|
+    \item \lstinline|volume()|
+    \item \lstinline|surfaceContains(const Point&)|: checks if the Point is strictly on the surface.
+    \item \lstinline|encloses(const Point&)|: checks if the point is strictly inside \lstinline|*this| (the \lstinline|Shape| in question). This means the point is not on the surface or outside.
+    \item \lstinline|overlaps(const Shape&)|: checks if the two shapes have a positive volume of intersection. That means if the intersection is a point, a line, or a plane, it returns \lstinline|false|.
+    \item \lstinline|distanceToSurface(const Point&, const Direction&)|: calculates the smallest, positive distance that a point has to travel to reach the surface.
+    \begin{itemize}
+        \item If the point is inside the shape, the distance equation will have positive and negative roots, and only the positive root is returned.
+        \item If the point is on the surface, returns 0 if it leaves the surface, and the distance to the other end if it enters the surface.
+        \item If the point is outside the shape, returns NAN if it never enters the shape, else the smallest distance to the surface.
+    \end{itemize}
+    \item \lstinline|normal(const Point&)|: checks if the point is on the surface, and returns the outward normal vector if it is.
+    \item \lstinline|print(std::ostream& os)|: outputs the shape into \lstinline|std::cout|.
+\end{enumerate}
+
+\lstinline|Shape| also has an overloaded \lstinline|encloses(const Shape&)| that checks if the other shape is completely contained within \lstinline|*this|. This function evaluates to \lstinline|true| even if
+the two \lstinline|Shape|s intersect on the surface. Because of the tree design, this is made a function within \lstinline|Shape|, but will always throw an exception unless \lstinline|*this| is of type
+\lstinline|Box|, and practically enclosure check is always done on \lstinline|Box| objects.

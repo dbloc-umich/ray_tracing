@@ -9,7 +9,7 @@
 #include "Eigen/Dense"
 #include "Material.h"
 
-class MultivariateBC;
+class BoundaryCondition;
 class SpatialMesh;
 class Variable;
 
@@ -20,25 +20,19 @@ using ConstState = Eigen::MatrixXd::ConstRowXpr;
 
 class StateMesh{
     public:
-    // Constructs with the entire state matrix
-    StateMesh(std::shared_ptr<SpatialMesh>, const Eigen::MatrixXd&,
-                const std::vector<std::shared_ptr<MultivariateBC>>&);
-    StateMesh(std::shared_ptr<SpatialMesh>, Eigen::MatrixXd&&,
-                const std::vector<std::shared_ptr<MultivariateBC>>&);
+    // Constructs without any initial information
+    StateMesh(std::shared_ptr<SpatialMesh>);
     // Constructs with a uniform initial state 
-    StateMesh(std::shared_ptr<SpatialMesh>, const Eigen::VectorXd& u0,
-                const std::vector<std::shared_ptr<MultivariateBC>>&);
+    StateMesh(std::shared_ptr<SpatialMesh>, const Eigen::VectorXd& u0);
+    // Constructs with the entire state matrix
+    StateMesh(std::shared_ptr<SpatialMesh>, const Eigen::MatrixXd&);
+    StateMesh(std::shared_ptr<SpatialMesh>, Eigen::MatrixXd&&);
     
     Eigen::Index size() const noexcept{ return _stateMesh.size(); }
     Eigen::Index cellCount() const noexcept{ return _stateMesh.cols(); }
     Eigen::Index stateCount() const noexcept{ return _stateMesh.rows(); }
 
     // Accessors and modifiers
-    // Get variable name or index
-    std::string& stateName(Eigen::Index s) noexcept{ return _stateName[s]; }
-    const std::string& stateName(Eigen::Index s) const noexcept{ return _stateName[s]; }
-    std::size_t stateID(const std::string& stateName) const noexcept;
-
     // Reference to a single value
     double& operator()(Eigen::Index s, Eigen::Index i, Eigen::Index j, Eigen::Index k) noexcept;
     const double& operator()(Eigen::Index s, Eigen::Index i, Eigen::Index j, Eigen::Index k) const noexcept;
@@ -66,18 +60,28 @@ class StateMesh{
     // Pointer to the underlying spatial mesh
     const std::shared_ptr<SpatialMesh> mesh() const noexcept{ return _spatialMesh; }
 
+    // Get variable name or index
+    std::string& stateName(Eigen::Index s) noexcept{ return _stateName[s]; }
+    const std::string& stateName(Eigen::Index s) const noexcept{ return _stateName[s]; }
+    std::size_t stateID(const std::string& stateName) const noexcept;
+    const std::vector<std::string>& stateName() const noexcept{ return _stateName; }
+    void setStateName(const std::vector<std::string>& name);
+    void setStateName(Eigen::Index s, std::string name);
+    void addVariable(std::string name, double u0);
+
     // Boundary conditions
-    std::shared_ptr<MultivariateBC> bc(Eigen::Index surfID) const noexcept{ return _bc[surfID]; }
-    void setBC(Eigen::Index surfID, std::shared_ptr<MultivariateBC> newBC) noexcept{ _bc[surfID] = newBC; }
+    std::shared_ptr<BoundaryCondition> bc(Eigen::Index varID, Eigen::Index surfID) const noexcept{ return _bc(varID, surfID); }
+    void setBC(Eigen::Index varID, Eigen::Index surfID, std::shared_ptr<BoundaryCondition> bc) noexcept{ _bc(varID, surfID) = bc; }
 
     // Get a map of material property variables
-    Material::PropVars matProp(std::shared_ptr<Material> mat, Eigen::Index i, Eigen::Index j, Eigen::Index k) const noexcept;
+    std::map<std::string, double> matProp(Eigen::Index i, Eigen::Index j, Eigen::Index k) const noexcept;
+    std::map<std::string, double> matProp(const ConstCell&) const noexcept;
 
     protected:
     std::shared_ptr<SpatialMesh> _spatialMesh;
     std::vector<std::string> _stateName;
     Eigen::MatrixXd _stateMesh;
-    std::vector<std::shared_ptr<MultivariateBC>> _bc;
+    Eigen::Array<std::shared_ptr<BoundaryCondition>, Eigen::Dynamic, 6> _bc;
 };
 
 #endif

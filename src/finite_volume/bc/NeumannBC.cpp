@@ -1,13 +1,16 @@
 #include "NeumannBC.h"
+#include "Material.h"
 #include "SpatialMesh.h"
 
 NeumannBC::NeumannBC(const std::function<double(const Eigen::Vector3d&)>& f,
                          std::shared_ptr<SpatialMesh> mesh, Eigen::Index surfID,
-                         std::shared_ptr<Material> mat, PropVariable var, Prop prop):
-    UnivariateBC(mat, var, surfID),
+                         std::shared_ptr<Material> mat, std::string var, std::string prop):
+    BoundaryCondition(surfID),
     _f(f),
     _mesh(mesh),
-    _prop(prop)
+    _mat(mat),
+    _var(std::move(var)),
+    _prop(std::move(prop))
 {}
 
 double NeumannBC::computeFlux(double u, const Eigen::Vector3d& r) const{

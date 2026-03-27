@@ -1,0 +1,11 @@
+% should this be in this section or the intro
+
+Modeling even a single droplet that interacts with a laser beam is more complicated than a typical thermal-hydraulic simulation. Even as the laser cross section is pretty small compared to the droplet surface area,
+the migration of free charged particles necesitates treating the entire droplet as a plasma. Modeling of plasmas, especially weakly-ionized ones, typically enforces strong coupling between the conservation equations
+and Maxwell's equations. 
+
+Chemically speaking, the laser can depart enough energies to not only remove bound electrons from their orbits but also break molecular bonds and alter the chemical composition of the fluid. In fact, free radicals and
+light molecular ions are frequently encountered in plasmas if the laser is not strong enough to completely disintegrate molecules into monoatomic ions. However, for simplicity, all ions are assumed to have resulted
+from neutral molecules each losing a single electron, and thus they have a charge of +1 and the same molecular weight as the parent neutral particle. With three separate species - electrons, ions, and neutral
+particles - in the system, a three-species model is developed. Under this approach, electrons, ions, and neutral particles are treated as separate fluids, each having its own set of state variables and interacting
+with the laser pulse, the electric and the magnetic fields in its own way. As the species try to equilibrate, their interactions with one another prove equally important.

@@ -7,9 +7,6 @@
 #include "UnitVector.h"
 
 class Material;
-enum class Prop;
-enum class PropVariable;
-
 class Shape{
     public:
     explicit Shape(std::shared_ptr<Material> mat=nullptr);
@@ -39,8 +36,8 @@ class Shape{
     virtual UnitVector3d normal(const Eigen::Vector3d& pos) const = 0; // outward unit normal vector
     friend std::ostream& operator<<(std::ostream& os, const Shape& shape);
 
-    bool hasProperty(const Prop&) const noexcept;
-    double computeProperty(const Prop&, const std::map<PropVariable, double>& vars={}) const;
+    bool hasProperty(const std::string&) const noexcept;
+    double computeProperty(const std::string&, const std::map<std::string, double>& vars={}) const;
 
     protected:
     std::shared_ptr<Material> _mat;

@@ -1,0 +1,164 @@
+The gradient of $kT$ in the flux term on each of the surfaces in cell $(i,j,k)$ is computing using formulations similar to Equation \ref{eqn:ellipsoidal_approx_grad}. Then the flux integral is simply the sum over all
+surfaces. Since the gradient on any surface only involves the cell of interest and its neighbor across that surface, the flux term only communicates with up to 6 neighboring cells.
+
+\begin{equation}
+    \oiint_{\partial V_{ijk}} \nabla kT \cdot \mathbf{\hat{n}} dS \approx \sum_{s=1}^{N_{\text{surf}}} \left[ \nabla kT \cdot \mathbf{\hat{n}} \right]_{ijk,s}  S_{ijk,s}.
+    \label{eqn:heat_interior_flux}
+\end{equation}
+
+Equation \ref{eqn:heat_interior_flux} works well for interior cells. Boundary cells typically have the flux terms for its boundary surfaces modified to account for boundary conditions. Six boundary conditions are
+required to fully describe the system; however, if the computing domain is a whole ellipsoid, five of them do not need to be specified.
+\begin{enumerate}
+    \item The flux terms on the surfaces $r = 0$ and $\mu = \pm 1$ are readily omitted. This can be justified by the degenerate surface that collapses at those points.
+    \item The surfaces $\varphi = -\pi$ and $\varphi = \pi$ form a set of periodic boundaries. 
+\end{enumerate}
+
+The only boundary condition that needs specifying is that at $r = 1$, which can be classified as either Dirichlet, Neumann, or Robin. In the following formulation of each boundary condition, function evaluations are
+almost always done at surface centroid of a boundary cell, i.e. at ($\mu_j, \varphi_k$), so the angular dependencies and the associated subscripts are implicit unless noted otherwise.
+
+\subsection{Dirichlet boundary condition} 
+The boundary condition takes the form
+\begin{equation}
+    T(1) = T^b.
+\end{equation}
+
+A layer of ghost cells can be constructed that extends to $r_{N_r + 3/2}$ and perscribed a temperature that averages out to $T^b$ when combined with the temperature at cell $N_r$. The average is just the arthimetic
+mean of the two temperatures if the ghost cell and its neighboring boundary cell are equivolume. The boundary of such a ghost cell is then
+\begin{subequations}
+    \begin{align}
+        r_{N_r + 3/2}^3 - 1 &= 1 - r_{N_r - 1/2}^3 \\
+        r_{N_r + 3/2}^3 &= \sqrt[3]{2 - r_{N_r - 1/2}^3} 
+    \end{align}
+\end{subequations}
+
+The partial derivative with respect to $r$ at $r = 1$ is calculated as the central difference between the temperatures in the ghost and boundary cells
+\begin{subequations}
+    \label{eqn:heat_dirichlet}
+    \begin{equation}
+        \left. \frac{\partial kT}{\partial r} \right|_{N_r+1/2} = \frac{k(T^g)T^g - k(T_{N_r})T_{N_r}}{\frac{1}{2} \sqrt[3]{2 - r_{N_r - 1/2}^3} - r_{N_r - 1/2}},
+        \label{eqn:heat_dirichlet}
+    \end{equation}
+    where
+    \begin{equation}
+        T^g \equiv 2T^b - T_{N_r}
+    \end{equation}
+\end{subequations}
+is the ghost cell temperature.
+
+\subsection{Neumann boundary condition}
+The boundary condition takes the form
+\begin{equation}
+    k \nabla T (1) \cdot \mathbf{\hat{n}}_r(1) = f,
+\end{equation}
+
+which directly specifies the flux on the outer surface.
+
+\subsection{Robin boundary condition}
+The boundary condition takes the form
+\begin{equation}
+    a T^b + b\nabla T^b \cdot \mathbf{\hat{n}}_r^b +  = f.
+\end{equation}
+
+There are 4 total unknowns -- one in $T^b$ and three in $\nabla T^b$. Similar to the Dirichlet case, $T^b$ is converted into the ghost cell temperature $T^g$:
+\begin{equation}
+    a \frac{T^g + T_{N_r}}{2} + b\nabla T^b \cdot \mathbf{\hat{n}}_r^b +  = f.
+\end{equation}
+
+This allows us to write the temperature derivative in terms of $T^g$ the same way as Equation \ref{eqn:heat_dirichlet}. Substituting the derivative approximation into Equation \ref{eqn:ellipsoidal_approx_grad}
+supplies the remaining three equations needed to solve for $T^g$ and $\nabla T^b$.
+\begin{equation}
+    \nabla T^b = \mathbf{J} \mathbf{G}^{-1}
+    \begin{bmatrix}
+        \displaystyle \frac{ T^g - T_{N_r} }{ \frac{1}{2} \sqrt[3]{2 - r_{N_r - 1/2}^3} - r_{N_r - 1/2} } \\
+        \displaystyle \frac{ \nabla T^b \cdot \Delta_j \mathbf{r}_{i+1/2,k} }{\Delta \mu_j} \\
+        \displaystyle \frac{ \nabla T^b \cdot \Delta_k \mathbf{r}_{i+1/2,j} }{\Delta \varphi_k}
+    \end{bmatrix},
+    \label{eqn:eqn:heat_robin_gradTb}
+\end{equation}
+
+% \subsection{Flux update}
+% Let $\mathbf{t}$ be a flattened vector of discretized temperature values at each cell. The convention here is $r$-$\mu$-$\varphi$ ordering, with $r$ being the outermost variable and $\varphi$ being the innermost
+% variable. The corresponding flux vector, $\mathbf{F}$ can be computed simultaneously for all cells in the form
+% \begin{equation}
+%     \mathbf{f} = \mathbf{D}(\mathbf{t})\mathbf{t} + \mathbf{b}(\mathbf{t}),
+% \end{equation}
+% where the diffusion matrix $\mathbf{D}(\mathbf{t})$ contains the "communications" with neighboring cells, and $\mathbf{b}$ is the boundary-condition vector. The $\mathbf{t}$ dependency of $\mathbf{D}$ and $\mathbf{b}$
+% comes from the thermal conductivity. Because each cell only retrives information from itself and at most 6 neighboring cells to get the flux, $\mathbf{D}$ is a very sparse matrix (with at most 7 entries on each row).
+% Consider a discretization where each spatial variable is partitioned into 4 intervals, $\mathbf{D}$ would look like Table \ref{tab:layout}. Moreover, $\mathbf{D}$ is symmetric and diagonally dominant, making it eligible
+% for a wide range of specialized solvers such as conjugate gradient.
+
+% \begin{table}[h!]
+%     \centering
+%     \caption{Full layout of matrix $\mathbf{D}$ for $N_r = N_\mu = N_\varphi = 4$. The diagonal entries are colored black and represent self-communication. Red, green, and blue colored entries indicate neighboring cells
+%             in the $r$, $\mu$, and $\varphi$ directions, respectively. Note the periodic nature of $\varphi$.}
+%     \resizebox{\textwidth}{!}{
+%         \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+%             \hline
+%             \cellcolor{black}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{black}& & & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             \cellcolor{green}& & & & \cellcolor{black}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & \cellcolor{green}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{black}& & & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & \cellcolor{green}& & & & \cellcolor{black}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & & & & \cellcolor{green}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{black}& & & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & & & & & \cellcolor{green}& & & & \cellcolor{black}& \cellcolor{blue}& & \cellcolor{blue}& & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & & & & & & & & \cellcolor{green}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{black}& & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             \cellcolor{red}& & & & & & & & & & & & & & & & \cellcolor{black}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & \cellcolor{red}& & & & & & & & & & & & & & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & \cellcolor{red}& & & & & & & & & & & & & & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & \cellcolor{red}& & & & & & & & & & & & & \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{black}& & & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & & \cellcolor{black}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{black}& & & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & & \cellcolor{black}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{black}& & & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & & \cellcolor{black}& \cellcolor{blue}& & \cellcolor{blue}& & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & &  \\\hline
+%             & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{black}& & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & &  \\\hline
+%             & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & \cellcolor{black}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{black}& & & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & & \cellcolor{black}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{black}& & & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & & \cellcolor{black}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{black}& & & & \cellcolor{green}& & & & & & & & & & & & \cellcolor{red}& & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & & \cellcolor{black}& \cellcolor{blue}& & \cellcolor{blue}& & & & & & & & & & & & & \cellcolor{red}& & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & & & & & & & & & & & & & \cellcolor{red}& &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & & & & & & & & & & & & & \cellcolor{red}&  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{black}& & & & & & & & & & & & & & & & \cellcolor{red} \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & & \cellcolor{black}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{green}& & & & & & & & & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & & & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & & \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{black}& & & & \cellcolor{green}& & & & & & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & & \cellcolor{black}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{green}& & & & & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& & & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{black}& & & & \cellcolor{green}& & & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & & \cellcolor{black}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{green}& & &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}& &  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}& & & \cellcolor{green}&  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{black}& & & & \cellcolor{green} \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & & \cellcolor{black}& \cellcolor{blue}& & \cellcolor{blue} \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue}&  \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& & & \cellcolor{blue}& \cellcolor{black}& \cellcolor{blue} \\\hline
+%             & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & & \cellcolor{red}& & & & & & & & & & & & \cellcolor{green}& \cellcolor{blue}& & \cellcolor{blue}& \cellcolor{black} \\\hline            
+%         \end{tabular}
+%     }
+%     \label{tab:layout}
+% \end{table}

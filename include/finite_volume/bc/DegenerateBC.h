@@ -2,12 +2,13 @@
 #ifndef DEGENERATE_BC_H
 #define DEGENERATE_BC_H
 
-#include "MultivariateBC.h"
+#include "BoundaryCondition.h"
 
-class DegenerateBC: public MultivariateBC{
+class DegenerateBC: public BoundaryCondition{
     public:
-    virtual Eigen::VectorXd computeFlux(const ConstCell& u, const Eigen::Vector3d& r) const override;
-    virtual Eigen::VectorXd computeBoundaryStates(const ConstCell& u, const Eigen::Vector3d& r) const override;
+    DegenerateBC(Eigen::Index surfID): BoundaryCondition(surfID) {}
+    double computeFlux(double u, const Eigen::Vector3d& r) const override{ return 0.0; }
+    double computeBoundaryState(double u, const Eigen::Vector3d& r) const override{ return u; }
 };
 
 #endif

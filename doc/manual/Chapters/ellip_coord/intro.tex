@@ -1,0 +1,43 @@
+Much of the solving algorithms detailed later in this manual utilizes finite volume method to solve for the desired states within a droplet. Since the droplets can deviate from perfect sphericity and each turn into
+an ellipsoid, the use of an ellipsoidal coordinate system is appropriate. There are many ways to formulate such system; the one used here resembles spherical coordinates, but with a different sketch factor in different
+semi-axial directions.
+
+\begin{equation}
+    \mathbf{r}(r, \mu, \varphi) =
+    \begin{bmatrix}
+        x' \\ y' \\ z'
+    \end{bmatrix}
+    = \begin{bmatrix}
+        a r \mu\\
+        b r \sqrt{1-\mu^2} \cos\varphi\\
+        c r \sqrt{1-\mu^2} \sin\varphi
+    \end{bmatrix},
+\end{equation}
+where $r \in [0, 1]$, $\mu \in [-1, 1]$, and $\varphi \in (-\pi, \pi]$ are the coordinate variables. The axes $x'$, $y'$, and $z'$ form a rotated Cartesian grid where $x'$ points to the
+semi-major direction, $y'$ to the semi-middle direction, and $z'$ to the semi-minor direction. As such, the polar cosine $\mu$ is always measured from the semi-major axis.
+
+The reverse transformations are
+\begin{subequations}
+    \begin{align}
+        r &= \sqrt{\left( \frac{x'}{a} \right)^2 + \left( \frac{y'}{b} \right)^2 + \left( \frac{z'}{c} \right)^2 } \\
+        \mu &= \frac{x'}{ar} \\
+        \varphi &= \arctantwo\left( \frac{z'}{c}, \frac{y'}{b} \right)
+    \end{align}
+\end{subequations}
+
+The basis vectors are defined as followed
+\begin{subequations}
+    \begin{align}
+        \mathbf{e}_r &\equiv \frac{\partial\mathbf{r}}{\partial r} = \frac{\mathbf{r}}{r} \\
+        \mathbf{e}_\mu &\equiv \frac{\partial\mathbf{r}}{\partial \mu} =
+            \begin{bmatrix}
+                ar \\ \displaystyle -br \frac{\mu}{\sqrt{1-\mu^2}} \cos\varphi \\ \displaystyle -cr \frac{\mu}{\sqrt{1-\mu^2}} \sin\varphi
+            \end{bmatrix} \\
+        \mathbf{e}_\varphi &\equiv \frac{\partial\mathbf{r}}{\partial \varphi} =
+            \begin{bmatrix}
+                0 \\ -br \sqrt{1-\mu^2} \sin\varphi \\ cr \sqrt{1-\mu^2} \cos\varphi
+            \end{bmatrix}.
+    \end{align}
+\end{subequations}
+
+The normalized counterparts are denoted as $\mathbf{\hat{r}}$, $\bm{\hat{\upmu}}$, and $\bm{\hat{\upvarphi}}$.

@@ -1,0 +1,16 @@
+% !TEX root = ../main.tex
+
+The motive for using a Tree data structure is to quickly locate which \text|Shape| object (potentially out of thousands or millions) that a ray of photon will enter next, which is our
+version of the nearest neighbor search algorithm. A brute-force approach will have a time-complexity of order $\mathcal{O}(N)$, which in itself is not ideal. Furthermore, distance
+calculations are expensive because of the use of the square-root function (in case of the \verb|Sphere| class) or some other functions that are potentially more expensive. A tree is a
+hierarchical data structure that groups objects based on certain common features. In this case, an Octree is used to group 3D shapes into each of the 8 octants of equal volume. Using a
+tree structure, the average time-complexity is down to $\mathcal{O}(\log N)$, which scales extremely well for large datasets. The majority of distance calculations involving those octants
+are to a surface of a box, and therefore are linear in nature, leaving a very few expensive calculations at the end.
+
+\subsection*{\texttt{BoundingBox}}
+The \verb|BoundingBox| class is derived from \verb|Box| and represents an axis-aligned bounding box (AABB). It is the building block of an \verb|Octree| and therefore is constrained to
+have at most 8 children. A \verb|Node| is defined as a pointer to a \verb|Shape| - more specifically, a \verb|std::unique_ptr<Shape>| - that is contained within a
+\verb|BoundingBox|. The pointed-to \verb|Shape| itself can be either another \verb|BoundingBox| (which means there are further subdivisions within that particular octant) or a terminal
+shape (which means they are leaf nodes). 
+
+\subsection*{\texttt{Octree}}
