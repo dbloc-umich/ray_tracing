@@ -40,22 +40,15 @@ double WaterMaterial::computeProperty(const std::string& name, const PropVars& v
     double P = vars.count("pressure") == 0 ? _eos->Pref() : vars.at("pressure");
     double lambda = vars.count("wavelength") == 0 ? 589e-9 : vars.at("wavelength");
     double rho = vars.count("density") == 0 ? _eos->rho(_eos->Pref(), _eos->Tref()) : vars.at("density");
-    double /*H,*/ T;
+    double T;
     if (vars.count("energy") == 0){
-        if (vars.count("temperature") == 0){
-            T = _eos->Tref();
-            // H = 0.0;
-        } else{
-            T = vars.at("temperature");
-            // H = _eos->H(P, T);
-        }
+        if (vars.count("temperature") == 0) T = _eos->Tref();
+        else T = vars.at("temperature");
     } else{
-        // H = vars.at("energy") / rho;
         TemperatureFromEnergyAux aux(_eos);
         T = aux.computeValue(vars);
     }
     double ni = vars.count("ion_number_density") == 0 ? 0 : vars.at("ion_number_density");
-    // double Ee = vars.count("electron_energy") == 0 ? 0.0 : vars.at("electron_energy") / ni;
     double Te = ElectronTemperatureAux().computeValue(vars);
 
     if (name == "2-photon_ionization_rate_coefficient") return 1.0e-52 * 1.0e-8;  // lit data = 1.0e-52 cm4 s, convert to m4 s

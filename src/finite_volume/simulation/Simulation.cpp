@@ -50,7 +50,10 @@ void Simulation::solve(StateMesh& u, double ti, double tf, double dt) const{
 
             // std::cout << u0.reshaped(u.stateCount(), u.cellCount()) << std::endl;
             auto status = _integrator->integrate(func, u0, ti, dt);
-            if (status != IVPStatus::Success) break;
+            if (status != IVPStatus::Success){
+                std::cerr << "ERROR: Time integration failed." << std::endl;
+                break;
+            }
 
             count++;
             if (ti >= tf) break;

@@ -1,5 +1,24 @@
-Source terms (momentum):
+Collisions are the primary mean that the species in a plasma exchange their mass, momentum, and energy. In their regime of interest where the plasma is not yet fully-ionized, 
+
+\subsection{Binary reactions}
+While photoionization is expected to be the primary source of ionization, a couple of binary reactions can play a non-neglible role when it
+comes to mass balance.
+
+Collisional ionization occurs when a free electron has enough kinetic energy 
+\begin{align}
+    r_{\text{ci}} &= S_{\text{ci}}N N_e \\
+    r_{\text{rec}} &= S_{\text{rec}}N_i N_e
+\end{align}
+
+\subsection{Momentum exchange}
 \begin{align}
     \mathbf{p}_{en} &= N N_e \sigma_{s, en} \lVert \mathbf{u}_e - \mathbf{u} \rVert \left( \mathbf{u}_e - \mathbf{u} \right) \\
     \mathbf{p}_{in} &= N N_i \sigma_{s, in} \lVert \mathbf{u}_i - \mathbf{u} \rVert \left( \mathbf{u}_i - \mathbf{u} \right)
+\end{align}
+
+\subsection{Energy exchange}
+\begin{align}
+    q'''_{ei} &= \nu_{ei} N_e k_B (T_e - T_i) \\
+    q'''_{en} &= \nu_{en} N_e k_B (T_e - T) \\
+    q'''_{in} &= \nu_{in} N_i k_B (T_i - T)
 \end{align}

@@ -5,7 +5,7 @@
 template<typename Callable, typename Scalar, typename>
 auto df(Callable&& f, Scalar x) -> decltype(f(x)) {
     const auto eps = std::numeric_limits<Scalar>::epsilon();
-    Scalar dx = std::cbrt(3*eps) * std::max(std::abs(x), 1.0);
+    Scalar dx = std::cbrt(3*eps) * std::abs(x);
     return (f(x+dx) - f(x-dx))/(2*dx);
 }
 
@@ -15,7 +15,7 @@ auto df(Callable&& f, const Eigen::Matrix<Scalar, Rows, Cols>& x, Eigen::Index i
     if (ind >= x.size()) throw std::invalid_argument("ERROR: Index out of bound.");
 
     const auto eps = std::numeric_limits<Scalar>::epsilon();
-    Scalar dx = std::cbrt(3*eps) * std::max(std::abs(x[ind]), 1.0);
+    Scalar dx = std::cbrt(3*eps) * std::abs(x[ind]);
     auto xp = x; xp[ind] += dx;
     auto xm = x; xm[ind] -= dx;
     return (f(xp) - f(xm))/(2*dx);

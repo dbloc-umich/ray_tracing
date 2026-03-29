@@ -1,4 +1,4 @@
-\subsection{Maxwell's equation}
+\subsection{Maxwell's equations}
 Hydrocarbon materials such that one used in this project can be reasonably assumed to be isotropic and homogeneous. This simplifies the Maxwell's equations in matter because it allows two vectors that are difficult
 to compute, namely the polarization vector $\mathbf{P}$ and the magnetization vector $\mathbf{M}$, to be parallel to the electric and magnetic fields. Moreover, $\mu_r \approx 1$ is assumed since hydrocarbon are
 non-magnetic materials. This leads to the following form of Maxwell's equations in matter:
@@ -16,8 +16,8 @@ non-magnetic materials. This leads to the following form of Maxwell's equations 
 In plasma, the free charge density $\rho_f$ and current density $\mathbf{j}_f$ can be easily computed using electron and ion information:
 \begin{subequations}
     \begin{align}
-        \rho_f &\equiv e(N_i - N_e) \\
-        \mathbf{j}_f &\equiv e(N_i \mathbf{u}_i - N_e \mathbf{u}_e)
+        \rho_f &\equiv e(n_i - n_e) \\
+        \mathbf{j}_f &\equiv e(n_i \mathbf{u}_i - n_e \mathbf{u}_e)
     \end{align}
 \end{subequations}
 
@@ -27,19 +27,20 @@ In plasma, the free charge density $\rho_f$ and current density $\mathbf{j}_f$ c
 % \end{equation}
 % due to the fact that light in matter must travel at the speed $v = c/n$.
 
-Though Equation \ref{eqn:maxwell} explicitly describes four vector equations, it can be easily shown that taking the divergence of Equations \ref{eqn:faraday} and \ref{eqn:ampere} will lead to Equations \ref{eqn:gauss_magnetic}
-and \ref{eqn:gauss}, respectively. Therefore, only Equations \ref{eqn:faraday} and \ref{eqn:ampere} are necessary to model the $\mathbf{E}$ and $\mathbf{B}$ fields.
+Maxwell's Equations (Equation \ref{eqn:maxwell}) are over-determined; there are 8 scalar equations that only describes 6 scalar variables (the components of $\mathbf{E}$ and $\mathbf{B}$). However, it can be shown
+that taking the divergence of Equations \ref{eqn:faraday} and \ref{eqn:ampere} will lead to Equations \ref{eqn:gauss_magnetic} and \ref{eqn:gauss}, respectively. Therefore, only Equations \ref{eqn:faraday} and
+\ref{eqn:ampere} are necessary to model the $\mathbf{E}$ and $\mathbf{B}$ fields.
 
 \subsection{Lorentz force}
-The Lorentz force acts upon any charge particle has the form
+The Lorentz force acts upon a distribution of charged particles has the form
 \begin{equation}
-    \mathbf{f}_j = \pm e \left(\mathbf{E} + \mathbf{u}_j \times \mathbf{B} \right),
+    \mathbf{f}_j = \rho_j \left(\mathbf{E} + \mathbf{u}_j \times \mathbf{B} \right),
     \label{eqn:lorentz_force}
 \end{equation}
 here the subscript $j$ can be either $e$ or $i$. Since a force is the rate of change of a momentum, Equation \ref{eqn:lorentz_force} can be expressed as 
 
 \begin{equation}
-    m_j \frac{d N_j\mathbf{u}_j}{dt} = \pm eN_j \left(\mathbf{E} + \mathbf{u}_j \times \mathbf{B} \right).
+    m_j \frac{d n_j\mathbf{u}_j}{dt} = \pm en_j \left(\mathbf{E} + \mathbf{u}_j \times \mathbf{B} \right).
     \label{eqn:lorentz_momentum}
 \end{equation}
 
@@ -50,6 +51,6 @@ however, the Lorentz force is still expected to be the main momentum contributor
 Electromagnetic waves themselves carry energy, and therefore capable of doing work on a charged system. According to Equation \ref{eqn:lorentz_momentum}, the magnetic field does no work on charged particles as its
 force component is always perpendicular to the charge velocity. The rate of work done by the electric field is then
 \begin{equation}
-    \frac{\partial N_j e_j}{\partial t} = m_j \frac{d N_j\mathbf{u}_j}{dt} \cdot \mathbf{u}_j = \pm eN_j \mathbf{u}_j \cdot \mathbf{E},
+    \frac{\partial n_j \mathcal{E}_j}{\partial t} = m_j \frac{d n_j\mathbf{u}_j}{dt} \cdot \mathbf{u}_j = \pm en_j \mathbf{u}_j \cdot \mathbf{E},
 \end{equation}
 and should be equal to the rate of energy gained by the particles.

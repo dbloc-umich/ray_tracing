@@ -292,7 +292,6 @@ Eigen::MatrixXd LaserSourceKernel::computeResidual(const StateMesh& u) const{
 #ifdef MONITOR2
                 std::cout << "[" << ray.position().transpose() << "] on cell " << i << ", " << j << ", " << k << std::endl;
 #endif
-                std::cout << std::endl;
                 return q;
             } else{
                 // Total internal reflection, since there is no refraction
