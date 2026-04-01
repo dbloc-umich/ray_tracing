@@ -1,0 +1,120 @@
+Collisions are the primary mean that the species in a plasma exchange their mass, momentum, and energy. The collisions described in this section are assumed to be entirely binary; i.e.\ involving two particles at a
+time. Primarily there are two interactions that can follow a collision, namely reaction and relaxation. Reactions convert a neutral particles into ions or vice versa, which changes the composition of the plasma.
+Relaxations are the main process in which a system is driven towards equilibrium in absence of external sources, is achieved by the two particles involved in a collision exchanging their velocities and temperatures
+at a rate proportional the respective difference, similar to two working fluids in a heat exchanger.
+
+\subsection{Reactions}
+\label{sect:reactions}
+When a free electron with a sufficient kinetic energy collides with a bound electron, the latter can receive enough energy to be removed from its orbit. This process, known as collisional ionization, requires the
+free electron to have a kinetic energy $\mathcal{E}_e$ that exceeds the binding energy $\mathcal{E}_b$. Electrons in a control volume is modeled as having a single particle-averaged energy. In this section, this
+averaged energy is denoted $\frac{3}{2} k_B T_e$ in this section as opposed to $\mathcal{E}_e$, which instead represents the energy of an individual electron. Collisional ionization still occurs in a volume where
+$\frac{3}{2} k_B T_e < \mathcal{E}_b$ since there exists a fraction of electron with a sufficient $\mathcal{E}_e$.
+
+Assuming a Maxwellian distribution of velocity, the probability density function (PDF) of electron speed $f(u_e)$ is \cite{Fitzpatrick}
+\begin{equation}
+    f(u_e) = \left( \frac{m_e}{2\pi k_B T_e} \right)^{3/2} 4\pi u_e^2 \exp{\frac{-\frac{1}{2}m_e u_e^2}{k_B T_e}}.
+    \label{eqn:maxwellian_velocity}
+\end{equation}
+
+To convert Equation \ref{eqn:maxwellian_velocity} into a PDF in kinetic energy, the following identity is employed
+\begin{equation}
+    f(\mathcal{E}_e) \left\lvert d\mathcal{E}_e \right\rvert = f(u_e) \left\lvert du_e \right\rvert.
+\end{equation}
+which requires the derivative
+\begin{subequations}
+    \begin{align}
+        \frac{d\mathcal{E}_e}{du_e} &= m_e u_e \\
+        \frac{du_e}{d\mathcal{E}_e} &= \frac{1}{m_e u_e} = \frac{1}{\sqrt{2m_e \mathcal{E}_e}}
+    \end{align}
+\end{subequations}
+
+The energy-PDF is therefore
+\begin{subequations}
+    \begin{align}
+        f(\mathcal{E}_e) &= f(u_e) \left\lvert \frac{du_e}{d\mathcal{E}_e} \right\rvert \\
+        &= \frac{2}{\sqrt{\pi}} \sqrt{\frac{\mathcal{E}_e}{(k_B T_e)^3}} \exp{\frac{-\mathcal{E}_e}{k_B T_e}}
+    \end{align}
+\end{subequations}
+
+Let $f_b$ be the fraction of electrons with $\mathcal{E}_e \geq \mathcal{E}_b$, then
+\begin{subequations}
+    \begin{align}
+        f_b &\equiv f(\mathcal{E}_e \geq \mathcal{E}_b) \\
+        &= \int_{\mathcal{E}_b}^{\infty} f(\mathcal{E}_e) d\mathcal{E}_e \\
+        &= \erfc \sqrt{z_b} + \frac{2}{\sqrt{\pi}} \sqrt{z_b} \exp(-z_b),
+    \end{align}
+    \label{eqn:fraction_fb}
+\end{subequations}
+where $z_b \equiv \mathcal{E}_b/(k_B T_e)$.
+
+\todo{Finish up collisional ionization}
+
+The reverse process of ionization is recombination, where an ion captures a free electron to become neutral. Recombination, fortunately, does not have an energy threshold, and the reaction rate density is
+\begin{equation}
+    \Gamma_{\text{rec}} = -S_{\text{rec}} n_e n_i.
+\end{equation}
+This reaction rate density is negative as ions are being consumed.
+
+Reactions do not just alter the amount of each species in a plasma; it also transfer a portion of the reactant's momentum and energy directly into the product, assuming no enthalpy of reaction. These transfers
+are typically more important for ions and neutrals than they are for electrons, as the latter have other sources that contribute to their momentum and energy a lot more significantly. Only account for the transfer
+of conservative variables in reactive processes, the conservation equations read
+\begin{subequations}
+    \begin{align}
+        \frac{\partial n_i}{\partial t} &= -\frac{\partial n}{\partial t} = \sum_r \Gamma_r \\
+        \frac{\partial n_i \mathbf{u}_i}{\partial t} &= -\frac{\partial n \mathbf{u}}{\partial t} = \sum_r \Gamma_r \mathbf{u}_r \\
+        \frac{\partial n_i \mathcal{E}_i}{\partial t} &= -\frac{\partial n \mathcal{E}}{\partial t} = \sum_r \Gamma_r \mathcal{E}_r,
+    \end{align}
+\end{subequations}
+where the subscript $r$ both denotes the type of reaction and indicates that the variables belong to the reactant species.
+
+\subsection{Relaxations}
+\label{sect:relaxations}
+A collision between a charged particle $j$ and a neutral particle results in a force roughly equal to
+\begin{equation}
+    \mathbf{f}_{jn} = \frac{m_j n_j (\mathbf{u}_j - \mathbf{u})}{\tau_{jn}}.
+    \label{eqn:momentum_relaxation_jn}
+\end{equation}
+Here the double subscript $jn$ refers to a transfer from a particle $j$ to a neutral particle. By Newton's third law of motion, $\mathbf{f}_{jn} = -\mathbf{f}_{nj}$. The mean time between collisions $\tau_{jn}$
+is approximately constant and is the reciprocal of the momentum-transfer collision frequency
+\begin{equation}
+    \nu_{jn}^M \equiv \frac{1}{\tau_{jn}} = n \sigma^{M}_{jn} \lVert \mathbf{u}_j - \mathbf{u} \rVert,
+    \label{eqn:nu_jn_momentum}
+\end{equation}
+with $\sigma^{M}_{jn}$ denotes the equivalent cross section of momentum transfer between $j$ and $n$. It is typically a function of charged particle speed; the average value over all velocities in a Maxwellian
+distribution is typically used in Equation \ref{eqn:nu_jn_momentum}.
+
+Collisions between two charged particles are Coulomb collisions mediated by the electric field. Like-particle (electron-electron or ion-ion) collisions are often neglected because they preserve the momentum and
+energy between themselves, and they contribute very little to diffusion. This is in contrast with electron-ion collisions, where there exists a net transfer of momentum (and energy) between the two particles. In a
+similar formulation as Equation \ref{eqn:momentum_relaxation_jn}, the force exerted between an ion and an electron during their collision is
+\begin{equation}
+    \mathbf{f}_{ei} = m_e n_e (\mathbf{u}_i - \mathbf{u}_e) \nu^M_{ei},
+    \label{eqn:momentum_relaxation_jn}
+\end{equation}
+and the electron-ion momentum-transfer collision frequency $\nu^M_{ei}$ is
+\begin{equation}
+    \nu^M_{ei} = C \frac{n_i Z e^4}{(4\pi\varepsilon_0)^2 \sqrt{m_e (k_B T_e)^3}} \ln\Lambda,
+    \label{eqn:nu_ei_momentum}
+\end{equation}
+where $C$ is a prefactor on the order of $\mathcal{O}(1)$ that differs depending on the text. Chen gives $C = \pi$, while the FLASH code uses $C = \frac{4}{3} \sqrt{2\pi}$ \cite{Chen}\cite{FLASH}. $C = \pi$ will be
+used in this model. The Coulomb logarithm $\ln\Lambda$ is a correction factor that accounts for the cumulative effect of many small-angle deflections in a collision and is given by
+\begin{equation}
+    \ln\Lambda \equiv \ln \left[ \frac{4\pi (\varepsilon_0 k_B T_e)^{3/2}}{Ze^3 \sqrt{n_e}} \right].
+    \label{eqn:ln_lambda}
+\end{equation}
+In both Equations \ref{eqn:nu_ei_momentum} and \ref{eqn:ln_lambda}, the average ionization number $Z$ can be assumed to be 1.
+
+For all types of collisions, the energy loss due to relaxation term can be expressed as a heat source that flows from particle $j$ to $j'$
+\begin{equation}
+    q'''_{jj'} = -q'''_{j'j} = \frac{3}{2} n_j \nu_{jj'}^K k_B (T_j - T_{j'}).
+    \label{eqn:energy_relaxation}
+\end{equation}
+
+The energy-transfer collision frequency $\nu^K$ is related to its momentum counterpart $\nu^M$ by
+\begin{equation}
+    \frac{\nu_{jj'}^K}{\nu_{jj'}^M} = \frac{2m_j}{m_j + m_{j'}}.
+    \label{eqn:collision_frequency_ratio}
+\end{equation}
+
+The index $j$ in Equation \ref{eqn:collision_frequency_ratio} refers to the lighter particle out of the pair, so it is always the electron if it is involved in a collision, and the ion in a ion-neutral collision.
+In the former case, $\nu_{ej'}^K \ll \nu_{ej'}^M$, which means energy is relaxed at a much slower rate than momentum is. Physically, upon colliding with a heavy particle, an electron is frequently scattered before
+a significant portion of its kinetic energy is lost. In an ion-neutral collision, due to the near-identical mass of the two particles, energy and momentum are relaxed on the same timescale -- i.e., $\nu_{in}^K = \nu_{in}^M$.

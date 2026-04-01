@@ -10,60 +10,60 @@ Material::~Material() = default;
 Material::Material(Material&&) = default;
 Material& Material::operator=(Material&&) = default;
 
-bool Material::hasProperty(Prop name) const noexcept{ return _props.count(name); }
+bool Material::hasProperty(const std::string& name) const noexcept{ return _props.count(name); }
 
-void Material::addProperty(Prop name) const{
+void Material::addProperty(const std::string& name) const{
     // Adds a placeholder null pointer, this is used when there's a user-implemented material property
     if (hasProperty(name))
         throw std::runtime_error("ERROR: A property of the same name already exists.");
     _props[name] = nullptr;
 }
 
-void Material::addProperty(Prop name, double val) const{
+void Material::addProperty(const std::string& name, double val) const{
     if (hasProperty(name))
         throw std::runtime_error("ERROR: A property of the same name already exists.");
     _props[name] = std::make_unique<ConstantProperty>(val);
     _props[name]->setMaterial(this);
 }
 
-void Material::addProperty(Prop name, std::function<double(const PropVars&)> func) const{
+void Material::addProperty(const std::string& name, std::function<double(const PropVars&)> func) const{
     if (hasProperty(name))
         throw std::runtime_error("ERROR: A property of the same name already exists.");
     _props[name] = std::make_unique<FunctionProperty>(func);
     _props[name]->setMaterial(this);
 }
 
-void Material::addProperty(Prop name, std::unique_ptr<MaterialProperty> prop) const{
+void Material::addProperty(const std::string& name, std::unique_ptr<MaterialProperty> prop) const{
     if (hasProperty(name))
         throw std::runtime_error("ERROR: A property of the same name already exists.");
     _props[name] = std::move(prop);
     _props[name]->setMaterial(this);
 }
 
-void Material::replaceProperty(Prop name, double val) noexcept{
+void Material::replaceProperty(const std::string& name, double val) noexcept{
     if (hasProperty(name)){
         _props[name] = std::make_unique<ConstantProperty>(val);
         _props[name]->setMaterial(this);
     }
 }
 
-void Material::replaceProperty(Prop name, std::function<double(const PropVars&)> func) noexcept{
+void Material::replaceProperty(const std::string& name, std::function<double(const PropVars&)> func) noexcept{
     if (hasProperty(name)){
         _props[name] = std::make_unique<FunctionProperty>(func);
         _props[name]->setMaterial(this);
     }
 }
 
-void Material::replaceProperty(Prop name, std::unique_ptr<MaterialProperty> prop) noexcept{
+void Material::replaceProperty(const std::string& name, std::unique_ptr<MaterialProperty> prop) noexcept{
     if (hasProperty(name)){
         _props[name].reset(prop.release());
         _props[name]->setMaterial(this);
     }
 }
 
-void Material::removeProperty(Prop name) noexcept{ _props.erase(name); }
+void Material::removeProperty(const std::string& name) noexcept{ _props.erase(name); }
 
-double Material::computeProperty(Prop name, const PropVars& vars) const{
+double Material::computeProperty(const std::string& name, const PropVars& vars) const{
     if (!hasProperty(name))
         throw std::invalid_argument("ERROR: A property of this name has not been added.");
     return _props[name]->compute(vars);

@@ -1,0 +1,61 @@
+\begin{subequations}
+    \begin{align}
+        \frac{\partial \rho}{\partial t} + \nabla \cdot [\rho\mathbf{u}] &= 0 \\
+        \frac{\partial \rho\mathbf{u}}{\partial t} + \nabla \cdot [\rho\mathbf{u} \otimes \mathbf{u}] &= -\nabla p + \nabla \cdot \mathbf{\uptau} + \rho \mathbf{a} \\
+        \frac{\partial \rho H}{\partial t} + \nabla \cdot [\rho\mathbf{u}H] &= \nabla \cdot \mathbf{q}'' + q'''
+    \end{align}
+\end{subequations}
+
+In terms of primitive variables
+\begin{subequations}
+    \begin{align}
+        \mathbf{\uptau} &= \mu \left[\nabla\mathbf{u} + (\nabla\mathbf{u})^T \right] - \frac{2}{3}\mu [\nabla \cdot \mathbf{u} ] \mathbf{I} \\
+        \mathbf{q''} &= k\nabla T
+    \end{align}
+\end{subequations}
+
+% The general form of the Heat Equation is
+% \begin{equation}
+%     \frac{\partial}{\partial t} \left[\rho \hat{H} \right] = -\nabla \cdot \mathbf{q''} + q''',
+%     \label{eqn:heat_general}
+% \end{equation}
+% where
+% \begin{align*}
+%     \rho &:= \text{density (kg/m$^3$)} \\
+%     \hat{H} &:= \text{specific enthalpy (J/kg)} \\
+%     \mathbf{q''} &:= \text{heat flux (W/m$^2$)} \\
+%     q''' &:= \text{volumetric heat generation rate (W/m$^3$)}
+% \end{align*}
+
+% The temperature dependency of the density and specific heat capacity, $\hat{C}_p$ is assumed to be weak; this is true when the material is a liquid far from phase transition. The time
+% derivative of enthalpy is then approximated in terms of only temperature change:
+% \begin{equation}
+%     \frac{\partial}{\partial t} \left[\rho \hat{H} \right] \approx \rho(T) \hat{C}_p(T) \frac{\partial T}{\partial t}
+%     \label{eqn:enthalpy_derivative}
+% \end{equation}
+
+% Fourier's Law states that the heat flux vector can be written as
+% \begin{equation}
+%     \mathbf{q''} = -\nabla[k(T) T]
+%     \label{eqn:fouriers_law}
+% \end{equation} 
+
+% Substituting the expressions in Equations \ref{eqn:enthalpy_derivative} and \ref{eqn:fouriers_law} into the Heat Equation and integrating over a control volume $(i,j,k)$, we arrive at the
+% finite-volume discretization
+% \begin{equation}
+%     \rho_{ijk} \hat{C}_{p, ijk} V_{ijk} \frac{\partial T_{ijk}}{\partial t} = \oiint_{\partial V_{ijk}} \nabla[k(T) T] \cdot \mathbf{\hat{n}} dS + q_{ijk},
+%     \label{eqn:heat_fv}
+% \end{equation}
+% where the quantities with an ${ijk}$ subscript are defined as follow
+% \begin{subequations}
+%     \begin{align}
+%         V_{ijk} &\equiv \iiint_{V_{ijk}} dV \\
+%         T_{ijk} &\equiv \frac{1}{V_{ijk}} \iiint_{V_{ijk}} T dV \\
+%         q_{ijk} &\equiv \iiint_{V_{ijk}} q''' dV \\
+%         \rho_{ijk} &\equiv \rho(T_{ijk}) \\
+%         \hat{C}_{p, ijk} &\equiv \hat{C}_p(T_{ijk})
+%     \end{align}
+% \end{subequations}
+
+% As computational domain is inside a droplet that typically assumes an ellipsoidal shape, ellipsoidal coordinates will be used throughout this chapter. The description of this coordinate
+% system can be found in Chapter \ref{chpt:ellip_coord}. The following sections aim to expand each term in Equation \ref{eqn:heat_fv} in ellipsoidal coordinates.

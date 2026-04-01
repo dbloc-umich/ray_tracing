@@ -1,5 +1,6 @@
 #include "NewtonSolver.h"
 #include "Derivative.h"
+#include <iostream>
 
 template<int N, int M>
 NewtonSolver<N, M>::NewtonSolver(const Function& func, const DFunction& dfunc,
@@ -35,9 +36,14 @@ NLStatus NewtonSolver<N, M>::solve(DomainType& x) const noexcept{
             if (fx.size() < x.size() || fx.size() < Jx.rows() || fx.size() != Jx.cols()) return NLStatus::InvalidArgument;
         }
         for (std::size_t iter = 0; iter < this->_maxIter; iter++){
+            std::cout << "Iter " << iter << ":" << std::endl;
+            std::cout << "x = " << x.transpose() << std::endl;
+            std::cout << "fx = " << fx.transpose() << std::endl;
+            std::cout << "Jx = " << std::endl << Jx << std::endl;
             Eigen::ColPivHouseholderQR<Eigen::Ref<DerivativeType>> qr(Jx);
             if (qr.rank() < fx.size()) return NLStatus::SingularityError;
             auto dx = qr.solve(fx);
+            std::cout << "dx = " << dx.transpose() << std::endl << std::endl;
             x -= dx;
             fx = this->_f(x);
             if (this->inputConverged(x, dx) || this->outputConverged(fx)) return NLStatus::Success;

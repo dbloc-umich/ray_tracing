@@ -1,0 +1,63 @@
+A linear transformation can be represented by a matrix multiplication. In this project, such matrices are in $\mathbb{R}^{3\times3}$, meaning they operate on an input on $\mathbb{R}^3$ to produce an output also on
+$\mathbb{R}^3$. This therefore excludes reduction transformations such as projection. A consequence of this is that the transformation matrix is invertible. Translation is not a linear transformation and therefore
+cannot be represented by a matrix in $\mathbb{R}^{3\times3}$. However, it is easy to account for since a mere translation does not change the original shape's orientation or size.
+
+Every shape defined by a user-input function has a shared pointer to a base shape, related to the actual shape by a transformation $\bm{M}$ and a translation vector $\bm{r}_0$. The transformed shape derived from a
+parametric surface $\bm{r}(u,v)$ is $\bm{Mr}(u,v) + \bm{r}_0$, while that derived from an implicit surface $f(\bm{r}) = 0$ is $f(\bm{M}^{-1}(\bm{r} - \bm{r}_0)) = 0$.
+
+
+\section{Classification of linear transformations}
+\subsection{Rigid transformation}
+A rotation by an angle $\theta$ about a fixed axis $\bm{\hat{\omega}}$ is represented by the matrix
+\begin{equation}
+    \bm{R}_{\bm{\hat{\omega}}}(\theta) = \bm{I} + \bm{\Omega} \sin\theta + \bm{\Omega}^2 (1-\cos\theta),
+\end{equation} 
+where $\bm{\Omega}$ is the anti-symmetric matrix defined as
+\begin{equation}
+    \bm{\Omega} \equiv
+    \begin{bmatrix}
+        0 & -\omega_z & \omega_y \\
+        \omega_z & 0 & -\omega_x \\
+        -\omega_y & \omega_x & 0
+    \end{bmatrix}.
+\end{equation}
+$\bm{R}_{\bm{\hat{\omega}}}$ is an orthogonal matrix ($\bm{R}_{\bm{\hat{\omega}}} \bm{R}_{\bm{\hat{\omega}}}^T = \bm{I}$) with unit determinant.
+
+\subsection{Reflection}
+A reflection about the plane that crosses the origin and has unit normal $\bm{\hat{n}}$ is represented by the matrix
+\begin{equation}
+    \bm{R}_{\bm{\hat{n}}} \equiv \bm{I} - 2\bm{\hat{n}} \otimes \bm{\hat{n}}.
+\end{equation}
+Similar to $\bm{R}_{\bm{\hat{\omega}}}$, $\bm{R}_{\bm{\hat{n}}}$ is orthogonal, but it has a determinant of -1.
+
+\subsection{Scaling}
+A scaling transformation is represented by the diagonal matrix
+\begin{equation}
+    \bm{K} \equiv
+    \begin{bmatrix}
+        K_x & 0 & 0 \\
+        0 & K_y & 0 \\
+        0 & 0 & K_z
+    \end{bmatrix}.
+\end{equation}
+
+If $K_x = K_y = K_z = K$, the matrix is simplified to
+\begin{equation}
+    \bm{K} = K\bm{I},    
+\end{equation}
+and the scaling is said to be uniform.
+
+\subsection{Shearing}
+A shearing transformation is represented by the matrix
+\begin{equation}
+    \bm{\Sigma} \equiv
+    \begin{bmatrix}
+        1 & \Sigma_{xy} & \Sigma_{xz} \\
+        \Sigma_{yx} & 1 & \Sigma_{yz} \\
+        \Sigma_{zx} & \Sigma_{zy} & 1
+    \end{bmatrix}.
+\end{equation}
+
+\section{Singular value decomposition}
+The motivation of applying the SVD onto $\bm{M}$ is to identify which transformations is $\bm{M}$ composed of. In particular, if they are only a sequence of rotations, reflections, and uniform scalings, then quite
+a few properties can be easily computed from those of the base shape. 

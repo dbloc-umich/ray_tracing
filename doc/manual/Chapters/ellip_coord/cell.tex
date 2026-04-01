@@ -1,0 +1,118 @@
+\begin{wrapfigure}{r}{5cm}
+    \centering
+    \includegraphics[scale=0.4]{Figures/ellipsoidal_cell.png}
+    \caption{A sample ellipsoidal cell}
+    \label{fig:ellipsoidal_cell}
+\end{wrapfigure}
+
+On a structured ellipsoidal mesh, a cell that occupies the space between the grid points $\left[r_{i-1/2}, r_{i+1/2}\right] \times \left[\mu_{j-1/2}, \mu_{j+1/2}\right] \times \left[\varphi_{k-1/2}, \varphi_{k+1/2}\right]$
+are given the triple index $(i,j,k)$. As is common in finite volume codes, cell boundaries are given half-integer indices, while cell centers have whole-integer indices. A depiction of such a cell is shown in Figure
+\ref{fig:ellipsoidal_cell}, with all three basis vectors clearly labeled.
+
+As a result of the stretching of the spherical coordinates, the basis vectors are no longer orthogonal. One consequence of the loss of orthogonality is the normal vector on any of the faces does not coincide with a
+basis vector. Instead, those normal vectors are given by
+\begin{subequations}
+    \label{eqn:ellipsoid_normal_vectors}
+    \begin{align}
+        \mathbf{n}_r = \mathbf{e}_\varphi \times \mathbf{e}_\mu \\
+        \mathbf{n}_\mu = \mathbf{e}_r \times \mathbf{e}_\varphi \\
+        \mathbf{n}_\varphi = \mathbf{e}_\mu \times \mathbf{e}_r.
+    \end{align}
+\end{subequations}
+
+The orientation of each normal vector in Equation \ref{eqn:ellipsoid_normal_vectors} is chosen such that the dot product between it and corresponding basis vector is positive - i.e. the two vectors both point towards
+the direction where their respective variable is increasing. Their normalized versions are denoted $\mathbf{\hat{n}}_r$, $\mathbf{\hat{n}}_\mu$, and $\mathbf{\hat{n}}_\varphi$, respectively. Note that because of
+degenerate surfaces, $\mathbf{\hat{n}}_r$ is undetermined at $r = 0$, and so is $\mathbf{\hat{n}}_\varphi$ at $\mu = \pm 1$.
+
+The Jacobian determinant indicates how much the volume of this box on $r$-$\mu$-$\varphi$ space is distorted by the transformation onto $x'$-$y'$-$z'$ space.
+\begin{subequations}
+    \begin{align}
+        \mathbf{J} &= \begin{bmatrix}
+            \mathbf{e}_r & \mathbf{e}_\mu & \mathbf{e}_\varphi
+        \end{bmatrix} \\
+        &= \begin{bmatrix}
+            a\mu & ar & 0 \\
+            b\sqrt{1-\mu^2} \cos\varphi & \displaystyle -br\cos\varphi\frac{\mu}{\sqrt{1-\mu^2}} & -br\sqrt{1-\mu^2} \sin\varphi \\
+            c\sqrt{1-\mu^2} \sin\varphi & \displaystyle -cr\sin\varphi\frac{\mu}{\sqrt{1-\mu^2}} & cr\sqrt{1-\mu^2} \cos\varphi \\
+        \end{bmatrix} \\
+        dV &= |\det \mathbf{J}| dr d\mu d\varphi \\
+        &= abcr^2 dr d\mu d\varphi
+    \end{align}
+\end{subequations}
+
+The volume of the cell is then
+\begin{equation}
+    V_{ijk} = \frac{abc}{3} \Delta_i r^3 \Delta\mu_j \Delta\varphi_k  \label{eqn:ellipsoidal_cell_volume}.
+\end{equation}
+
+Here, the following short-hand $\Delta$ notations are employed:
+\begin{subequations}
+    \begin{align}
+        \Delta r_i &\equiv r_{i+1/2} - r_{i-1/2} \\
+        \Delta_i f(r) &\equiv f(r_{i+1/2}) - f(r_{i-1/2})
+    \end{align}
+\end{subequations}
+
+Most cell have 6 surfaces, each corresponding to a boundary value of $s$, $\mu$, or $\varphi$, respectively. The exceptions are those with $r=0$, which collapses into a point at the origin, and $\mu = \pm 1$, which
+together form the major axis. The nomenclature for a surface is to add a $+1/2$ or $-1/2$ to the index that corresponds to the variable being held constant. For example, surface $(i+1/2,j,k)$ is the surface of
+cell $(i,j,k)$ where $r$ is at its maximum value. It is also the surface of cell $(i+1,j,k)$ where $r$ is at its minimum value.
+
+The differential surface area is proportional to the L2-norm of the normal vector. For example, its value on surfaces $r = r_{i\pm1/2}$ is
+\begin{subequations}
+    \begin{align}
+        dS_{i \pm 1/2,j,k} &= \left\lVert \mathbf{e}_\mu \times \mathbf{e}_\varphi \right\rVert _{r=r_{i\pm1/2}} d\mu d\varphi \\
+        &= \begin{vmatrix}
+            \bm{\hat{\imath}} & \bm{\hat{\jmath}} & \bm{\hat{k}} \\
+            ar_{i\pm1/2} & \displaystyle -br_{i\pm1/2}\cos\varphi\frac{\mu}{\sqrt{1-\mu^2}} & \displaystyle -cr_{i\pm1/2}\sin\varphi\frac{\mu}{\sqrt{1-\mu^2}} \\
+            0 & -br_{i\pm1/2}\sqrt{1-\mu^2} \sin\varphi & cr_{i\pm1/2}\sqrt{1-\mu^2} \cos\varphi
+        \end{vmatrix} d\mu d\varphi \\
+        &= r_{i\pm1/2}^2 \left\lVert bc\mu \bm{\hat{\imath}} + ac\sqrt{1-\mu^2}\cos\varphi \bm{\hat{\jmath}} + ab\sqrt{1-\mu^2}\sin\varphi \bm{\hat{k}} \right\rVert d\mu d\varphi \\
+        &= abc r_{i\pm1/2}^2 \sqrt{\frac{\mu^2}{a^2} + \frac{(1-\mu^2)\cos^2\varphi}{b^2} + \frac{(1-\mu^2)\sin^2\varphi}{c^2}} d\mu d\varphi
+        \label{eqn:ellipsoid_dSi}
+    \end{align}    
+\end{subequations}
+
+Integrating Equation \ref{eqn:ellipsoid_dSi} then yields the surface area of surfaces $(i+1/2,j,k)$
+\begin{equation}
+    \frac{S_{i \pm 1/2,j,k}}{abc} = r_{i\pm1/2}^2 \int_{\Delta\varphi_k} \int_{\Delta\mu_j} \sqrt{\frac{\mu^2}{a^2} + \frac{(1-\mu^2)\cos^2\varphi}{b^2} + \frac{(1-\mu^2)\sin^2\varphi}{c^2}} d\mu d\varphi
+    \label{eqn:ellipsoid_Si}
+\end{equation}
+
+In Equation \ref{eqn:ellipsoid_Si}, the $\varphi$-dependency of the integrand can be rewritten as two incomplete elliptic integrals of the second kind $E(\theta, k)$, as followed:
+\begin{subequations}
+    \begin{align}
+        &\int_{\Delta\varphi_k} \sqrt{\alpha + \beta \cos^2\varphi + \gamma \sin^2 \varphi} d\varphi \\
+        &= \int_{\Delta\varphi_k} \sqrt{\alpha + \gamma - (\gamma - \beta)\cos^2\varphi} d\varphi \\
+        &= \int_{\pi/2 - \varphi_{k+1/2}}^{\pi/2 - \varphi_{k-1/2}} \sqrt{\alpha + \gamma - (\gamma - \beta)\sin^2\varphi} d\varphi \\
+        &= \sqrt{\alpha + \gamma} \int_{\pi/2 - \varphi_{k+1/2}}^{\pi/2 - \varphi_{k-1/2}} \sqrt{1 - \frac{\gamma - \beta}{\alpha + \gamma} \sin^2\varphi} d\varphi \\
+        &= \sqrt{\alpha + \gamma} \left[ E\left(\frac{\pi}{2} - \varphi_{k-1/2}, \sqrt{\frac{\gamma - \beta}{\alpha + \gamma}} \right) - E\left(\frac{\pi}{2} - \varphi_{k+1/2}, \sqrt{\frac{\gamma - \beta}{\alpha + \gamma}} \right)\right] \\
+        &= -\sqrt{\alpha + \gamma} \Delta_k E\left(\frac{\pi}{2} - \varphi, \sqrt{\frac{\gamma - \beta}{\alpha + \gamma}} \right).
+    \end{align}    
+\end{subequations}
+
+Therefore,
+\begin{subequations}
+    \label{eqn:ellipsoidal_Si_final}
+    \begin{equation}
+        \frac{S_{i \pm 1/2,j,k}}{ab} = -r_{i\pm1/2}^2 \int_{\Delta\mu_j} \sqrt{1-(1-\epsilon^2)\mu^2} \Delta_k E\left(\frac{\pi}{2} - \varphi, \sqrt{\frac{(1 - \delta^2)(1 - \mu^2)}{1 - (1-\epsilon^2)\mu^2}} \right) d\mu,
+    \end{equation}
+    where
+    \begin{align}
+        \delta &\equiv \frac{c}{b}, \label{eqn:delta} \\
+        \epsilon &\equiv \frac{c}{a}. \label{eqn:epsilon}
+    \end{align}
+\end{subequations}
+
+The area of the surfaces $S_{i,j \pm 1/2,k}$ can be calculated similarly
+\begin{align*}
+    \frac{S_{i,j \pm 1/2,k}}{ab} &= -\frac{\Delta_i r^2}{2} \sqrt{( 1 - \mu_{j \pm 1/2}^2) \left[\epsilon^2 + (1 - \epsilon^2)\mu_{j \pm 1/2}^2 \right]} \\
+    &\cdot \Delta_k E\left(\frac{\pi}{2} - \varphi, \sqrt{\frac{\mu_{j \pm 1/2}^2(1 - \delta^2)}{\epsilon^2 + (1 - \epsilon^2)\mu_{j \pm 1/2}^2}} \right),
+    \numberthis \label{eqn:ellipsoidal_Sj}
+\end{align*}
+where $\delta$ and $\epsilon$ are defined in Equations \ref{eqn:delta} and \ref{eqn:epsilon}, respectively.
+
+Finally, the area of surfaces $S_{i,j,k \pm 1/2}$ is
+\begin{equation}
+    \frac{S_{i,j,k \pm 1/2}}{ab} = \frac{\Delta_i r^2}{2} \Delta_j \arcsin(\mu) \sqrt{\delta^2 + (1-\delta^2)\cos^2{\varphi_{k \pm 1/2}}}.
+    \numberthis \label{eqn:ellipsoidal_Sk}  
+\end{equation}

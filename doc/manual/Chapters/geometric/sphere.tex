@@ -1,0 +1,72 @@
+The \lstinline|Sphere| class requires information of the center, $\bm{r}_0 = [x_0, y_0, z_0]^T$ and of the radius $R$. In Cartesian coordinates, the sphere surface is described by the implicit equation:
+\begin{equation}
+    (x - x_0)^2 + (y - y_0)^2 + (z - z_0)^2 = R^2,
+    \label{eqn:implicit_sphere}
+\end{equation}
+or in vector terms,
+\begin{equation}
+    \Vert \bm{r} - \bm{r}_0 \Vert^2 = R^2.
+    \label{eqn:vector_sphere}
+\end{equation}
+
+\subsection{Extreme points}
+The $x$-extrema are $x_0 \pm R$, the $y$-extrema are $y_0 \pm R$, and $x$-extrema are $z_0 \pm R$.
+
+\subsection{Surface area}
+The surface area is $4\pi R^2$.
+
+\subsection{Volume}
+The volume is $\displaystyle \frac{4}{3}\pi R^3$.
+
+\subsection{Checking if a point on the surface}
+A point with coordinates $\bm{r}$ is on the sphere surface if it satisfies Equation \ref{eqn:vector_sphere}.
+
+\subsection{Checking if a point is inside}
+A point with coordinates $\bm{r}$ is inside the sphere if $\Vert \bm{r} - \bm{r}_0 \Vert^2 < R^2$.
+
+\subsection{Checking if another volume overlaps}
+\label{sect:collision_test_sphere}
+\subsubsection{Sphere}
+If the other sphere is centered at $\bm{r}_1$ and has radius $R_1$, then it intersects with the current sphere if
+\begin{equation}
+    \Vert \bm{r}_0 - \bm{r}_1 \Vert < R + R_1,
+\end{equation}
+in other words, the two spheres intersect if the line joining their centers is shorter than the sum of the two radii.
+
+\subsubsection{Box}
+A box with lower vertex $\bm{p}_0 = [p_{x0}, p_{y0}, p_{z0}]^T$ and upper vertex $\bm{p}_1 = [p_{x1}, p_{y1}, p_{z1}]^T$ overlaps with the sphere if
+\begin{equation}
+    \Vert \bm{r}_0 - \bm{p} \Vert < R,
+\end{equation}
+where $\bm{p}$ is defined as
+\begin{equation}
+    \bm{p} =
+    \begin{bmatrix}
+        \max(p_{x0}, \min(x_0, p_{x1})) \\
+        \max(p_{y0}, \min(y_0, p_{y1})) \\
+        \max(p_{z0}, \min(z_0, p_{z1}))
+    \end{bmatrix}
+\end{equation}
+
+\subsubsection{Ellipsoid}
+Refer to Section \ref{sect:collision_test_ellipsoid}.
+
+\subsection{Distance to surface}
+Given a point $\bm{r}$ travelling at direction $\bm{\hat{\omega}}$, the distance $s$ to the sphere surface satisfies the equation
+\begin{equation}
+    \Vert \bm{r} + \bm{\hat{\omega}}s - \bm{r}_0 \Vert^2 = R^2,
+\end{equation}
+which is a quadratic equation in $s$. It has the explicit form:
+
+\begin{equation}
+    s^2 + 2Bs + C = 0,
+    \label{eqn:distance_sphere}
+\end{equation}
+where the coefficients $B$ and $C$ are defined as
+\begin{align}
+    B &= (\bm{r} - \bm{r}_0) \cdot \bm{\hat{\omega}} \\
+    C &= \Vert \bm{r} - \bm{r}_0 \Vert^2 - R^2.
+\end{align}
+
+\subsection{Outward normal vector}
+The outward normal vector of a point $\bm{r}$ on the sphere surface is $\displaystyle \frac{\bm{r} - \bm{r}_0}{R}$.

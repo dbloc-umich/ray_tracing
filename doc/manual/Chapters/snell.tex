@@ -1,0 +1,73 @@
+% !TEX root = ../main.tex
+
+Let $\bm{\hat{\imath}}$ be the incident vector, $\bm{\hat{n}}$ be the (outward) normal vector, and  $\bm{\hat{t}}$ be the transmitted vector. Also the index of refraction of a medium
+is labeled $n$.
+
+Our job is to find $\bm{\hat{t}}$, given $\bm{\hat{\imath}}$, $\bm{\hat{n}}$, $n_1$ and $n_2$. The vectors are related through Snell's Law, and in vector notation it reads
+\begin{equation}
+    n_1 \left( \bm{\hat{\imath}} \times \bm{\hat{n}} \right) = n_2 \left( \bm{\hat{t}} \times \bm{\hat{n}} \right),
+\end{equation}
+or
+\begin{equation}
+    \bm{\hat{t}} \times \bm{\hat{n}} = \bm{c},
+    \label{eqn:def_t}
+\end{equation}  
+for the new vector $\bm{c}$ defined as $\displaystyle \bm{c} = \frac{n_1}{n_2} \left( \bm{\hat{\imath}} \times \bm{\hat{n}} \right)$. Note that $\bm{c}$ and $\bm{\hat{n}}$ are
+orthogonal.
+
+We start solving for $\bm{\hat{t}}$ by decomposing it into two components: one parallel and one orthogonal to $\bm{\hat{n}}$:
+\begin{equation}
+    \bm{\hat{t}} = t_{\|} \bm{\hat{n}} + t_{\perp} \bm{\hat{p}}
+\end{equation}
+
+Since the cross product of the parallel component and $\bm{\hat{n}}$ is the zero vector, we require the cross product of the orthogonal component and $\bm{\hat{n}}$ be equal to $\bm{c}$.
+\begin{equation}
+    t_{\perp} \bm{\hat{p}} \times \bm{\hat{n}} = \bm{c}
+    \label{eqn:def_t_perp}
+\end{equation}
+
+Since $\bm{c}$ and $\bm{\hat{n}}$ are already orthogonal, one of the possible values for the unit vector $\bm{\hat{p}}$ is $\bm{\hat{p}} = \bm{\hat{n}} \times \bm{\hat{c}}$ (the other
+possibility is its additive inverse). Note that the unit vector $\bm{\hat{c}}$ is $\bm{c}$ normalized to unit length. Using the vector triple product identity $\bm{a} \times (\bm{b}
+\times \bm{c}) = (\bm{a} \cdot \bm{c})\bm{b} - (\bm{a} \cdot \bm{b})\bm{c}$,
+it can be showed that
+\begin{align*}
+    \bm{\hat{p}} \times \bm{\hat{n}} &= \left( \bm{\hat{n}} \times \bm{\hat{c}} \right) \times \bm{\hat{n}} \\
+    &= \bm{\hat{n}} \times \left( \bm{\hat{c}} \times \bm{\hat{n}} \right) \\
+    &= (\bm{\hat{n}} \cdot \bm{\hat{n}})\bm{\hat{c}} - (\bm{\hat{n}} \cdot \bm{\hat{c}})\bm{\hat{n}} \\
+    &= 1\bm{\hat{c}} - 0\bm{\hat{n}} \\
+    \bm{\hat{p}} \times \bm{\hat{n}} &= \bm{\hat{c}} \numberthis
+\end{align*}
+
+Substituting the above expression into Equation \ref{eqn:def_t_perp}, we arrive at the expression for $t_{\perp}$:
+\begin{align*}
+    t_{\perp} \bm{\hat{p}} \times \bm{\hat{n}} &= \bm{c} \\
+    t_{\perp} \bm{\hat{c}} &= \bm{c} \\
+    t_{\perp} &= \Vert \bm{c} \Vert \numberthis
+\end{align*}
+
+The parallel component of $\bm{\hat{t}}$ does not contribute to the cross product, so theoretically $t_{\|}$ can assume any value and Equation \ref{eqn:def_t} will hold true. However, since $\bm{\hat{t}}$ is a unit vector, we
+require that
+\begin{align*}
+    t_{\|}^2 + t_{\perp}^2 &= 1 \\
+    t_{\|} &= \pm \sqrt{1 - t_{\perp}^2}
+\end{align*}
+
+The choice of sign on $t_{\|}$ now depends on the orientation of the incident vector $\bm{\hat{\imath}}$. When the incident ray \textbf{enters} a surface, the transmitted vector $\bm{\hat{t}}$
+will point inwards, away from the normal vector. Conversely, when the incident ray \textbf{exits} the surface, $\bm{\hat{t}}$ will point outwards. Therefore,
+$$
+    t_{\|} =
+    \begin{cases}
+        -\sqrt{1 - t_{\perp}^2} &, \bm{\hat{\imath}} \cdot \bm{\hat{n}} < 0 \\
+        \sqrt{1 - t_{\perp}^2} &, \bm{\hat{\imath}} \cdot \bm{\hat{n}} > 0 \\
+    \end{cases}
+$$
+
+Therefore, the final form of the transmitted vector $\bm{\hat{t}}$ is
+\begin{align*}
+    \bm{\hat{t}} &= \Vert \bm{c} \Vert \left( \bm{\hat{n}} \times \bm{\hat{c}} \right) + \sgn\left( \bm{\hat{\imath}} \cdot \bm{\hat{n}} \right) \sqrt{1 - \Vert \bm{c} \Vert^2} \bm{\hat{n}} \label{eqn:refraction} \numberthis \\
+    \bm{c} &= \frac{n_1}{n_2} \left( \bm{\hat{\imath}} \times \bm{\hat{n}} \right)
+\end{align*}
+
+There are two special considerations. First, if $\Vert \bm{c} \Vert > 1$, the radical in Equation \ref{eqn:refraction} is complex-valued, and no refraction occurs. This phenomenon is
+known as total internal reflection. Second, if the incident ray to tangent to the surface it intersects with ($\bm{\hat{\imath}} \cdot \bm{\hat{n}} = 0$), it neither enters or exits
+the surface. As a result, there is no refraction or reflection.

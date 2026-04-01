@@ -5,11 +5,12 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-Ray::Ray(Eigen::Vector3d p, UnitVector3d dir, double I, double lambda, Shape* host):
+Ray::Ray(Eigen::Vector3d p, UnitVector3d dir, double I, double lambda, double A, Shape* host):
     _p(p),
     _dir(dir),
     _I(I),
     _lambda(lambda),
+    _A(A),
     _host(host)
 {
     if (I < 0.0) throw std::invalid_argument("ERROR: Negative intensity.");
@@ -24,13 +25,17 @@ void Ray::setIntensity(double I){
 }
 
 double Ray::frequency() const noexcept{
-    // angular frequency in units of radians/s
     return 2.0 * mconst::pi * pconst::c / _lambda;
 }
 
 void Ray::setWavelength(double lambda){
     if (lambda <= 0.0) throw std::invalid_argument("ERROR: Non-positive wavelength.");
     _lambda = lambda;
+}
+
+void Ray::setArea(double A){
+    if (A <= 0.0) throw std::invalid_argument("ERROR: Non-positive area.");
+    _A = A;
 }
 
 void Ray::setHost(Shape* host){

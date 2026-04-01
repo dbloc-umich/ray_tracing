@@ -1,0 +1,106 @@
+\documentclass{report}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{biblatex}
+\usepackage{bm}
+\usepackage{boldline}
+\usepackage{esint}
+\usepackage[left=2cm, right=2cm]{geometry}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage[intoc]{nomencl}
+\usepackage{mathtools}
+\usepackage{multicol}
+\usepackage{siunitx}
+\usepackage{spverbatim}
+\usepackage{todonotes}
+\usepackage{upgreek}
+\usepackage{wrapfig}
+\usepackage[table]{xcolor}
+
+\makenomenclature
+\renewcommand{\nomname}{Nomenclature}
+
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\diag}{diag}
+\lstset{basicstyle=\ttfamily, breaklines=true}
+
+\DeclareMathOperator{\arctantwo}{arctan2}
+\DeclareMathOperator{\erf}{erf}
+\DeclareMathOperator{\erfc}{erfc}
+
+\addbibresource{references.bib}
+
+%% This code creates the groups
+% -----------------------------------------
+\usepackage{etoolbox}
+\renewcommand\nomgroup[1]{%
+    \item[\bfseries
+    \ifstrequal{#1}{C}{Physical constants}{%
+    \ifstrequal{#1}{D}{Scalars}{%
+    \ifstrequal{#1}{E}{Vectors}{
+    \ifstrequal{#1}{F}{Matrices}{
+    \ifstrequal{#1}{X}{Subscripts}{
+    \ifstrequal{#1}{Y}{Superscripts}{
+    \ifstrequal{#1}{Z}{Styles}{
+    }}}}}}}%
+]}
+% -----------------------------------------
+
+%% This will add the units
+%----------------------------------------------
+\newcommand{\nomunit}[1]{%
+\renewcommand{\nomentryend}{\hspace*{\fill}#1}}
+%----------------------------------------------
+
+\begin{document}
+
+\tableofcontents
+
+\pagebreak
+\begin{multicols}{2}
+\input{Chapters/nomenclature.tex}
+
+
+\chapter{Introduction}
+
+\chapter{Physics of laser-droplet interactions}
+\label{chpt:numerical_droplet}
+\input{Chapters/droplet}
+
+\chapter{Numerical methods}
+
+% \chapter{Geometric classes}
+% \label{chpt:geometric}
+% \input{Chapters/geometric}
+
+% \chapter{Tree classes}
+% \label{chpt:tree}
+% \input{Chapters/tree}
+
+% \chapter{Propogation of light in matter}
+% \label{chpt:light}
+% \input{Chapters/attenuation}
+
+% \chapter{Snell's Law and Orientation of the Transmitted Ray}
+% \label{chpt:snell}
+% \input{Chapters/snell}
+
+% \chapter{Ellipsoidal Coordinates Formulation}
+% \label{chpt:ellip_coord}
+% \input{Chapters/ellip_coord}
+
+% \chapter{Heat Equation}
+% \label{chpt:heat_eqn}
+% \input{Chapters/heat_eqn}
+
+% \appendix
+% \chapter{Linear transformation}
+% \input{Chapters/linear_transformations.tex}
+
+\end{multicols}
+
+\printbibliography
+
+\end{document}

@@ -6,6 +6,7 @@ class EquationOfState{
     virtual ~EquationOfState() = default;
 
     // Required fluid properties
+    virtual double M() const noexcept = 0; // molecular mass
     virtual double rho(double P, double T) const noexcept = 0; // density
     virtual double drho_dP(double P, double T) const noexcept = 0; // pressure-derivative of density
     virtual double drho_dT(double P, double T) const noexcept = 0; // temperature-derivative of density
@@ -16,6 +17,9 @@ class EquationOfState{
     virtual double mu(double P, double T) const noexcept = 0; // dynamic viscosity
     virtual double Pr(double P, double T) const noexcept{ return Cp(P,T)/(mu(P,T)*k(P,T)); } // Prandt number
     virtual double H(double P, double T) const noexcept = 0; // specific enthalpy
+    virtual double T(double H) const noexcept = 0; // temperature from enthalpy
+    virtual double Pref() const noexcept = 0; // reference pressure
+    virtual double Tref() const noexcept = 0; // reference temperature
 };
 
 #endif

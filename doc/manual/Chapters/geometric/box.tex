@@ -1,0 +1,80 @@
+The \lstinline|Box| class represents an axis-aligned rectangular prism, where its edges align with the axes in Cartesian coordinates.
+It is defined by a lower vertex $\bm{p}_0$ and upper vertex $\bm{p}_1$. The edge lengths are $a = p_{x1} - p_{x0}$, $b = p_{y1} - p_{y0}$, and $c = p_{z1} - p_{z0}$,
+conventially called the length, width, and height, respectively.
+
+\subsection{Extreme points}
+The extreme points are $p_{x0}$ and $p_{x1}$ in the x-direction, $p_{y0}$ and $p_{y1}$ in y, and $p_{z0}$ and $p_{z1}$ in z.
+
+\subsection{Surface area}
+The surface area is $2(ab + ac + bc)$.
+
+\subsection{Volume}
+The volume is $abc$.
+
+\subsection{Checking if a point on the surface}
+A point $\bm{r}$ is on the one of its six faces if one coordinate is equal to the minimum or maximum coordinate of the box, and the other two coordinates
+are not outside of their respective extrema. For example, if $\bm{r}$ is on the face defined by $x = p_{x0}$, then $x = p_{x0}$, $p_{y0} \leq y \leq p_{y1}$, and $p_{z0} \leq z \leq p_{z1}$.
+
+\subsection{Checking if a point is inside}
+A point $\bm{r}$ is inside the box if all coordinates are strictly in between their respective extrema. Mathematically, $p_{x0} < x < p_{x1}$, $p_{y0} < y < p_{y1}$, and $p_{z0} < z < p_{z1}$.
+
+\subsection{Checking if another volume overlaps}
+\subsubsection{Box}
+Two boxes overlap with for all three coordinates, the maximum value of one box is greater than the minimum value of the other.
+\subsubsection{Sphere}
+Refer to Section \ref{sect:collision_test_sphere}.
+\subsubsection{Ellipsoid}
+Refer to Section \ref{sect:collision_test_ellipsoid}.
+
+\subsection{Distance to surface}
+Given a point $\bm{r}$ on the box surface with direction $\bm{\hat{\omega}}$, it is travelling away from the box if any of the following conditions is true:
+\begin{enumerate}
+    \item $x = p_{x0}$ and $\Omega_x \leq 0$,
+    \item $x = p_{x1}$ and $\Omega_x \geq 0$,
+    \item $y = p_{y0}$ and $\Omega_y \leq 0$,
+    \item $y = p_{y1}$ and $\Omega_y \geq 0$,
+    \item $z = p_{z0}$ and $\Omega_z \leq 0$,
+    \item $z = p_{z1}$ and $\Omega_z \geq 0$.
+\end{enumerate}
+The distance to surface should be 0 in these cases according to the function definition.
+
+Otherwise, the distance $s$ to the plane (not the box face) $x = p_{x0}$ is
+\begin{equation}
+    s = \frac{x - p_{x0}}{\Omega_x},
+\end{equation}
+and similar formulae can be applied to the other planes containing a box face.
+
+Even if negative or undefined values of $s$ are neglected, the smallest positive value of $s$ is still not guaranteed to be the distance to the box surface.
+This is because the calculated $s$ is the distance to the plane containing a face, not the face itself. An additional check to ensure that after traveling a
+distance $s$ to reach a plane, the remaining two coordinates are still in bound. For example, if $s$ is the distance to the plane $x = p_{x0}$, the additional
+checks are
+\begin{align}
+    p_{y0} \leq y + \Omega_y s \leq p_{y1} \\
+    p_{z0} \leq z + \Omega_z s \leq p_{z1}
+\end{align}
+
+The smallest positive value of $s$ that also ensures the point is still in bound is the distance to the box surface.
+
+\subsection{Outward normal vector}
+For a point $\bm{r}$ on the box surface, the normal vector is undefined if $\bm{r}$ lies on a vertex or an edge (the intersection of multiple faces). Otherwise,
+the normal vector is only dependent on which face the point lies:
+\begin{enumerate}
+    \item If $x = p_{x0}$, $\bm{\hat{n}} = -\bm{\hat{\imath}}$
+    \item If $x = p_{x1}$, $\bm{\hat{n}} = +\bm{\hat{\imath}}$
+    \item If $y = p_{y0}$, $\bm{\hat{n}} = -\bm{\hat{\jmath}}$
+    \item If $y = p_{y1}$, $\bm{\hat{n}} = +\bm{\hat{\jmath}}$
+    \item If $z = p_{z0}$, $\bm{\hat{n}} = -\bm{\hat{k}}$
+    \item If $z = p_{z1}$, $\bm{\hat{n}} = +\bm{\hat{k}}$
+\end{enumerate}
+
+\subsection{Checking if another volume is inside}
+This function is only defined for the \lstinline|Box| class, which will be useful in a few tree functions. Given a volume with calculated extreme points $\bm{r}_0$ and $\bm{r}_1$, respectively, the box will completely
+enclose this volume if the following 6 conditions are true
+\begin{enumerate}
+    \item $p_{x0} \leq x0$
+    \item $p_{y0} \leq y0$
+    \item $p_{z0} \leq z0$
+    \item $p_{x1} \geq x1$
+    \item $p_{y1} \geq y1$
+    \item $p_{z1} \geq z1$
+\end{enumerate}

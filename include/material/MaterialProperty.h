@@ -4,7 +4,6 @@
 #include <map>
 
 class Material;
-enum class PropVariable;
 class MaterialProperty{
     public:
     MaterialProperty() {};
@@ -15,7 +14,7 @@ class MaterialProperty{
     MaterialProperty& operator=(MaterialProperty&&){ return *this; }
 
     void setMaterial(const Material* mat) noexcept{ _mat = mat; }
-    virtual double compute(const std::map<PropVariable, double>& = {}) const = 0;
+    virtual double compute(const std::map<std::string, double>& = {}) const = 0;
 
     protected:
     const Material* _mat; // pointer to a const "parent" Material object

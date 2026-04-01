@@ -12,11 +12,11 @@ bool Shape::encloses(const Shape& other) const{
     return false;
 }
 
-bool Shape::hasProperty(const Prop& name) const noexcept{
+bool Shape::hasProperty(const std::string& name) const noexcept{
     return _mat->hasProperty(name);
 }
 
-double Shape::computeProperty(const Prop& name, const Material::PropVars& vars) const{
+double Shape::computeProperty(const std::string& name, const std::map<std::string, double>& vars) const{
     return _mat->computeProperty(name, vars);
 }
 
