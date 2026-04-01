@@ -9,31 +9,32 @@ const std::shared_ptr<WaterEquationOfState> WaterMaterial::_eos = std::make_shar
 WaterMaterial::WaterMaterial():
     Material()
 {
-    addProperty("2-photon_ionization_rate_coefficient");
-    addProperty("3-photon_ionization_rate_coefficient");
-    addProperty("4-photon_ionization_rate_coefficient");
-    addProperty("attenuation_coefficient");
-    addProperty("binding_energy");
-    addProperty("coulomb_logarithm");
-    addProperty("density");
-    addProperty("density_pressure_derivative");
-    addProperty("density_temperature_derivative");
-    addProperty("electron_density");
-    addProperty("electron_ion_collision_frequency");
-    addProperty("electron_neutral_collision_frequency");
-    addProperty("enthalpy");
-    addProperty("extinction_coefficient");
-    addProperty("heat_capacity");
-    addProperty("heat_capacity_temperature_derivative");
-    addProperty("inverse_bremsstrahlung_frequency");
-    addProperty("ionization_number");
-    addProperty("molecular_mass");
-    addProperty("number_density");
-    addProperty("quantum_yield");
-    addProperty("refractive_index");
-    addProperty("thermal_conductivity");
-    addProperty("thermal_expansion_coefficient");
-    addProperty("viscosity");
+    // addProperty("2-photon_ionization_rate_coefficient");
+    // addProperty("3-photon_ionization_rate_coefficient");
+    // addProperty("4-photon_ionization_rate_coefficient");
+    // addProperty("attenuation_coefficient");
+    // addProperty("binding_energy");
+    // addProperty("coulomb_logarithm");
+    // addProperty("density");
+    // addProperty("density_pressure_derivative");
+    // addProperty("density_temperature_derivative");
+    // addProperty("electron_density");
+    // addProperty("electron_ion_collision_frequency");
+    // addProperty("electron_neutral_collision_frequency");
+    // addProperty("enthalpy");
+    // addProperty("extinction_coefficient");
+    // addProperty("heat_capacity");
+    // addProperty("heat_capacity_temperature_derivative");
+    // addProperty("inverse_bremsstrahlung_frequency");
+    // addProperty("ionization_number");
+    // addProperty("molecular_mass");
+    // addProperty("number_density");
+    // addProperty("plasma_electron_frequency");
+    // addProperty("quantum_yield");
+    // addProperty("refractive_index");
+    // addProperty("thermal_conductivity");
+    // addProperty("thermal_expansion_coefficient");
+    // addProperty("viscosity");
 }
 
 double WaterMaterial::computeProperty(const std::string& name, const PropVars& vars) const{
@@ -63,10 +64,10 @@ double WaterMaterial::computeProperty(const std::string& name, const PropVars& v
         if (std::isnan(Te)) return 0.0;
         double Z = computeProperty("ionization_number", vars);
         double e = pconst::e;
-        double kT = pconst::k_B * Te;
+        double ekT = pconst::epsilon_0 * pconst::k_B * Te;
         double ne = computeProperty("electron_density", vars);
-        double Lambda = 3.0/(2*Z*e*e*e) * std::sqrt(kT*kT*kT / (mconst::pi*ne));
-        return std::log(Lambda);
+        double Lambda = 4.0*mconst::pi/(Z*e*e*e) * std::sqrt(ekT*ekT*ekT/ne);
+        return std::max(std::log(Lambda), 1.0);
     }
     if (name == "density") return rho;
     if (name == "density_pressure_derivative") return _eos->drho_dP(P,T);
@@ -76,14 +77,15 @@ double WaterMaterial::computeProperty(const std::string& name, const PropVars& v
         if (std::isnan(Te)) return 0.0;
         double Z = computeProperty("ionization_number", vars);
         double lnLambda = computeProperty("coulomb_logarithm", vars);
-        double ne = computeProperty("electron_density", vars);
         double e = pconst::e;
-        return 4.0/3 * std::sqrt(2*mconst::pi/pconst::m_e) * ne*Z*e*e*e*e*lnLambda * std::pow(pconst::k_B*Te, -1.5);
+        double k = 1.0 / (4 * mconst::pi * pconst::epsilon_0);
+        double kT = pconst::k_B*Te;
+        return (mconst::pi * ni*Z*e*e*e*e*lnLambda * k*k) / std::sqrt(pconst::m_e * (kT*kT*kT));
     }
     if (name == "electron_neutral_collision_frequency"){
         if (std::isnan(Te)) return 0.0;
         double nn = computeProperty("number_density", vars) - ni;
-        double sigma_en = 1e-19; // square meter
+        double sigma_en = 1e-19; // cross section in square meter
         double ve = std::sqrt(8*pconst::k_B*Te / (mconst::pi*pconst::m_e));
         return nn*sigma_en*ve;
     }
@@ -100,14 +102,18 @@ double WaterMaterial::computeProperty(const std::string& name, const PropVars& v
     if (name == "inverse_bremsstrahlung_frequency"){
         if (std::isnan(Te)) return 0.0;
         double nu_ei = computeProperty("electron_ion_collision_frequency", vars);
-        double v = pconst::c / computeProperty("refractive_index", vars);
-        double omega = 2*mconst::pi * v/lambda;
-        return omega*omega / (omega*omega + nu_ei*nu_ei) * nu_ei;
+        double omega = 2*mconst::pi * pconst::c/lambda;
+        double omega_pe = computeProperty("plasma_electron_frequency", vars);
+        return omega_pe*omega_pe / (omega*omega + nu_ei*nu_ei) * nu_ei;
     }
     if (name == "ionization_number") return 1.0;
     if (name == "molecular_mass") return _eos->M();
     if (name == "number_density") return _eos->rho(P,T) / _eos->M() * pconst::N_A;
-    if (name == "photoionizationCrossSection") return 6.30e+6; // in barns
+    if (name == "photoionization_cross_section") return 6.30e+6; // in barns
+    if (name == "plasma_electron_frequency"){
+        double ne = computeProperty("electron_density", vars);
+        return pconst::e * std::sqrt(ne / (pconst::epsilon_0*pconst::m_e)); // angular frequency in rad/s
+    }
     if (name == "quantum_yield") return 0.9;
     if (name == "refractive_index"){
         double T_bar = T/273.15;

@@ -8,6 +8,8 @@ namespace mconst{
 
 namespace pconst{
     // Physical constants
+    constexpr double epsilon_0 = 8.8541878188e-12; // Permittivity of free space [F/m]
+    constexpr double mu_0 = 1.25663706127e-6; // Permeability of free space [H/m]
     constexpr double c = 299792458; // Speed of light in vacuum [m/s]
     constexpr double e = 1.602176634e-19; // Elementary charge [C]
     constexpr double h = 6.62607015e-34; // Planck constant [J s]

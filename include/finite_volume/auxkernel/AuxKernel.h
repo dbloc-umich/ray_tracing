@@ -7,7 +7,7 @@ class AuxKernel{
     public:
     AuxKernel() {}
     virtual ~AuxKernel() = default;
-    // Best if the map is returned by StateMesh::matProp
+    // Best if the map is returned by StateMesh::stateMap
     virtual double computeValue(const std::map<std::string, double>& u) const = 0;
 };
 

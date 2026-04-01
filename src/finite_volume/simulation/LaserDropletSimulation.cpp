@@ -32,7 +32,7 @@
 //     for (Eigen::Index i = 0; i < Nr; i++){
 //         for (Eigen::Index j = 0; j < Nmu; j++){
 //             for (Eigen::Index k = 0; k < Nphi; k++){
-//                 auto vars = u.matProp(i,j,k);
+//                 auto vars = u.stateMap(i,j,k);
 //                 m0 += mat->computeProperty("density", vars) * mesh->volume(i,j,k);
 //             }
 //         }

@@ -22,8 +22,7 @@ void Simulation::solve(StateMesh& u, double ti, double tf, double dt) const{
     _results.clear();
     auto func = [&u, this](double, const Eigen::VectorXd& arr) -> Eigen::VectorXd {
         u.flattened() = std::move(arr);
-        // std::cout << "Initial matrix: " << std::endl;
-        // std::cout << u.matrix() << std::endl;
+        // std::cout << "Initial matrix: " << std::endl << u.matrix() << std::endl;
         Eigen::MatrixXd R = Eigen::MatrixXd::Zero(u.stateCount(), u.cellCount());
 
         for (auto& kernel: _kernels){
@@ -36,8 +35,7 @@ void Simulation::solve(StateMesh& u, double ti, double tf, double dt) const{
                 }
             }
         }
-        // std::cout << "Residual: " << std::endl;
-        // std::cout << R << std::endl;
+        // std::cout << "Residual: " << std::endl << R << std::endl << std::endl;
         return Eigen::Map<Eigen::VectorXd>(R.data(), R.size());
     };
 
@@ -45,11 +43,10 @@ void Simulation::solve(StateMesh& u, double ti, double tf, double dt) const{
     int count = 0;
     if (_integrator){
         while (true){
-            // std::cout << "Time step " << count << std::endl;
             if (count % _saveEveryNIterations == 0) _results[ti] = u.matrix();
-
-            // std::cout << u0.reshaped(u.stateCount(), u.cellCount()) << std::endl;
-            auto status = _integrator->integrate(func, u0, ti, dt);
+            double step = std::min(tf-ti, dt);
+            
+            auto status = _integrator->integrate(func, u0, ti, step);
             if (status != IVPStatus::Success){
                 std::cerr << "ERROR: Time integration failed." << std::endl;
                 break;
@@ -57,8 +54,7 @@ void Simulation::solve(StateMesh& u, double ti, double tf, double dt) const{
 
             count++;
             if (ti >= tf) break;
-            if (ti + dt > tf) ti = tf;
-            else ti += dt;
+            ti += step;
         }
     }
 }

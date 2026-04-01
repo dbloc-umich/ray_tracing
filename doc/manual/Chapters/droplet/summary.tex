@@ -1,34 +1,34 @@
-The system of equations have a total of 21 nonlinear variables, organized into four categories. Five equations are needed to describe the fluid motion of neutral particles.
-\begin{align}
-    \frac{\partial \rho}{\partial t} + \nabla \cdot \rho \mathbf{u} &= \frac{M}{N_A} (\Gamma_{\text{rec}} - \Gamma_{\text{pi}} - \Gamma_{\text{ci}}) \\
-    \frac{\partial \rho\mathbf{u}}{\partial t} + \nabla \cdot \rho \mathbf{u} \otimes \mathbf{u} &= -\nabla p + \nabla \cdot \mathbf{T} + \rho\mathbf{g} + \frac{M}{N_A} [\mathbf{f}_{en} + \mathbf{f}_{in} + \Gamma_{\text{rec}}\mathbf{u}_i - (\Gamma_{\text{pi}} + \Gamma_{\text{ci}})\mathbf{u} ] \\
-    \frac{\partial \rho E}{\partial t} + \nabla \cdot \rho\mathbf{u} H &= -\nabla \cdot \mathbf{q}'' + \nabla \cdot \left[\mathbf{T} \cdot \mathbf{u} \right] + q'''_{\text{exc}} + q'''_{en} + q'''_{in} + \frac{M}{N_A} [\Gamma_{\text{rec}}E_i - (\Gamma_{\text{pi}} + \Gamma_{\text{ci}})E]
-\end{align}
+The system of equations have a total of 21 nonlinear variables, organized into four categories. The fluid equations for neutral particles are
+\begin{align*}
+    \frac{\partial \rho}{\partial t} + \nabla \cdot \rho \mathbf{u} &= -\frac{M}{N_A} \sum_{r} \Gamma_r \numberthis \\
+    \frac{\partial \rho\mathbf{u}}{\partial t} + \nabla \cdot \rho \mathbf{u} \otimes \mathbf{u} &= -\nabla p + \nabla \cdot \mathbf{T} + \rho\mathbf{g} \\
+    &+ \sum_j^{e,i} \mathbf{f}_{jn} - \frac{M}{N_A} \sum_r \Gamma_r \mathbf{u}_r \numberthis \\
+    \frac{\partial \rho E}{\partial t} + \nabla \cdot \rho\mathbf{u} H &= -\nabla \cdot \mathbf{q}'' + \nabla \cdot \left[\mathbf{T} \cdot \mathbf{u} \right] \\
+    &+ \sum_j^{e,i,\gamma} q'''_{jn} - \frac{M}{N_A} \sum_r \Gamma_r E_r. \numberthis
+\end{align*}
 
-Electron motion requires another set of five equations.
-\begin{align}
-    \frac{\partial n_e}{\partial t} + \nabla \cdot n_e \mathbf{u}_e &= \Gamma_{\text{pi}} + \Gamma_{\text{ci}} - \Gamma_{\text{rec}} \\
-    \frac{\partial n_e\mathbf{u}_e}{\partial t} + \nabla \cdot n_e \mathbf{u}_e \otimes \mathbf{u}_e &= \frac{-\nabla p_e - en_e (\mathbf{E} + \mathbf{u}_e \times \mathbf{B})}{m_e} - \mathbf{f}_{en} \\
-    \frac{\partial n_e \mathcal{E}_e}{\partial t} + \nabla \cdot n_e \mathbf{u}_e \mathcal{H}_e &= q'''_{\text{pi}} - q'''_{en} - q'''_{ei} - en_e\mathbf{u}_e \cdot \mathbf{E}
-\end{align}
+The fluid equations for electrons are
+\begin{align*}
+    \frac{\partial n_e}{\partial t} + \nabla \cdot n_e \mathbf{u}_e &= \sum_{r} \Gamma_r \numberthis \\
+    \frac{\partial n_e\mathbf{u}_e}{\partial t} + \nabla \cdot n_e \mathbf{u}_e \otimes \mathbf{u}_e &= \frac{-\nabla p_e - en_e (\mathbf{E} + \mathbf{u}_e \times \mathbf{B})}{m_e} \\
+    &+ \frac{1}{m_e}\sum_j^{i,n} \mathbf{f}_{je} \numberthis \\
+    \frac{\partial n_e \mathcal{E}_e}{\partial t} + \nabla \cdot n_e \mathbf{u}_e \mathcal{H}_e &= - en_e\mathbf{u}_e \cdot \mathbf{E} \\
+    &+ \sum_j^{i,n,\gamma} q'''_{je} + q'''_{\text{pi}}. \numberthis
+\end{align*}
 
-Ion motion is described by a very similar set of equations.
-\begin{align}
-    \frac{\partial n_i}{\partial t} + \nabla \cdot n_i \mathbf{u}_i &= \Gamma_{\text{pi}} + \Gamma_{\text{ci}} - \Gamma_{\text{rec}} \\
-    \frac{\partial n_i\mathbf{u}_i}{\partial t} + \nabla \cdot n_i \mathbf{u}_i \otimes \mathbf{u}_i &= \frac{-\nabla p_i + en_i (\mathbf{E} + \mathbf{u}_i \times \mathbf{B}) }{m_i} - \mathbf{f}_{in} + (\Gamma_{\text{pi}} + \Gamma_{\text{ci}})\mathbf{u} - \Gamma_{\text{rec}}\mathbf{u}_i \\
-    \frac{\partial n_i \mathcal{E}_i}{\partial t} + \nabla \cdot n_i \mathbf{u}_i \mathcal{H}_i &= q'''_{ei} - q'''_{in} + en_i\mathbf{u}_i \cdot \mathbf{E} + (\Gamma_{\text{pi}} + \Gamma_{\text{ci}}) \mathcal{E} - \Gamma_{\text{rec}}\mathcal{E}_i
-\end{align}
+The fluid equations for ions are
+\begin{align*}
+    \frac{\partial n_i}{\partial t} + \nabla \cdot n_i \mathbf{u}_i &= \sum_{r} \Gamma_r \numberthis \\
+    \frac{\partial n_i\mathbf{u}_i}{\partial t} + \nabla \cdot n_i \mathbf{u}_i \otimes \mathbf{u}_i &= \frac{-\nabla p_i + en_i (\mathbf{E} + \mathbf{u}_i \times \mathbf{B})}{m_i} \\
+    &+ \frac{1}{m_i}\sum_j^{e,n} \mathbf{f}_{ji} + \sum_r \Gamma_r \mathbf{u}_r \numberthis \\
+    \frac{\partial n_i \mathcal{E}_i}{\partial t} + \nabla \cdot n_i \mathbf{u}_i \mathcal{H}_i &= en_i\mathbf{u}_i \cdot \mathbf{E} \\
+    &+ \sum_j^{e,n} q'''_{ji} + \sum_r \Gamma_r \mathcal{E}_r. \numberthis
+\end{align*}
 
-Finally, the electric and magnetic fields that arise from charge movement are taken from Maxwell's Equations.
+Finally, Maxwell's Equations are needed to model the electric and magnetic fields.
 \begin{align}
     \varepsilon_r \varepsilon_0\frac{\partial \mathbf{E}}{\partial t} &= \frac{1}{\mu_0} \nabla \times \mathbf{B} - e(n_i\mathbf{u}_i - n_e\mathbf{u}_e) \\
     \frac{\partial \mathbf{B}}{\partial t} &= -\nabla \times \mathbf{E}
 \end{align}
-
-% Diffusive terms:
-% \begin{align}
-%     \mathbf{T} &= \mu \left[ \nabla\mathbf{u} + \nabla\mathbf{u}^T - \frac{2}{3} (\nabla\cdot\mathbf{u})\mathbf{I} \right] \\
-%     \mathbf{q}'' &= -k\nabla T
-% \end{align}
 
 

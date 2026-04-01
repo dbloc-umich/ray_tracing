@@ -10,6 +10,7 @@
 \usepackage{listings}
 \usepackage[intoc]{nomencl}
 \usepackage{mathtools}
+\usepackage{multicol}
 \usepackage{siunitx}
 \usepackage{spverbatim}
 \usepackage{todonotes}
@@ -26,6 +27,8 @@
 \lstset{basicstyle=\ttfamily, breaklines=true}
 
 \DeclareMathOperator{\arctantwo}{arctan2}
+\DeclareMathOperator{\erf}{erf}
+\DeclareMathOperator{\erfc}{erfc}
 
 \addbibresource{references.bib}
 
@@ -54,7 +57,11 @@
 \begin{document}
 
 \tableofcontents
+
+\pagebreak
+\begin{multicols}{2}
 \input{Chapters/nomenclature.tex}
+
 
 \chapter{Introduction}
 
@@ -91,6 +98,8 @@
 % \appendix
 % \chapter{Linear transformation}
 % \input{Chapters/linear_transformations.tex}
+
+\end{multicols}
 
 \printbibliography
 

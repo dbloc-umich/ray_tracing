@@ -16,8 +16,8 @@ non-magnetic materials. This leads to the following form of Maxwell's equations 
 In plasma, the free charge density $\rho_f$ and current density $\mathbf{j}_f$ can be easily computed using electron and ion information:
 \begin{subequations}
     \begin{align}
-        \rho_f &\equiv e(n_i - n_e) \\
-        \mathbf{j}_f &\equiv e(n_i \mathbf{u}_i - n_e \mathbf{u}_e)
+        \rho_f &\equiv e(n_i - n_e) \label{eqn:charge_density} \\
+        \mathbf{j}_f &\equiv e(n_i \mathbf{u}_i - n_e \mathbf{u}_e) \label{eqn:current_density}
     \end{align}
 \end{subequations}
 
@@ -34,23 +34,16 @@ that taking the divergence of Equations \ref{eqn:faraday} and \ref{eqn:ampere} w
 \subsection{Lorentz force}
 The Lorentz force acts upon a distribution of charged particles has the form
 \begin{equation}
-    \mathbf{f}_j = \rho_j \left(\mathbf{E} + \mathbf{u}_j \times \mathbf{B} \right),
+    \mathbf{f}_j = \pm en_j \left(\mathbf{E} + \mathbf{u}_j \times \mathbf{B} \right).
     \label{eqn:lorentz_force}
-\end{equation}
-here the subscript $j$ can be either $e$ or $i$. Since a force is the rate of change of a momentum, Equation \ref{eqn:lorentz_force} can be expressed as 
-
-\begin{equation}
-    m_j \frac{d n_j\mathbf{u}_j}{dt} = \pm en_j \left(\mathbf{E} + \mathbf{u}_j \times \mathbf{B} \right).
-    \label{eqn:lorentz_momentum}
 \end{equation}
 
 Since electrons are extremely lightweight, its acceleration due to the Lorentz force easily dominates any diffusive or gravitational effects, so they are safe to neglect. The case for ions is a little bit more nuanced;
 however, the Lorentz force is still expected to be the main momentum contributor.
 
-\subsection{Energy transport by electromagnetic waves}
-Electromagnetic waves themselves carry energy, and therefore capable of doing work on a charged system. According to Equation \ref{eqn:lorentz_momentum}, the magnetic field does no work on charged particles as its
+Electromagnetic waves themselves carry energy, and therefore capable of doing work on a charged system. According to Equation \ref{eqn:lorentz_force}, the magnetic field does no work on charged particles as its
 force component is always perpendicular to the charge velocity. The rate of work done by the electric field is then
 \begin{equation}
-    \frac{\partial n_j \mathcal{E}_j}{\partial t} = m_j \frac{d n_j\mathbf{u}_j}{dt} \cdot \mathbf{u}_j = \pm en_j \mathbf{u}_j \cdot \mathbf{E},
+    W_j = \mathbf{f}_j \cdot \mathbf{u}_j = \pm en_j \mathbf{u}_j \cdot \mathbf{E},
 \end{equation}
-and should be equal to the rate of energy gained by the particles.
+and should be equal to the rate of energy gained by the particles. This accounts for the change in kinetic energy of a charged particles under the influence of the electric fields.

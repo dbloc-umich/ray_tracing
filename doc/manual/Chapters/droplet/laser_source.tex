@@ -1,3 +1,6 @@
+While the model assumes the droplet is at least partially ionized, the plasma state is not formed without a laser source. The laser introduces a fourth particle -- the photon -- into the system, and it is quickly
+absorbed by either bound or free electrons. Whereas the term ``electrons'' has typically referred to free electrons for much of this chapter, in this context it collectively refers to both free and bound electrons.
+
 \subsection{Energy deposition}
 This model assumes the laser beam is a line heat source within each droplet even if the laser cross-sectional area is known. The volumetric heat generation, as a result, contains a Dirac delta function
 $\delta(\bm{r}_{\text{laser}})$ where $\bm{r}_{\text{laser}}$ is the laser trajectory. Finite-volume methods blend well with this assumption since the delta function is always integrated out during the formulation.
@@ -12,8 +15,7 @@ attenuated by a factor of $e^{-\alpha_k s_k}$ when exitting the cell -- $s_k$ be
     \iiint_{V_k} q'''_{\text{laser}} dV = I_k A (1 - e^{-\alpha_k s_k})
 \end{equation}
 
-Laser energy absorption is done by electrons. Whereas the term ``electrons'' typically refers to free electrons for much of this chapter, in this context it collectively refers to both free and bound electrons, but
-the two kinds differ in how the energy is spent. A free electron, upon absorbing a photon, simply increases in kinetic energy. A bound electron, however, can either be excited or removed from its orbit altogether.
+Bound and free electrons differ in how the energy is spent. A free electron, upon absorbing a photon, simply increases in kinetic energy. A bound electron, however, can either be excited or removed from its orbit altogether.
 If excitation occurs, collisions with the atom causes the electron to rapidly relax and transfer the acquired energy into thermal energy of the bulk liquid; therefore, on the timescale of interest, it is responsible
 to assume that the energy goes directly into heating the neutral fluid.
 
@@ -26,31 +28,30 @@ and the fraction of energy that goes into each channel is proportional to the re
 \begin{subequations}
     \begin{align}
         q_b &= I_0 A(1 - e^{-\alpha s}) \frac{\alpha_b}{\alpha} \label{eqn:heat_bound_electrons} \\
-        q_{\text{ib}} &= I_0 A(1 - e^{-\alpha s}) \frac{\alpha_{\text{ib}}}{\alpha}.
+        q_{\gamma e} &= I_0 A(1 - e^{-\alpha s}) \frac{\alpha_{\text{ib}}}{\alpha}.
     \end{align}
 \end{subequations}
 
-The subscript ``ib'' in Equation \ref{eqn:total_attenuation_coeff} refers to inverse Bremsstrahlung, a process in which free electrons, upon colliding with ions, absorbs energy and starts to accelerate. It should
-take over as the dominant absorption process once a sufficiently opaque medium is formed. The attenuation coefficient will increase proportionally to the inverse Bremsstrahlung frequency $\nu_{\text{ib}}$
+The subscript ``ib'' in Equation \ref{eqn:total_attenuation_coeff} refers to inverse bremsstrahlung, a process in which free electrons, in the vincinty of an ion, absorbs energy and starts to accelerate. The double
+subscript $\gamma e$ infers as if the heat source were due to a ``collision'' between a photon and a free electron, similar to how other heat sources are denoted in Section \ref{sect:relaxations}. Inverse bremsstrahlung
+should take over as the dominant absorption process once a sufficiently opaque medium is formed. The attenuation coefficient will increase proportionally to the inverse bremsstrahlung frequency $\nu_{\text{ib}}$
 \begin{equation}
-    \alpha_{\text{ib}} \equiv \frac{\nu_{\text{ib}} \eta}{c}.
+    \alpha_{\text{ib}} = \frac{\nu_{\text{ib}} \eta}{c} = \frac{\omega_e^2}{\omega^2 + \nu_{ei}^2} \frac{\nu_{ei} \eta}{c},
+    \label{eqn:nu_ib_general}
 \end{equation}
-    
-$\nu_{\text{ib}}$ itself is given by
+where $\omega_e$ is the plasma electron frequency and $\omega$ is the laser frequency. The former is defined as
 \begin{equation}
-    \nu_{\text{ib}} = \frac{N_e}{N_c} \nu_{\text{ei}},
+    \omega_e^2 \equiv \frac{n_e e^2}{\varepsilon_0 m_e}.
 \end{equation}
-where $N_c$ is the electron critical density and $\nu_{\text{ei}}$ is the electron-ion collision frequency.
-\begin{subequations}
-    \begin{align}
-        N_c &\equiv \frac{m_e \pi \omega^2}{e^2} \\
-        \nu_{\text{ei}} &\equiv \frac{4}{3} \sqrt{\frac{2\pi}{m_e}} \frac{N_e Ze^4 \ln\Lambda}{(k_B T_e)^{3/2}}
-    \end{align}
-\end{subequations}
 
-The average ionization number $Z$ is assumed to be 1, and the Coulomb logarithm $\ln\Lambda$ is given by
+When $\omega \gg \nu_{ei}$, $\nu_{\text{ib}}$ is usually given in the form
 \begin{equation}
-    \ln\Lambda \equiv \ln \left[ \frac{3}{2Ze^3} \sqrt{\frac{(k_B T_e)^3}{\pi N_e}} \right].
+    \nu_{\text{ib}} = \frac{n_e}{n_c} \nu_{ei},
+    \label{eqn:nu_ib_approx}
+\end{equation}
+and the critical density $n_c$ is defined in terms of $\omega$
+\begin{equation}
+    \omega^2 = \frac{n_c e^2}{\varepsilon_0 m_e}.
 \end{equation}
 
 \subsection{Photoionization}
@@ -74,7 +75,7 @@ A newly freed electron will carry an excess energy of $h\nu - \mathcal{E}_b$, wh
 
 Any absorption that do not result in ionization will instead excite bound electrons and serve as a heat source for the neutral particles with a rate of
 \begin{equation}
-    q'''_{\text{exc}} = (1 - \Phi) q'''_b = q'''_b - h\nu\Gamma_{\text{pi}}.
+    q'''_{\gamma n} = (1 - \Phi) q'''_b = q'''_b - h\nu\Gamma_{\text{pi}}.
     \label{eqn:excitation_energy_1}
 \end{equation}
 
@@ -109,14 +110,12 @@ The rate of energy deposited into the neutrals and electrons are
 \begin{subequations}
     \begin{align}
         q'''_{\text{pi}} &= (Nh\nu - \mathcal{E}_b) \Gamma_{\text{pi}} \label{eqn:electron_energy_N} \\
-        q'''_{\text{exc}} &= q_b - Nh\nu \Gamma_{\text{pi}} \label{eqn:excitation_energy_N}.
+        q'''_{\gamma n} &= q'''_b - Nh\nu \Gamma_{\text{pi}} \label{eqn:excitation_energy_N}.
     \end{align}
 \end{subequations}
 
 For simplicity, bound electrons are assumed to only absorb $N$ photons prior to removal from its parent nucleus. Above-threshold ionization, a phenomenon where an electron absorbs more than $N$ photons, is also possible,
 but will be neglected here.
-
-Photoionization, as well as any binary reaction that converts between a nucleus and an ion, 
 
 % \subsection{Refraction at cell interfaces}
 % \todo{Should this be in a numerical method section?}

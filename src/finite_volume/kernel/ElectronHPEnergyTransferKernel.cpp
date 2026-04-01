@@ -24,7 +24,7 @@ Eigen::MatrixXd ElectronHPEnergyTransferKernel::computeResidual(const StateMesh&
     for (Eigen::Index i = 0; i < Nx; i++){
         for (Eigen::Index j = 0; j < Ny; j++){
             for (Eigen::Index k = 0; k < Nz; k++){
-                auto vars = u.matProp(i,j,k);
+                auto vars = u.stateMap(i,j,k);
                 double Ee = vars.at("electron_energy");
                 double f = (2*pconst::m_e*pconst::N_A)/_mat->computeProperty("molecular_mass", vars); // conversion factor from momentum to energy relaxation frequency
                 double nu_ei = _mat->computeProperty("electron_ion_collision_frequency", vars)*f;

@@ -7,7 +7,7 @@
 #include "Sphere.h"
 
 //#include <random>
-//#define MONITOR
+// #define MONITOR
 //#define MONITOR2
 
 namespace{
@@ -68,7 +68,9 @@ Eigen::MatrixXd LaserSourceKernel::computeResidual(const StateMesh& u) const{
     // Refract the ray
     UnitVector3d normal = mesh->normalVector(0, coord[0], coord[1], ray.position()[2]);
     double n1 = 1.0;
-    auto vars = u.matProp(i,j,k);
+    std::map<std::string, double> vars;
+    vars["wavelength"] = ray.wavelength();
+    u.updateStateMap(vars,i,j,k);
     double n2 = _mat->computeProperty("refractive_index", vars);
     ray.setDirection(ray.direction().refract(normal, n1, n2));
     omega = ray.direction().value();
@@ -227,13 +229,16 @@ Eigen::MatrixXd LaserSourceKernel::computeResidual(const StateMesh& u) const{
         // Update heat and photoionization sources
         Eigen::Index ind = (i*Nmu + j)*Nphi + k;
         double alphaB = _mat->computeProperty("attenuation_coefficient", vars); // absorption by bound electrons
-        double alphaIB = _mat->computeProperty("inverse_bremsstrahlung_frequency", vars) * n2 / pconst::c; // absorption by free electrons (inverse Bremsstrahlugn)
+        // double nuei = _mat->computeProperty("electron_ion_collision_frequency", vars);
+        // double nuib = _mat->computeProperty("inverse_bremsstrahlung_frequency", vars);
+        double alphaIB = _mat->computeProperty("inverse_bremsstrahlung_frequency", vars) * n2 / pconst::c; // absorption by free electrons (inverse bremsstrahlung)
         double alpha = alphaB + alphaIB;
         double Id = ray.intensity()*(1 - std::exp(-alpha*s)); // deposited intensity;
 
         double V = mesh->volume(i,j,k);
         double qb = Id*ray.area()/V * (alphaB/alpha); // energy absorbed by bound electrons
         double qib = Id*ray.area()/V * (alphaIB/alpha); // energy absorbed by free electrons
+        // std::cout << "alphaB = " << alphaB << ", alphaIB = " << alphaIB << ", nuei = " << nuei << ", nuib = " << nuib << std::endl;
         
         if (hnu >= Eb){
             // single-photon ionization
@@ -258,9 +263,11 @@ Eigen::MatrixXd LaserSourceKernel::computeResidual(const StateMesh& u) const{
             q(2, ind) = Gamma_pi; // photoionization term
         }
 #ifdef MONITOR
-        std::cout << "The electron energy contribution is " << q(0, (i*Nmu + j)*Nphi + k) << std::endl;
-        std::cout << "The photoionization contribution is " << q(1, (i*Nmu + j)*Nphi + k) << std::endl;
+        std::cout << "The energy residual contribution is " << q(0, ind) << std::endl;
+        std::cout << "The electron energy residual contribution is " << q(1, ind) << std::endl;
+        std::cout << "The photoionization residual contribution is " << q(2, ind) << std::endl;
 #endif
+        if (!q.col(ind).array().isFinite().all()) throw std::runtime_error("ERROR: Unable to solve for residual.");
         ray.setIntensity(ray.intensity() - Id); // remaining intensity
         /** 
          * Shouldn't model stochastic energy deposition within a droplet
@@ -289,6 +296,9 @@ Eigen::MatrixXd LaserSourceKernel::computeResidual(const StateMesh& u) const{
             UnitVector3d transmit = ray.direction().refract(normal, n1, n2);
             if (transmit){
                 ray.direction() = transmit;
+#ifdef MONITOR
+                std::cout << std::endl;
+#endif
 #ifdef MONITOR2
                 std::cout << "[" << ray.position().transpose() << "] on cell " << i << ", " << j << ", " << k << std::endl;
 #endif
@@ -310,7 +320,7 @@ Eigen::MatrixXd LaserSourceKernel::computeResidual(const StateMesh& u) const{
             else if (surfID == 4) k = k == 0 ? Nphi-1 : k-1;
             else k = k == Nphi-1 ? 0 : k+1;
 
-            vars = u.matProp(i,j,k); // density corrected later
+            u.updateStateMap(vars,i,j,k); // density corrected later
             n2 = _mat->computeProperty("refractive_index", vars);
             UnitVector3d transmit = ray.direction().refract(normal, n1, n2);
             if (transmit) ray.setDirection(ray.direction().refract(normal, n1, n2));

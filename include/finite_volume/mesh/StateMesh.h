@@ -74,8 +74,11 @@ class StateMesh{
     void setBC(Eigen::Index varID, Eigen::Index surfID, std::shared_ptr<BoundaryCondition> bc) noexcept{ _bc(varID, surfID) = bc; }
 
     // Get a map of material property variables
-    std::map<std::string, double> matProp(Eigen::Index i, Eigen::Index j, Eigen::Index k) const noexcept;
-    std::map<std::string, double> matProp(const ConstCell&) const noexcept;
+    std::map<std::string, double> stateMap(Eigen::Index i, Eigen::Index j, Eigen::Index k) const noexcept;
+    std::map<std::string, double> stateMap(const ConstCell&) const noexcept;
+    // Update a state map (which may contain other variables other than the states)
+    void updateStateMap(std::map<std::string, double>&, Eigen::Index i, Eigen::Index j, Eigen::Index k) const noexcept;
+    void updateStateMap(std::map<std::string, double>&, const ConstCell&) const noexcept;
 
     protected:
     std::shared_ptr<SpatialMesh> _spatialMesh;

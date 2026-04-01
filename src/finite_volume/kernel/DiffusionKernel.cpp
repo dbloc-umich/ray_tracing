@@ -26,7 +26,7 @@ Eigen::MatrixXd DiffusionKernel::computeResidual(const StateMesh& u) const{
         for (Eigen::Index i = 0; i < Nx; i++){
             for (Eigen::Index j = 0; j < Ny; j++){
                 for (Eigen::Index k = 0; k < Nz; k++){
-                    auto vars = u.matProp(i, j, k);
+                    auto vars = u.stateMap(i, j, k);
                     double u0 = u(s,i,j,k);
                     double T0 = _converter ? u0 : _converter->computeValue(vars);
                     vars[_primitive] = T0;
@@ -67,7 +67,7 @@ Eigen::MatrixXd DiffusionKernel::computeResidual(const StateMesh& u) const{
                             }
                         }
 
-                        vars = u.matProp(in, jn, kn);
+                        vars = u.stateMap(in, jn, kn);
                         double uk = u(s,in,jn,kn);
                         double Tk = _converter ? uk : _converter->computeValue(vars);
                         vars[_primitive] = Tk;

@@ -94,14 +94,22 @@ void StateMesh::addVariable(std::string name, double u0){
     } else throw std::invalid_argument("ERROR: Duplicate state names detected.");
 }
 
-std::map<std::string, double> StateMesh::matProp(Eigen::Index i, Eigen::Index j, Eigen::Index k) const noexcept{
+std::map<std::string, double> StateMesh::stateMap(Eigen::Index i, Eigen::Index j, Eigen::Index k) const noexcept{
     std::map<std::string, double> props;
     for (Eigen::Index s = 0; s < stateCount(); s++) props[_stateName[s]] = operator()(s,i,j,k);
     return props;
 }
 
-std::map<std::string, double> StateMesh::matProp(const ConstCell& cell) const noexcept{
+std::map<std::string, double> StateMesh::stateMap(const ConstCell& cell) const noexcept{
     std::map<std::string, double> props;
     for (Eigen::Index s = 0; s < stateCount(); s++) props[_stateName[s]] = cell[s];
     return props;
+}
+
+void StateMesh::updateStateMap(std::map<std::string, double>& props, Eigen::Index i, Eigen::Index j, Eigen::Index k) const noexcept{
+    for (Eigen::Index s = 0; s < stateCount(); s++) props[_stateName[s]] = operator()(s,i,j,k);
+}
+
+void StateMesh::updateStateMap(std::map<std::string, double>& props, const ConstCell& cell) const noexcept{
+    for (Eigen::Index s = 0; s < stateCount(); s++) props[_stateName[s]] = cell[s];
 }
