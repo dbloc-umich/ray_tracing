@@ -17,7 +17,6 @@ Eigen::MatrixXd ElectronHPEnergyTransferKernel::computeResidual(const StateMesh&
     Eigen::Index Nx = mesh->axisSize(0)-1; // number of cells on the r axis
     Eigen::Index Ny = mesh->axisSize(1)-1; // number of cells on the mu axis
     Eigen::Index Nz = mesh->axisSize(2)-1; // number of cells on the phi axis
-    //Eigen::Index Ns   = _s.size();           // number of variables that this residual affects, should be 2 for now
     Eigen::MatrixXd q(2, Nx*Ny*Nz);
 
     TemperatureFromEnergyAux ThAux(_eos);

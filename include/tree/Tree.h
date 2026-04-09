@@ -30,7 +30,7 @@ class Tree{
      *  s is the modified distance that the particle has to travel to reach the next Shape
      *  a raw pointer to Shape where the particle lands is returned
     **/
-    virtual Shape* nextShape(const Ray& ray, double& s) const noexcept = 0;
+    virtual Shape* nextShape(const Ray& ray, double& s, int& count) const noexcept = 0;
 
     double xMin() const noexcept;
     double xMax() const noexcept;

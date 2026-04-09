@@ -1,4 +1,5 @@
 #include "GaussianQuadrature.h"
+#include <iostream>
 
 template<int N, int M>
 typename GaussianQuadrature<N, M>::RangeType GaussianQuadrature<N, M>::integrate(const Function& f, const IntegrationDomain& D) const{
@@ -12,7 +13,10 @@ typename GaussianQuadrature<N, M>::RangeType GaussianQuadrature<N, M>::integrate
     if constexpr (N == 1){
         auto nodes = getNodes(this->eval(D[0]), this->eval(D[1]));
         auto weights = getWeights(this->eval(D[0]), this->eval(D[1]));
-        for (std::size_t i = 0; i < n(); i++) sum += weights[i] * f(nodes[i]);
+        std::size_t n = nodes.size();
+        for (std::size_t i = 0; i < n; i++){
+            sum += weights[i] * f(nodes[i]);
+        }
     } else{
         constexpr std::size_t dim = (N != Eigen::Dynamic) ? N : D.size();
         std::size_t numNodes = 1; // total number of nodes in all dimensions;

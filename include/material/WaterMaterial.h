@@ -8,8 +8,8 @@ class WaterEquationOfState;
 class WaterMaterial: public Material{
     public:
     WaterMaterial();
-    double computeProperty(const std::string& name, const PropVars& vars = {}) const override;
-    double T_from_H(double H) const override;
+    double computeProperty(const std::string& name, const PropVars& vars = {}) const;
+    double T_from_H(double H) const;
 
     protected:
     static const std::shared_ptr<WaterEquationOfState> _eos;

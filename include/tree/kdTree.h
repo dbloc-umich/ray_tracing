@@ -11,7 +11,7 @@ class kdTree: public Tree<Node>{
     explicit kdTree(PtrList& ptrs);
 
     void insert(std::unique_ptr<Shape> shape) override;
-    Shape* nextShape(const Ray& ray, double& s) const noexcept override;
+    Shape* nextShape(const Ray& ray, double& s, int& count) const noexcept override;
 
     protected:
     iterator medianNode(Box& bbox0, Box& bbox1, iterator begin, iterator end, char axis) noexcept;

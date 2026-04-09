@@ -65,17 +65,18 @@ void kdTree::insert(std::unique_ptr<Shape> shape){
     }
 }
 
-Shape* kdTree::nextShape(const Ray& ray, double& s) const noexcept{
+Shape* kdTree::nextShape(const Ray& ray, double& s, int& count) const noexcept{
     if (!_root){
         s = NAN;
         return nullptr;
     }
 
     Eigen::Vector3d pos = ray.position();
-    UnitVector3d dir = ray.direction();
+    UnitVector3d dir = ray.direction(); 
     Shape* current = ray.host();
     if (current){
         s = current->distanceToSurface(pos, dir);
+        count++;
         if (current->encloses(pos) || (current->surfaceContains(pos) && s > 0.0)) return current;
     }
 
@@ -89,6 +90,7 @@ Shape* kdTree::nextShape(const Ray& ray, double& s) const noexcept{
         stack.pop();
         // Check if box has any viable candidates
         double dist = node->distanceToSurface(pos, dir);
+        count++;
 #ifdef MONITOR
         std::cout << "Checking node " << *node << ", dist = " << dist << ", s = " << s << std::endl;
 #endif
@@ -102,6 +104,7 @@ Shape* kdTree::nextShape(const Ray& ray, double& s) const noexcept{
             if (!node[i]) continue;
             auto& candidate = *(node[i]);
             dist = candidate->distanceToSurface(pos, dir);
+            count++;
             if (std::isnan(dist)) continue;
 #ifdef MONITOR
             else std::cout << "Candidate: " << *candidate << ", dist = " << dist << ", s = " << s << std::endl;

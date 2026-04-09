@@ -34,8 +34,8 @@ class Material{
     void removeProperty(const std::string& name) noexcept;
     virtual double computeProperty(const std::string& name, const PropVars& vars = {}) const;
 
-    // Functions from eos
-    virtual double T_from_H(double H) const = 0;
+    // // Functions from eos
+    // virtual double T_from_H(double H) const = 0;
 
     protected:
     mutable std::map<std::string, std::unique_ptr<MaterialProperty>> _props;

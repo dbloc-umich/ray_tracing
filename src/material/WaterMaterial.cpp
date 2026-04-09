@@ -109,6 +109,7 @@ double WaterMaterial::computeProperty(const std::string& name, const PropVars& v
     if (name == "ionization_number") return 1.0;
     if (name == "molecular_mass") return _eos->M();
     if (name == "number_density") return _eos->rho(P,T) / _eos->M() * pconst::N_A;
+    if (name == "orbital_kinetic_energy") return pconst::Ry; // assumed to just be hydrogen for now
     if (name == "photoionization_cross_section") return 6.30e+6; // in barns
     if (name == "plasma_electron_frequency"){
         double ne = computeProperty("electron_density", vars);

@@ -5,10 +5,11 @@ at a rate proportional the respective difference, similar to two working fluids 
 
 \subsection{Reactions}
 \label{sect:reactions}
-When a free electron with a sufficient kinetic energy collides with a bound electron, the latter can receive enough energy to be removed from its orbit. This process, known as collisional ionization, requires the
-free electron to have a kinetic energy $\mathcal{E}_e$ that exceeds the binding energy $\mathcal{E}_b$. Electrons in a control volume is modeled as having a single particle-averaged energy. In this section, this
-averaged energy is denoted $\frac{3}{2} k_B T_e$ in this section as opposed to $\mathcal{E}_e$, which instead represents the energy of an individual electron. Collisional ionization still occurs in a volume where
-$\frac{3}{2} k_B T_e < \mathcal{E}_b$ since there exists a fraction of electron with a sufficient $\mathcal{E}_e$.
+When a free electron collides with a bound electron and departs sufficient energy on it, the latter can be removed from its orbit. Known as collisional ionization, this process is responsible for rapid increase of
+the free electron population. Not all free electrons can cause collisional ionization; it must have a kinetic energy $\mathcal{E}_e$ that exceeds the binding energy $\mathcal{E}_b$ of the bound electron. Under the
+fluid model of plasma, electrons in any control volume is modeled as having a single particle-averaged energy. In this section, this averaged energy is denoted $\frac{3}{2} k_B T_e$ in this section as opposed to
+$\mathcal{E}_e$, which instead represents the energy of an individual electron. Collisional ionization still occurs in a volume where $\frac{3}{2} k_B T_e < \mathcal{E}_b$ since there exists a fraction of electron
+with a sufficient $\mathcal{E}_e$.
 
 Assuming a Maxwellian distribution of velocity, the probability density function (PDF) of electron speed $f(u_e)$ is \cite{Fitzpatrick}
 \begin{equation}
@@ -36,24 +37,32 @@ The energy-PDF is therefore
     \end{align}
 \end{subequations}
 
-Let $f_b$ be the fraction of electrons with $\mathcal{E}_e \geq \mathcal{E}_b$, then
+The electron-impart ionization cross section is calculated using the Binary-Encounter-Bethe (BEB) model \cite{StoneKim}:
+\begin{subequations}
+    \begin{equation}
+        \sigma_{\text{BEB}} = \frac{4\pi a_0^2 r^2}{t+u+1} \left[\frac{\ln t}{2} \left(1 - \frac{1}{t^2} \right) + 1 - \frac{1}{t} - \frac{\ln t}{t + 1} \right],
+    \end{equation}
+    where the following dimensionless energies are used
+    \begin{align}
+        r &\equiv \frac{\mathcal{R}}{\mathcal{E}_b} \\
+        t &\equiv \frac{\mathcal{E}_e}{\mathcal{E}_b} \\
+        u &\equiv \frac{\mathcal{U}}{\mathcal{E}_b}
+    \end{align}
+\end{subequations}
+
+Let $\Gamma_r$ be the ionization rate density of a reaction $r$, which has a positive value if ions are created and negative if they are consumed. For collisional ionization, the rate density is
 \begin{subequations}
     \begin{align}
-        f_b &\equiv f(\mathcal{E}_e \geq \mathcal{E}_b) \\
-        &= \int_{\mathcal{E}_b}^{\infty} f(\mathcal{E}_e) d\mathcal{E}_e \\
-        &= \erfc \sqrt{z_b} + \frac{2}{\sqrt{\pi}} \sqrt{z_b} \exp(-z_b),
-    \end{align}
-    \label{eqn:fraction_fb}
+        \Gamma_{\text{ci}} &= S_{\text{ci}} n_e n \\
+        S_{\text{ci}} &\equiv \int_{\mathcal{E}_b}^{\infty} \sigma_{\text{BEB}} (\mathcal{E}_e) v(\mathcal{E}_e) f(\mathcal{E}_e) d\mathcal{E}_e.
+    \end{align}    
 \end{subequations}
-where $z_b \equiv \mathcal{E}_b/(k_B T_e)$.
-
-\todo{Finish up collisional ionization}
+The rate constant $S_{\text{ci}}$ has units of volumetric flow rate (m$^3$/s).
 
 The reverse process of ionization is recombination, where an ion captures a free electron to become neutral. Recombination, fortunately, does not have an energy threshold, and the reaction rate density is
 \begin{equation}
     \Gamma_{\text{rec}} = -S_{\text{rec}} n_e n_i.
 \end{equation}
-This reaction rate density is negative as ions are being consumed.
 
 Reactions do not just alter the amount of each species in a plasma; it also transfer a portion of the reactant's momentum and energy directly into the product, assuming no enthalpy of reaction. These transfers
 are typically more important for ions and neutrals than they are for electrons, as the latter have other sources that contribute to their momentum and energy a lot more significantly. Only account for the transfer
@@ -65,7 +74,7 @@ of conservative variables in reactive processes, the conservation equations read
         \frac{\partial n_i \mathcal{E}_i}{\partial t} &= -\frac{\partial n \mathcal{E}}{\partial t} = \sum_r \Gamma_r \mathcal{E}_r,
     \end{align}
 \end{subequations}
-where the subscript $r$ both denotes the type of reaction and indicates that the variables belong to the reactant species.
+where the subscript $r$ on a state variable indicates that the variable belongs to the reactant species.
 
 \subsection{Relaxations}
 \label{sect:relaxations}
@@ -88,7 +97,7 @@ energy between themselves, and they contribute very little to diffusion. This is
 similar formulation as Equation \ref{eqn:momentum_relaxation_jn}, the force exerted between an ion and an electron during their collision is
 \begin{equation}
     \mathbf{f}_{ei} = m_e n_e (\mathbf{u}_i - \mathbf{u}_e) \nu^M_{ei},
-    \label{eqn:momentum_relaxation_jn}
+    \label{eqn:momentum_relaxation_ei}
 \end{equation}
 and the electron-ion momentum-transfer collision frequency $\nu^M_{ei}$ is
 \begin{equation}

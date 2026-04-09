@@ -1,15 +1,19 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#include <limits> 
+
 namespace mconst{
     // Mathematical constants
     constexpr double pi = 3.14159265358979323846;
+    constexpr double infty = std::numeric_limits<double>::infinity();
 }
 
 namespace pconst{
     // Physical constants
     constexpr double epsilon_0 = 8.8541878188e-12; // Permittivity of free space [F/m]
     constexpr double mu_0 = 1.25663706127e-6; // Permeability of free space [H/m]
+    constexpr double a0 = 5.29177210544e-11; // Bohr radius [m]
     constexpr double c = 299792458; // Speed of light in vacuum [m/s]
     constexpr double e = 1.602176634e-19; // Elementary charge [C]
     constexpr double h = 6.62607015e-34; // Planck constant [J s]
@@ -18,6 +22,7 @@ namespace pconst{
     constexpr double m_n = 1.67492750056e-27; // Neutron mass [kg]
     constexpr double N_A = 6.0221408e+23; // Avogadro's number [mol-1]
     constexpr double R = 8.31446261815324; // Universal gas constant [J/mol K]
+    constexpr double Ry = 2.1798723611030e-18; // Rydberg energy [J]
 }
 
 #endif

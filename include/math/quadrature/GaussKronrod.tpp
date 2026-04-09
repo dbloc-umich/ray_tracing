@@ -8,7 +8,7 @@ typename GaussKronrod<N, M>::RangeType GaussKronrod<N, M>::integrate(const Funct
 
 template<int N, int M>
 Eigen::VectorXd GaussKronrod<N, M>::getNodes(double l, double u) const{
-    Eigen::ArrayXd x(n());
+    Eigen::ArrayXd x(2*this->_n+1);
     x.head(this->_n) = _nodes[this->_n-1];
     x.tail(this->_n+1) = _Knodes[this->_n-1];
     return x * (u-l)/2 + (u+l)/2;    
@@ -16,7 +16,7 @@ Eigen::VectorXd GaussKronrod<N, M>::getNodes(double l, double u) const{
 
 template<int N, int M>
 Eigen::VectorXd GaussKronrod<N, M>::getWeights(double l, double u) const{
-    Eigen::ArrayXd w(n());
+    Eigen::ArrayXd w(2*this->_n+1);
     w.head(this->_n) = _Lweights[this->_n-1];
     w.tail(this->_n+1) = _Kweights[this->_n-1];
     return w * (u-l)/2;   
@@ -69,8 +69,8 @@ void GaussKronrod<N, M>::recursiveSplitDomain(std::vector<IntegrationDomain>& ne
 
 template<int N, int M>
 typename GaussKronrod<N, M>::RangeType GaussKronrod<N, M>::adaptiveIntegral(const Function& f, const IntegrationDomain& D, double tol, std::size_t d) const{
-    RangeType sum = GaussianQuadrature<N,M>::integrate(f, D);
-    GaussLegendre<N,M> GL(this->_n);
+    RangeType sum = GaussianQuadrature<N, M>::integrate(f, D);
+    GaussLegendre<N, M> GL(this->_n);
     // would be nice to reuse repeated nodes, but in higher dimensions it doesn't help much
     double err = error(GL.integrate(f, D), sum);
 

@@ -7,7 +7,7 @@ IVPStatus ExplicitMidpoint::integrate(const Function& f, Eigen::VectorXd& ic, do
         Eigen::VectorXd k2 = f(t+0.5*dt, ic+0.5*dt*k1);
         ic += dt*k2;
     } catch(const std::runtime_error& ex){
-        std::cerr << ex.what();
+        std::cerr << ex.what() << std::endl;
         return IVPStatus::FailureToSolve;
     }
 

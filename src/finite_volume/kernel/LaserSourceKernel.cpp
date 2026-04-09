@@ -8,7 +8,7 @@
 
 //#include <random>
 // #define MONITOR
-//#define MONITOR2
+#define MONITOR2
 
 namespace{
     static constexpr double eps = 1.0e-9;
@@ -229,8 +229,6 @@ Eigen::MatrixXd LaserSourceKernel::computeResidual(const StateMesh& u) const{
         // Update heat and photoionization sources
         Eigen::Index ind = (i*Nmu + j)*Nphi + k;
         double alphaB = _mat->computeProperty("attenuation_coefficient", vars); // absorption by bound electrons
-        // double nuei = _mat->computeProperty("electron_ion_collision_frequency", vars);
-        // double nuib = _mat->computeProperty("inverse_bremsstrahlung_frequency", vars);
         double alphaIB = _mat->computeProperty("inverse_bremsstrahlung_frequency", vars) * n2 / pconst::c; // absorption by free electrons (inverse bremsstrahlung)
         double alpha = alphaB + alphaIB;
         double Id = ray.intensity()*(1 - std::exp(-alpha*s)); // deposited intensity;
@@ -266,8 +264,14 @@ Eigen::MatrixXd LaserSourceKernel::computeResidual(const StateMesh& u) const{
         std::cout << "The energy residual contribution is " << q(0, ind) << std::endl;
         std::cout << "The electron energy residual contribution is " << q(1, ind) << std::endl;
         std::cout << "The photoionization residual contribution is " << q(2, ind) << std::endl;
+        if (!q.col(ind).array().isFinite().all()){
+            std::cout << "Some NAN occured in residual. The cell value is " << u.cell(i,j,k).transpose() << std::endl;
+            double nuei = _mat->computeProperty("electron_ion_collision_frequency", vars);
+            double nuib = _mat->computeProperty("inverse_bremsstrahlung_frequency", vars);
+            std::cout << "alphaB = " << alphaB << ", alphaIB = " << alphaIB << ", nuei = " << nuei << ", nuib = " << nuib << std::endl;
+        }
 #endif
-        if (!q.col(ind).array().isFinite().all()) throw std::runtime_error("ERROR: Unable to solve for residual.");
+        if (!q.col(ind).array().isFinite().all()) throw std::runtime_error("ERROR: In LaserSourceKernel: Unable to solve for residual.");
         ray.setIntensity(ray.intensity() - Id); // remaining intensity
         /** 
          * Shouldn't model stochastic energy deposition within a droplet
