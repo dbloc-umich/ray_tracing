@@ -2,7 +2,7 @@
 #define ELECTRON_TEMPERATURE_AUX_H
 
 #include "AuxKernel.h"
-class ElectronTemperatureAux: public AuxKernel{
+class ElectronTemperatureAux: public AuxKernel<1>{
     public:
     ElectronTemperatureAux(): AuxKernel() {}
     double computeValue(const std::map<std::string, double>& u) const override;

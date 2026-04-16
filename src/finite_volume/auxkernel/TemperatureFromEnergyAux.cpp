@@ -1,6 +1,5 @@
 #include "TemperatureFromEnergyAux.h"
-#include "EquationOfState.h"
-#include <algorithm>
+#include "PrimitiveVariablesFromEosAux.h"
 
 TemperatureFromEnergyAux::TemperatureFromEnergyAux(std::shared_ptr<EquationOfState> eos):
     AuxKernel(),
@@ -10,8 +9,6 @@ TemperatureFromEnergyAux::TemperatureFromEnergyAux(std::shared_ptr<EquationOfSta
 }
 
 double TemperatureFromEnergyAux::computeValue(const std::map<std::string, double>& u) const{
-    if (u.count("energy") == 0) throw std::out_of_range("ERROR: Required variable(s) not found.");
-    double rhoH = u.at("energy");
-    double rho = (u.count("density") == 0) ? _eos->rho(_eos->Pref(), _eos->Tref()) : u.at("density");
-    return _eos->T(rhoH/rho);
+    PrimitiveVariablesFromEosAux pTSolver(_eos);
+    return pTSolver.computeValue(u)[1];
 }

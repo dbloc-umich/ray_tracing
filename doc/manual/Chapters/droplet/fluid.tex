@@ -31,13 +31,13 @@ Properties related to charged particles tend to be formulated in terms of their 
     \rho_j = \frac{M_j}{N_A} n_j.
 \end{equation}
 
-Euler's equations are used to describe the flow of charged particles; viscous effects are neglected since charged particles are so accelerated by the electric fields that advection dominates over diffusion. The
-Euler's equations for charged particle without external sources read
+Similarly, a different set of conservation equations can be written for charged particles. It is more common to describe a quantity of charges using number density as opposed to mass density, and therefore the
+equations read:
 \begin{subequations}
     \begin{align}
         \frac{\partial n_j}{\partial t} + \nabla \cdot n_j \mathbf{u}_j &= 0 \\
-        \frac{\partial n_j\mathbf{u}_j}{\partial t} + \nabla \cdot n_j \mathbf{u}_j \otimes \mathbf{u}_j &= \frac{-\nabla p_j}{m_j} \\
-        \frac{\partial n_j \mathcal{E}_j}{\partial t} + \nabla \cdot n_j \mathbf{u}_j \mathcal{H}_j &= 0
+        \frac{\partial n_j\mathbf{u}_j}{\partial t} + \nabla \cdot n_j \mathbf{u}_j \otimes \mathbf{u}_j &= \frac{-\nabla p_j + \nabla \cdot \mathbf{T}_j}{m_j} + n_j \mathbf{g} \\
+        \frac{\partial n_j \mathcal{E}_j}{\partial t} + \nabla \cdot n_j \mathbf{u}_j \mathcal{H}_j &= -\nabla \cdot \mathbf{q}_j'' + \nabla \cdot \left[\mathbf{T}_j \cdot \mathbf{u}_j \right]
     \end{align}
 \end{subequations}
 Here, the average energy and enthalpy per particle, $\mathcal{E}$ and $\mathcal{H}$, are used in order to ensure energy density is in the correct units.

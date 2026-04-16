@@ -5,21 +5,23 @@
 #include "StateMesh.h"
 #include <iostream>
 
-DiffusionKernel::DiffusionKernel(std::shared_ptr<Material> mat, std::string var,
-                                 std::shared_ptr<AuxKernel> converter, std::string primitive, std::string prop):
+template<int N>
+DiffusionKernel<N>::DiffusionKernel(std::shared_ptr<Material> mat, std::string var,
+                                 std::shared_ptr<AuxKernel<N>> converter, std::string primitive, std::string prop):
     Kernel(mat),
     _var(std::move(var)),
     _converter(converter),
-    _primitive(primitive),
+    _primitive(std::move(primitive)),
     _prop(std::move(prop))
 {}
 
-Eigen::MatrixXd DiffusionKernel::computeResidual(const StateMesh& u) const{
+template<int N>
+Eigen::MatrixXd DiffusionKernel<N>::computeResidual(const StateMesh& u) const{
     auto mesh = u.mesh();
     Eigen::Index Nx = mesh->axisSize(0)-1; // number of cells on the 1st axis
     Eigen::Index Ny = mesh->axisSize(1)-1; // number of cells on the 2nd axis
     Eigen::Index Nz = mesh->axisSize(2)-1; // number of cells on the 3rd axis
-    Eigen::MatrixXd F = Eigen::MatrixXd::Zero(1, Nx*Ny*Nz);
+    Eigen::MatrixXd F = Eigen::MatrixXd::Zero(N, Nx*Ny*Nz);
     Eigen::Index s = u.stateID(_var); // varID
 
     if (_prop != "none"){
@@ -27,9 +29,7 @@ Eigen::MatrixXd DiffusionKernel::computeResidual(const StateMesh& u) const{
             for (Eigen::Index j = 0; j < Ny; j++){
                 for (Eigen::Index k = 0; k < Nz; k++){
                     auto vars = u.stateMap(i, j, k);
-                    double u0 = u(s,i,j,k);
-                    double T0 = _converter ? u0 : _converter->computeValue(vars);
-                    vars[_primitive] = T0;
+                    auto T0 = _converter->computeValue(vars);
                     double D = _mat->computeProperty(_prop, vars);
 
                     // Flux from and to neighboring cells
@@ -68,15 +68,17 @@ Eigen::MatrixXd DiffusionKernel::computeResidual(const StateMesh& u) const{
                         }
 
                         vars = u.stateMap(in, jn, kn);
-                        double uk = u(s,in,jn,kn);
-                        double Tk = _converter ? uk : _converter->computeValue(vars);
-                        vars[_primitive] = Tk;
+                        auto Tk = _converter->computeValue(vars);
                         double Dk = _mat->computeProperty(_prop, vars);
-                        double dT = Dk*Tk - D*T0;
+                        auto dT = Dk*Tk - D*T0;
 
-                        double flux = mesh->gradientDotN(dT/dr, i, j, k, surfID) * mesh->area(i, j, k, surfID);
-                        F(s, (i*Ny + j)*Nz + k) += flux;
-                        F(s, (in*Ny + jn)*Nz + kn) -= flux;
+                        if constexpr (N == 1){
+                            double flux = mesh->gradientDotN(dT/dr, i, j, k, surfID) * mesh->area(i, j, k, surfID);
+                            F(s, (i*Ny + j)*Nz + k) += flux;
+                            F(s, (in*Ny + jn)*Nz + kn) -= flux;
+                        } else{
+                            // To be implemented later
+                        }
                     }
 
                     // Flux from boundaries
@@ -112,8 +114,13 @@ Eigen::MatrixXd DiffusionKernel::computeResidual(const StateMesh& u) const{
     return F;
 }
 
-Eigen::VectorXi DiffusionKernel::stateID(const StateMesh& u) const noexcept{
+template<int N>
+Eigen::VectorXi DiffusionKernel<N>::stateID(const StateMesh& u) const noexcept{
     Eigen::VectorXi ind(1);
     ind(0) = u.stateID(_var);
     return ind;
 }
+
+template class DiffusionKernel<1>;
+// template class DiffusionKernel<2>;
+// template class DiffusionKernel<3>;

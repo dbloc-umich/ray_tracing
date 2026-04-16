@@ -3,7 +3,7 @@
 #include "EquationOfState.h"
 #include "SpatialMesh.h"
 #include "StateMesh.h"
-#include "TemperatureFromEnergyAux.h"
+#include "PrimitiveVariablesFromEosAux.h"
 
 ElectronHPEnergyTransferKernel::ElectronHPEnergyTransferKernel(std::shared_ptr<Material> mat, std::shared_ptr<EquationOfState> eos):
     Kernel(mat),
@@ -19,7 +19,7 @@ Eigen::MatrixXd ElectronHPEnergyTransferKernel::computeResidual(const StateMesh&
     Eigen::Index Nz = mesh->axisSize(2)-1; // number of cells on the phi axis
     Eigen::MatrixXd q(2, Nx*Ny*Nz);
 
-    TemperatureFromEnergyAux ThAux(_eos);
+    PrimitiveVariablesFromEosAux ThAux(_eos);
     for (Eigen::Index i = 0; i < Nx; i++){
         for (Eigen::Index j = 0; j < Ny; j++){
             for (Eigen::Index k = 0; k < Nz; k++){
@@ -29,7 +29,7 @@ Eigen::MatrixXd ElectronHPEnergyTransferKernel::computeResidual(const StateMesh&
                 double nu_ei = _mat->computeProperty("electron_ion_collision_frequency", vars)*f;
                 double nu_en = _mat->computeProperty("electron_neutral_collision_frequency", vars)*f;
                 double ne = _mat->computeProperty("electron_density", vars);
-                double Th = ThAux.computeValue(vars);
+                double Th = ThAux.computeValue(vars)[1];
                 double C = 1.5*ne*pconst::k_B;
                 double qeh = (nu_ei+nu_en)*(Ee-C*Th);
                 // std::cout << "Ee = " << Ee << ", T = " << Th << ", E = " << C*Th << std::endl;

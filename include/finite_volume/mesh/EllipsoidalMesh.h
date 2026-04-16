@@ -17,7 +17,7 @@ class EllipsoidalMesh: public SpatialMesh{
     Eigen::Vector3d basisVector(Eigen::Index varID, double r, double mu, double phi) const noexcept override;
     UnitVector3d normalVector(Eigen::Index varID, double r, double mu, double phi) const noexcept override;
     // cannot use this function with ellipsoidal coordinates because of its lack of orthogonality
-    double gradientFactor(Eigen::Index varID, double, double, double) const noexcept override{ assert(false); };
+    double gradientFactor(Eigen::Index varID, double, double, double) const noexcept override{ assert(false); return 0.0; };
     double gradientDotN(double dudq, Eigen::Index i, Eigen::Index j, Eigen::Index k, Eigen::Index surfID) const override;
 
     double area(Eigen::Index i, Eigen::Index j, Eigen::Index k, Eigen::Index surfID) const noexcept override;

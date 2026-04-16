@@ -8,7 +8,7 @@
 
 //#include <random>
 // #define MONITOR
-#define MONITOR2
+// #define MONITOR2
 
 namespace{
     static constexpr double eps = 1.0e-9;
