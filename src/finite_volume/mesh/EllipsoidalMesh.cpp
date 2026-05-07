@@ -101,8 +101,8 @@ double EllipsoidalMesh::gradientDotN(double dudq, Eigen::Index i, Eigen::Index j
     Eigen::LDLT<Eigen::Ref<Eigen::Matrix3d>> ldlt(G); // LDL^T decomposition
 
     // Function to find the gradient
-    auto gradFunc = [&, this](const Eigen::Vector3d& g){
-        Eigen::Vector3d rhs;
+    auto gradFunc = [&, this](const Eigen::Vector3d& g) -> Eigen::Vector3d {
+        Eigen::Vector3d rhs = Eigen::Vector3d::Zero();
         rhs[0] = (surfID == 0 || surfID == 1) ? dudq : g.dot(cartesian(_r[i+1], mu, phi) - cartesian(_r[i], mu, phi))/(_r[i+1]-_r[i]);
         rhs[1] = (surfID == 2 || surfID == 3) ? dudq : g.dot(cartesian(r, _mu[j+1], phi) - cartesian(r, _mu[j], phi))/(_mu[j+1]-_mu[j]);
         rhs[2] = (surfID == 4 || surfID == 5) ? dudq : g.dot(cartesian(r, mu, _phi[k+1]) - cartesian(r, mu, _phi[k]))/(_phi[k+1]-_phi[k]);

@@ -4,14 +4,16 @@
 #define TEMPERATURE_FROM_ENERGY_AUX_H
 
 #include "AuxKernel.h"
+#include "PrimitiveVariablesFromEosAux.h"
 class EquationOfState;
 class TemperatureFromEnergyAux: public AuxKernel<1>{
     public:
-    TemperatureFromEnergyAux(std::shared_ptr<EquationOfState> eos);
+    TemperatureFromEnergyAux(const EquationOfState& eos, std::string densityVar="density", std::string energyVar="energy",
+                             double pScale=1.0e-6, double tScale=1.0e-3, double rhoScale=1.0, double HScale=1.0e-3);
     double computeValue(const std::map<std::string, double>& u) const override;
 
     protected:
-    std::shared_ptr<EquationOfState> _eos;
+    PrimitiveVariablesFromEosAux _ptAux;
 };
 
 #endif

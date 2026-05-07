@@ -5,12 +5,12 @@
 class EquationOfState;
 class ElectronHPEnergyTransferKernel: public Kernel{
     public:
-    ElectronHPEnergyTransferKernel(std::shared_ptr<Material> mat, std::shared_ptr<EquationOfState> eos);
+    ElectronHPEnergyTransferKernel(std::shared_ptr<Material> mat, std::shared_ptr<Material> eMat);
     Eigen::MatrixXd computeResidual(const StateMesh& u) const override;
     Eigen::VectorXi stateID(const StateMesh& u) const noexcept override;
 
     protected:
-    std::shared_ptr<EquationOfState> _eos;
+    std::shared_ptr<Material> _eMat;
 };
 
 #endif

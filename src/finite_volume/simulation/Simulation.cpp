@@ -25,6 +25,7 @@ void Simulation::solve(StateMesh& u, double ti, double tf, double dt) const{
         // std::cout << "Initial matrix: " << std::endl << u.matrix() << std::endl;
         Eigen::MatrixXd R = Eigen::MatrixXd::Zero(u.stateCount(), u.cellCount());
 
+        int count = 0;
         for (auto& kernel: _kernels){
             if (kernel){
                 auto residual = kernel->computeResidual(u);
@@ -32,8 +33,10 @@ void Simulation::solve(StateMesh& u, double ti, double tf, double dt) const{
                 for (Eigen::Index i = 0; i < indices.size(); i++){
                     int ind = indices[i];
                     R.row(ind) += residual.row(i);
+                    // if (count == 1 && ind == 3) std::cout << "Electron energy contribution: " << residual.row(i) << std::endl;
                 }
             }
+            count++;
         }
         // std::cout << "Residual: " << std::endl << R << std::endl << std::endl;
         return Eigen::Map<Eigen::VectorXd>(R.data(), R.size());
@@ -46,14 +49,16 @@ void Simulation::solve(StateMesh& u, double ti, double tf, double dt) const{
             if (count % _saveEveryNIterations == 0) _results[ti] = u.matrix();
             double step = std::min(tf-ti, dt);
             
+            // std::cout << "t = " << ti << std::endl;
             auto status = _integrator->integrate(func, u0, ti, step);
+            // std::cout << std::endl;
             if (status != IVPStatus::Success){
                 std::cerr << "ERROR: Time integration failed." << std::endl;
                 break;
             }
 
             count++;
-            if (ti >= tf) break;
+            if (ti-tf > -dt*1e-6) break;
             ti += step;
         }
     }

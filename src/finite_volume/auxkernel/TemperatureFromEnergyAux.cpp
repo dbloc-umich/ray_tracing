@@ -1,14 +1,9 @@
 #include "TemperatureFromEnergyAux.h"
-#include "PrimitiveVariablesFromEosAux.h"
 
-TemperatureFromEnergyAux::TemperatureFromEnergyAux(std::shared_ptr<EquationOfState> eos):
+TemperatureFromEnergyAux::TemperatureFromEnergyAux(const EquationOfState& eos, std::string densityVar, std::string energyVar,
+                                                   double pScale, double tScale, double rhoScale, double HScale):
     AuxKernel(),
-    _eos(eos)
-{
-    assert(_eos); // not null
-}
+    _ptAux(eos, densityVar, energyVar, pScale, tScale, rhoScale, HScale)
+{}
 
-double TemperatureFromEnergyAux::computeValue(const std::map<std::string, double>& u) const{
-    PrimitiveVariablesFromEosAux pTSolver(_eos);
-    return pTSolver.computeValue(u)[1];
-}
+double TemperatureFromEnergyAux::computeValue(const std::map<std::string, double>& u) const{ return _ptAux.computeValue(u)[1]; }

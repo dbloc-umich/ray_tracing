@@ -6,6 +6,7 @@
 #include <memory>
 
 class MaterialProperty; // for all other properties
+class EquationOfState;
 class Material{
     protected:
     using PropVars = std::map<std::string, double>;
@@ -34,8 +35,8 @@ class Material{
     void removeProperty(const std::string& name) noexcept;
     virtual double computeProperty(const std::string& name, const PropVars& vars = {}) const;
 
-    // // Functions from eos
-    // virtual double T_from_H(double H) const = 0;
+    // Gets eos object
+    virtual const EquationOfState& eos() const noexcept = 0;
 
     protected:
     mutable std::map<std::string, std::unique_ptr<MaterialProperty>> _props;

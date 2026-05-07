@@ -5,12 +5,14 @@
 #include "SpatialMesh.h"
 #include "StateMesh.h"
 
+// #define MONITOR
+
 Eigen::MatrixXd CollisionalIonizationKernel::computeResidual(const StateMesh& u) const{
     auto mesh = u.mesh();
     Eigen::Index Nx = mesh->axisSize(0)-1; // number of cells on the r axis
     Eigen::Index Ny = mesh->axisSize(1)-1; // number of cells on the mu axis
     Eigen::Index Nz = mesh->axisSize(2)-1; // number of cells on the phi axis
-    Eigen::MatrixXd q(3, Nx*Ny*Nz);
+    Eigen::MatrixXd q(6, Nx*Ny*Nz);
 
     for (Eigen::Index i = 0; i < Nx; i++){
         for (Eigen::Index j = 0; j < Ny; j++){
@@ -36,18 +38,27 @@ Eigen::MatrixXd CollisionalIonizationKernel::computeResidual(const StateMesh& u)
                 };
 
                 GaussLaguerre quad(8, 1.0/kT); // Use ungeneralized Gauss-Laguerre because the cross section function may be a discontinuity at E = 0
-                Quadrature<>::IntegrationDomain D{Eb, mconst::infty};
+                Quadrature<>::IntegrationDomain D{Eb, mconst::infty}; // lower bound is Eb since that's the threshold of ionization
                 double S_ci = quad.integrate(func, D);
-                // std::cout << "S_ci = " << S_ci << ", Eb = " << Eb << ", u = " << u << ", Te = " << kT/pconst::k_B << std::endl;
-                double ne = _mat->computeProperty("electron_density", vars);
+
+                double ne = vars.at("electron_number_density");
                 double n = _mat->computeProperty("number_density", vars);
                 double En = vars.at("energy")/n; // energy per neutral particle
                 double Gamma_ci = S_ci*ne*n;
 
                 Eigen::Index ind = (i*Nx + j)*Ny + k;
-                q(0, ind) = -Gamma_ci*En;
-                q(1, ind) = -Gamma_ci*Eb;
-                q(2, ind) = Gamma_ci;
+                q(0, ind) = -Gamma_ci * (_mat->computeProperty("molecular_mass") / pconst::N_A); // neutral mass density
+                q(1, ind) = -Gamma_ci*En; // neutral energy
+                q(2, ind) = Gamma_ci; // electron number density
+                q(3, ind) = -Gamma_ci*Eb; // electron energy
+                q(4, ind) = Gamma_ci; // ion number density
+                q(5, ind) = Gamma_ci*En; // ion energy
+#ifdef MONITOR
+                double Ee = vars.at("electron_energy") / vars.at("electron_number_density");
+                // std::cout << "S_ci = " << S_ci << ", Ee = " << Ee << ", Te = " << kT/pconst::k_B << ", Gamma_ci = " << Gamma_ci << std::endl;
+                double tau = vars.at("electron_energy") / (Gamma_ci * (Eb + Ee));
+                std::cout << "Timescale: " << tau << std::endl;
+#endif
             }
         }
     }
@@ -55,9 +66,12 @@ Eigen::MatrixXd CollisionalIonizationKernel::computeResidual(const StateMesh& u)
 }
 
 Eigen::VectorXi CollisionalIonizationKernel::stateID(const StateMesh& u) const noexcept{
-    Eigen::VectorXi ind(3);
-    ind(0) = u.stateID("energy");
-    ind(1) = u.stateID("electron_energy");
-    ind(2) = u.stateID("ion_number_density");
+    Eigen::VectorXi ind(6);
+    ind(0) = u.stateID("density");
+    ind(1) = u.stateID("energy");
+    ind(2) = u.stateID("electron_number_density");
+    ind(3) = u.stateID("electron_energy");
+    ind(4) = u.stateID("ion_number_density");
+    ind(5) = u.stateID("ion_energy");
     return ind;
 }

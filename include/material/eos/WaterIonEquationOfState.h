@@ -10,6 +10,8 @@ class WaterIonEquationOfState: IdealGasEquationOfState{
     double Cp(double P, double T) const noexcept override; // specific heat capacity at constant pressure
     double k(double P, double T) const noexcept override{ return 0.0; } // thermal conductivity -- note: do not use k computed from this EOS. Consult WaterIonMaterialProperty.
     double mu(double P, double T) const noexcept override{ return 8.90e-4; } // dynamic viscosity
+    double Pref() const noexcept override{ return 0.0; } // reference pressure
+    double Tref() const noexcept override{ return 273.15; } // reference temperature
 };
 
 

@@ -65,7 +65,7 @@ void Material::removeProperty(const std::string& name) noexcept{ _props.erase(na
 
 double Material::computeProperty(const std::string& name, const PropVars& vars) const{
     if (!hasProperty(name))
-        throw std::invalid_argument("ERROR: A property of this name has not been added.");
+        throw std::invalid_argument("ERROR: Property " + name + " has not been added.");
     return _props[name]->compute(vars);
 }
 

@@ -17,8 +17,9 @@ namespace{
 //     static std::uniform_real_distribution<double> dist(0.0, 1.0);
 }
 
-LaserSourceKernel::LaserSourceKernel(std::shared_ptr<Material> mat, Ray& ray, Shape* shape):
+LaserSourceKernel::LaserSourceKernel(std::shared_ptr<Material> mat, std::shared_ptr<Material> eMat, Ray& ray, Shape* shape):
     Kernel(mat),
+    _eMat(eMat),
     _ray(ray),
     _shape(shape),
     _I0(ray.intensity())
@@ -31,8 +32,8 @@ Eigen::MatrixXd LaserSourceKernel::computeResidual(const StateMesh& u) const{
     Eigen::Index Nr   = mesh->axisSize(0)-1; // number of cells on the r axis
     Eigen::Index Nmu  = mesh->axisSize(1)-1; // number of cells on the mu axis
     Eigen::Index Nphi = mesh->axisSize(2)-1; // number of cells on the phi axis
-    //Eigen::Index Ns   = _s.size();           // number of variables that this residual affects, should be 2 for now
-    Eigen::MatrixXd q = Eigen::MatrixXd::Zero(3, Nr*Nmu*Nphi);
+    // Eigen::Index Ns   = _s.size();           // number of variables that this residual affects, should be 2 for now
+    Eigen::MatrixXd q = Eigen::MatrixXd::Zero(6, Nr*Nmu*Nphi);
 
     double a, b, c; // semi-axes of the ellipse
     bool isSpherical;
@@ -229,7 +230,7 @@ Eigen::MatrixXd LaserSourceKernel::computeResidual(const StateMesh& u) const{
         // Update heat and photoionization sources
         Eigen::Index ind = (i*Nmu + j)*Nphi + k;
         double alphaB = _mat->computeProperty("attenuation_coefficient", vars); // absorption by bound electrons
-        double alphaIB = _mat->computeProperty("inverse_bremsstrahlung_frequency", vars) * n2 / pconst::c; // absorption by free electrons (inverse bremsstrahlung)
+        double alphaIB = _eMat->computeProperty("inverse_bremsstrahlung_frequency", vars) * n2 / pconst::c; // absorption by free electrons (inverse bremsstrahlung)
         double alpha = alphaB + alphaIB;
         double Id = ray.intensity()*(1 - std::exp(-alpha*s)); // deposited intensity;
 
@@ -242,9 +243,12 @@ Eigen::MatrixXd LaserSourceKernel::computeResidual(const StateMesh& u) const{
             // single-photon ionization
             double Q = _mat->computeProperty("quantum_yield", vars);
             double Gamma_pi = Q * qb/hnu;
-            q(0, ind) = qb - hnu*Gamma_pi; // neutral energy term
-            q(1, ind) = (hnu-Eb)*Gamma_pi + qib; // electron energy term
-            q(2, ind) = Gamma_pi; // photoionization term
+            q(0, ind) = -Gamma_pi * (_mat->computeProperty("molecular_mass") / pconst::N_A); // neutral mass density
+            q(1, ind) = qb - hnu*Gamma_pi; // neutral energy
+            q(2, ind) = Gamma_pi; // electron number density
+            q(3, ind) = (hnu-Eb)*Gamma_pi + qib; // electron energy
+            q(4, ind) = Gamma_pi; // ion number density
+            q(5, ind) = hnu*Gamma_pi; // ion energy
         } else{
             // multi-photon ionization
             int N = std::ceil(Eb/hnu);
@@ -256,18 +260,25 @@ Eigen::MatrixXd LaserSourceKernel::computeResidual(const StateMesh& u) const{
             double phi = ray.intensity()/hnu * (1 - std::exp(-alpha*s))/(alpha*s);
             double nn = _mat->computeProperty("number_density", vars);
             double Gamma_pi = std::min(SN*std::pow(phi,N)*nn, qb/(N*hnu));
-            q(0, ind) = qb - N*hnu*Gamma_pi; // neutral energy term
-            q(1, ind) = (N*hnu-Eb)*Gamma_pi + qib; // electron energy term
+            q(0, ind) = -Gamma_pi * (_mat->computeProperty("molecular_mass") / pconst::N_A); // neutral mass density
+            q(1, ind) = qb - N*hnu*Gamma_pi; // neutral energy
             q(2, ind) = Gamma_pi; // photoionization term
+            q(3, ind) = (N*hnu-Eb)*Gamma_pi + qib; // electron energy
+            q(4, ind) = Gamma_pi;
+            q(5, ind) = N*hnu*Gamma_pi;
         }
 #ifdef MONITOR
-        std::cout << "The energy residual contribution is " << q(0, ind) << std::endl;
-        std::cout << "The electron energy residual contribution is " << q(1, ind) << std::endl;
-        std::cout << "The photoionization residual contribution is " << q(2, ind) << std::endl;
+        std::cout << "The mass density residual contribution is " << q(0, ind) << std::endl;
+        std::cout << "The energy density residual contribution is " << q(1, ind) << std::endl;
+        std::cout << "The electron number density residual contribution is " << q(2, ind) << std::endl;
+        std::cout << "The electron energy density residual contribution is " << q(3, ind) << std::endl;
+        std::cout << "The ion number density residual contribution is " << q(4, ind) << std::endl;
+        std::cout << "The ion energy density residual contribution is " << q(5, ind) << std::endl;
+
         if (!q.col(ind).array().isFinite().all()){
             std::cout << "Some NAN occured in residual. The cell value is " << u.cell(i,j,k).transpose() << std::endl;
-            double nuei = _mat->computeProperty("electron_ion_collision_frequency", vars);
-            double nuib = _mat->computeProperty("inverse_bremsstrahlung_frequency", vars);
+            double nuei = _eMat->computeProperty("electron_ion_collision_frequency", vars);
+            double nuib = _eMat->computeProperty("inverse_bremsstrahlung_frequency", vars);
             std::cout << "alphaB = " << alphaB << ", alphaIB = " << alphaIB << ", nuei = " << nuei << ", nuib = " << nuib << std::endl;
         }
 #endif
@@ -338,9 +349,12 @@ Eigen::MatrixXd LaserSourceKernel::computeResidual(const StateMesh& u) const{
 }
 
 Eigen::VectorXi LaserSourceKernel::stateID(const StateMesh& u) const noexcept{
-    Eigen::VectorXi ind(3);
-    ind(0) = u.stateID("energy");
-    ind(1) = u.stateID("electron_energy");
-    ind(2) = u.stateID("ion_number_density");
+    Eigen::VectorXi ind(6);
+    ind(0) = u.stateID("density");
+    ind(1) = u.stateID("energy");
+    ind(2) = u.stateID("electron_number_density");
+    ind(3) = u.stateID("electron_energy");
+    ind(4) = u.stateID("ion_number_density");
+    ind(5) = u.stateID("ion_energy");
     return ind;
 }
