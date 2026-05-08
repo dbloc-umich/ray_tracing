@@ -5,15 +5,15 @@
 #include <functional>
 #include <type_traits>
 
-enum class NLStatus{ Success, MissingFunction, InvalidArgument, SingularityError, NoConvergence };
+enum class NLStatus{ Success, MissingFunction, InvalidArgument, SingularityError, NoConvergence, FailureToEvaluate };
 
 template<int N, int M = N>
 class NonlinearSolver{
     static_assert(N == Eigen::Dynamic || N >= 1);
     static_assert(M == Eigen::Dynamic || M >= N);
     public:
-    using DomainType = std::conditional_t<N == 1, double, Eigen::Matrix<double, N, 1>>;
-    using RangeType = std::conditional_t<M == 1, double, Eigen::Matrix<double, M, 1>>;
+    using DomainType = std::conditional_t<N == 1, double, Eigen::Vector<double, N>>;
+    using RangeType = std::conditional_t<M == 1, double, Eigen::Vector<double, M>>;
     using Function = std::function<RangeType(const DomainType&)>;
 
     explicit NonlinearSolver(const Function& func=nullptr, double ftol=1.0e-6, double xtol=1.0e-6, std::size_t maxIter=100);
@@ -31,7 +31,8 @@ class NonlinearSolver{
     double _xtol; // Tolerance in input step size
     std::size_t _maxIter;
 
-    bool outputConverged(const RangeType& fx) const noexcept;
+    double outputNorm(const RangeType& fx) const noexcept;
+    bool outputConverged(const RangeType& fx) const noexcept{ return outputNorm(fx) < _ftol; }
     bool inputConverged(const DomainType& x, const DomainType& dx) const noexcept;
 };
 

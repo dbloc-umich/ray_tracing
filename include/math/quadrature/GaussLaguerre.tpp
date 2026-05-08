@@ -6,12 +6,12 @@ GaussLaguerre<N, M>::GaussLaguerre(std::size_t n, double omega):
     _omega(omega)
 {
     if (n < 1 || n > 10) throw std::domain_error("ERROR: Can only support 1 through 10 integration nodes.");
-    if (omega <= 0.0) throw std::invalid_argument("ERROR: Gauss-Laguerre requires that the exponential coefficient be positive");
+    if (omega <= 0.0) throw std::invalid_argument("ERROR: Gauss-Laguerre requires that the exponential coefficient be positive.");
 }
 
 template<int N, int M>
 void GaussLaguerre<N, M>::setOmega(double omega) const{
-    if (omega <= 0.0) throw std::invalid_argument("ERROR: Gauss-Laguerre requires that the exponential coefficient be positive");
+    if (omega <= 0.0) throw std::invalid_argument("ERROR: Gauss-Laguerre requires that the exponential coefficient be positive.");
     _omega = omega;
 }
 

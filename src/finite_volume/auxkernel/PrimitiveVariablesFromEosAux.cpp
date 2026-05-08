@@ -21,6 +21,8 @@ PrimitiveVariablesFromEosAux::PrimitiveVariablesFromEosAux(const EquationOfState
 }
 
 Eigen::Vector2d PrimitiveVariablesFromEosAux::computeValue(const std::map<std::string, double>& u) const{
+    if (u.at(_densityVar) < 0 || u.at(_energyVar) < 0) throw std::invalid_argument("ERROR: In PrimitiveVariablesFromEosAux: Negative density or energy encountered.");
+
     auto func = [this, &u](const Eigen::Vector2d& PThat) -> Eigen::Vector2d {
         double P = PThat[0] / _pScale;
         double T = PThat[1] / _tScale;

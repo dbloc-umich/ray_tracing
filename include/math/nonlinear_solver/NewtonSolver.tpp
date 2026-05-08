@@ -30,8 +30,15 @@ NLStatus NewtonSolver<N, M>::solve(DomainType& x) const noexcept{
     }
 
     else{
-        RangeType fx = this->_f(x);
-        DerivativeType Jx = _df(x);
+        RangeType fx;
+        DerivativeType Jx;
+        try{
+            fx = this->_f(x);
+            Jx = _df(x);
+        } catch (...){
+            return NLStatus::FailureToEvaluate;
+        }
+        
         if (N == Eigen::Dynamic || M == Eigen::Dynamic){
             if (fx.size() < x.size() || fx.size() < Jx.rows() || fx.size() != Jx.cols()) return NLStatus::InvalidArgument;
         }
@@ -47,9 +54,18 @@ NLStatus NewtonSolver<N, M>::solve(DomainType& x) const noexcept{
             auto dx = qr.solve(fx);
             // std::cout << "dx = " << dx.transpose() << std::endl << std::endl;
             x -= dx;
-            fx = this->_f(x);
+            try{
+                fx = this->_f(x);
+            } catch (...){
+                return NLStatus::FailureToEvaluate;
+            }
             if (this->inputConverged(x, dx) || this->outputConverged(fx)) return NLStatus::Success;
-            Jx = _df(x);
+
+            try{
+                Jx = _df(x);
+            } catch (...){
+                return NLStatus::FailureToEvaluate;
+            }
         }  
         return NLStatus::NoConvergence;
     }    

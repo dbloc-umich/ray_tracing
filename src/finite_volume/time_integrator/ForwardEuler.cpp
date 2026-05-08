@@ -1,11 +1,9 @@
-#include "ExplicitMidpoint.h"
+#include "ForwardEuler.h"
 #include <iostream>
 
-IVPStatus ExplicitMidpoint::integrate(const Function& f, Eigen::VectorXd& u0, double t, double dt) const{
+IVPStatus ForwardEuler::integrate(const Function& f, Eigen::VectorXd& u0, double t, double dt) const{
     try{
-        Eigen::VectorXd k1 = f(t, u0);
-        Eigen::VectorXd k2 = f(t+0.5*dt, u0+0.5*dt*k1);
-        u0 += dt*k2;
+        u0 += dt*f(t, u0);
         if (Eigen::isfinite(u0.array()).all()) return IVPStatus::Success;
         return IVPStatus::FailureToEvaluate;
     } catch(const std::runtime_error& ex){

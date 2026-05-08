@@ -282,7 +282,7 @@ Eigen::MatrixXd LaserSourceKernel::computeResidual(const StateMesh& u) const{
             std::cout << "alphaB = " << alphaB << ", alphaIB = " << alphaIB << ", nuei = " << nuei << ", nuib = " << nuib << std::endl;
         }
 #endif
-        if (!q.col(ind).array().isFinite().all()) throw std::runtime_error("ERROR: In LaserSourceKernel: Unable to solve for residual.");
+        if (!q.col(ind).array().isFinite().all()) return q; // throw std::runtime_error("ERROR: In LaserSourceKernel: Unable to solve for residual.");
         ray.setIntensity(ray.intensity() - Id); // remaining intensity
         /** 
          * Shouldn't model stochastic energy deposition within a droplet

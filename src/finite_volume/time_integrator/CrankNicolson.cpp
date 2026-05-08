@@ -1,26 +1,23 @@
 #include "CrankNicolson.h"
+#include "NonlinearSolver.h"
+#include <iostream>
 
-CrankNicolson::CrankNicolson(SolverPointer solver):
-    _nlSolver(std::move(solver))
-{
-    assert(_nlSolver);
-}
+IVPStatus CrankNicolson::integrate(const Function& f, Eigen::VectorXd& u0, double t, double dt) const{
+    if (!_nlSolver) return IVPStatus::MissingNonlinearSolver;
 
-IVPStatus CrankNicolson::integrate(const Function& f, Eigen::VectorXd& ic, double t, double dt) const noexcept{
-    Eigen::VectorXd k1 = f(t, ic);
-
-    auto k2Func = [&](const Eigen::VectorXd& k2) -> Eigen::VectorXd { return k2 - f(t, 0.5*dt*(k1+k2)); };
-    Eigen::VectorXd k2(k1);
-    _nlSolver->setFunction(k2Func);
-    auto status = _nlSolver->solve(k2);
+    auto uFunc = [&](const Eigen::VectorXd& u) -> Eigen::VectorXd { return u - u0 - 0.5*dt*(f(t,u0) + f(t+dt,u)); };
+    _nlSolver->setFunction(uFunc);
+    Eigen::VectorXd u(u0);
+    
+    auto status = _nlSolver->solve(u);
     switch (status){
         case (NLStatus::Success):
-            ic += 0.5*dt*(k1+k2);
-            break;
+            if (Eigen::isfinite(u.array()).all()){
+                u0 = std::move(u);
+                return IVPStatus::Success;
+            }
+            return IVPStatus::FailureToEvaluate;
         default:
             return IVPStatus::FailureToSolve;
     }
-
-    if (Eigen::isfinite(ic.array()).all()) return IVPStatus::Success;
-    return IVPStatus::FailureToSolve;
 }

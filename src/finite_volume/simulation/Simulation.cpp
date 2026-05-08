@@ -49,9 +49,8 @@ void Simulation::solve(StateMesh& u, double ti, double tf, double dt) const{
             if (count % _saveEveryNIterations == 0) _results[ti] = u.matrix();
             double step = std::min(tf-ti, dt);
             
-            // std::cout << "t = " << ti << std::endl;
             auto status = _integrator->integrate(func, u0, ti, step);
-            // std::cout << std::endl;
+            u.flattened() = u0;
             if (status != IVPStatus::Success){
                 std::cerr << "ERROR: Time integration failed." << std::endl;
                 break;
@@ -62,4 +61,5 @@ void Simulation::solve(StateMesh& u, double ti, double tf, double dt) const{
             ti += step;
         }
     }
+
 }

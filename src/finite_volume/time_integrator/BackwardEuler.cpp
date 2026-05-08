@@ -1,26 +1,22 @@
 #include "BackwardEuler.h"
+#include "NonlinearSolver.h"
 #include <iostream>
 
-BackwardEuler::BackwardEuler(SolverPointer solver):
-    _nlSolver(std::move(solver))
-{
-    assert(_nlSolver);
-}
-
-IVPStatus BackwardEuler::integrate(const Function& f, Eigen::VectorXd& u0, double t, double dt) const noexcept{
-    auto kFunc = [&](const Eigen::VectorXd& y) -> Eigen::VectorXd { return y - u0 - dt*f(t,y); };
+IVPStatus BackwardEuler::integrate(const Function& f, Eigen::VectorXd& u0, double t, double dt) const{
+    if (!_nlSolver) return IVPStatus::MissingNonlinearSolver;
+    auto uFunc = [&](const Eigen::VectorXd& u) -> Eigen::VectorXd { return u - u0 - dt*f(t+dt,u); };
     
-    Eigen::VectorXd y(u0);
-    _nlSolver->setFunction(kFunc);
-    auto status = _nlSolver->solve(y);
+    _nlSolver->setFunction(uFunc);
+    Eigen::VectorXd u(u0);
+    auto status = _nlSolver->solve(u);
     switch (status){
         case (NLStatus::Success):
-            u0 = std::move(y);
-            break;
+            if (Eigen::isfinite(u.array()).all()){
+                u0 = std::move(u);
+                return IVPStatus::Success;
+            }
+            return IVPStatus::FailureToEvaluate;
         default:
             return IVPStatus::FailureToSolve;
     }
-
-    if (Eigen::isfinite(u0.array()).all()) return IVPStatus::Success;
-    return IVPStatus::FailureToSolve;
 }
