@@ -62,7 +62,6 @@ double ElectronMaterial::computeProperty(const std::string& name, const PropVars
     }
     if (name == "enthalpy") return _eos.H(P,T);
     if (name == "heat_capacity") return _eos.Cp(P,T);
-    if (name == "heat_capacity_temperature_derivative") return _eos.dCp_dT(P,T);
     if (name == "inverse_bremsstrahlung_frequency"){
         if (std::isnan(T)) return 0.0;
         double nu_ei = computeProperty("electron_ion_collision_frequency", vars);

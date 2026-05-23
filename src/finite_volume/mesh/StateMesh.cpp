@@ -18,6 +18,12 @@ StateMesh::StateMesh(std::shared_ptr<SpatialMesh> spatialMesh, const Eigen::Vect
 
     _bc.resize(u0.size(), Eigen::NoChange);
     _bc.setConstant(nullptr);
+
+    _L.resize(u0.size());
+    _L.setConstant(-std::numeric_limits<double>::infinity());
+    
+    _U.resize(u0.size());
+    _U.setConstant(std::numeric_limits<double>::infinity());
 }
 
 StateMesh::StateMesh(std::shared_ptr<SpatialMesh> spatialMesh, const Eigen::MatrixXd& array):
@@ -26,6 +32,12 @@ StateMesh::StateMesh(std::shared_ptr<SpatialMesh> spatialMesh, const Eigen::Matr
 {
     _bc.resize(array.rows(), Eigen::NoChange);
     _bc.setConstant(nullptr);
+
+    _L.resize(array.rows());
+    _L.setConstant(-std::numeric_limits<double>::infinity());
+    
+    _U.resize(array.rows());
+    _U.setConstant(std::numeric_limits<double>::infinity());
 }
 
 StateMesh::StateMesh(std::shared_ptr<SpatialMesh> spatialMesh, Eigen::MatrixXd&& array):
@@ -34,6 +46,12 @@ StateMesh::StateMesh(std::shared_ptr<SpatialMesh> spatialMesh, Eigen::MatrixXd&&
 {
     _bc.resize(array.rows(), Eigen::NoChange);
     _bc.setConstant(nullptr);
+
+    _L.resize(array.rows());
+    _L.setConstant(-std::numeric_limits<double>::infinity());
+    
+    _U.resize(array.rows());
+    _U.setConstant(std::numeric_limits<double>::infinity());
 }
 
 std::size_t StateMesh::stateID(const std::string& name) const noexcept{
@@ -65,6 +83,29 @@ ConstCell StateMesh::operator()(Eigen::Index i, Eigen::Index j, Eigen::Index k) 
     return _stateMesh.col((i*N + j)*K + k);    
 }
 
+void StateMesh::addVariable(std::string name, double u0, double L, double U){
+    if (L >= U) throw std::invalid_argument("ERROR: Lower bound must be strictly less than upper bound.");
+    if (std::find(_stateName.cbegin(), _stateName.cend(), name) == _stateName.cend()){
+        Eigen::Index Ns = stateCount();
+        _stateName.push_back(std::move(name));
+
+        if (_stateMesh.size() == 0){
+            Eigen::Index M = _spatialMesh->axisSize(0)-1;
+            Eigen::Index N = _spatialMesh->axisSize(1)-1;
+            Eigen::Index K = _spatialMesh->axisSize(2)-1;
+            _stateMesh.resize(1, M*N*K);
+        } else _stateMesh.conservativeResize(Ns+1, Eigen::NoChange);
+        _stateMesh.row(Ns).fill(u0);
+
+        _bc.conservativeResize(Ns+1, Eigen::NoChange);
+        _bc.row(Ns).fill(nullptr);
+        _L.conservativeResize(Ns+1);
+        _L[Ns] = L;
+        _U.conservativeResize(Ns+1);
+        _U[Ns] = U;
+    } else throw std::invalid_argument("ERROR: Duplicate state names detected.");
+}
+
 void StateMesh::setStateName(const std::vector<std::string>& names){
     if (int(names.size()) != stateCount()) throw std::invalid_argument("ERROR: Number of names must be equal to number of states.");
     std::unordered_set<std::string> seen(names.cbegin(), names.cend());
@@ -77,21 +118,26 @@ void StateMesh::setStateName(Eigen::Index s, std::string name){
     else throw std::invalid_argument("ERROR: Duplicate state names detected.");
 }
 
-void StateMesh::addVariable(std::string name, double u0){
-    if (std::find(_stateName.cbegin(), _stateName.cend(), name) == _stateName.cend()){
-        Eigen::Index Ns = stateCount();
-        _stateName.push_back(std::move(name));
-        if (_stateMesh.size() == 0){
-            Eigen::Index M = _spatialMesh->axisSize(0)-1;
-            Eigen::Index N = _spatialMesh->axisSize(1)-1;
-            Eigen::Index K = _spatialMesh->axisSize(2)-1;
-            _stateMesh.resize(1, M*N*K);
-        } else _stateMesh.conservativeResize(Ns+1, Eigen::NoChange);
-        _stateMesh.row(Ns).fill(u0);
+void StateMesh::setLowerBound(Eigen::Index s, double L){
+    if (_U[s] > L) _L[s] = L;
+    else throw std::invalid_argument("ERROR: Lower bound must be strictly less than upper bound.");
+}
 
-        _bc.conservativeResize(Ns+1, Eigen::NoChange);
-        _bc.row(Ns).fill(nullptr);
-    } else throw std::invalid_argument("ERROR: Duplicate state names detected.");
+void StateMesh::setLowerBound(const Eigen::VectorXd& L){
+    assert(L.size() == _L.size());
+    if ((_U.array() > L.array()).all()) _L = L;
+    else throw std::invalid_argument("ERROR: Lower bound must be strictly less than upper bound.");
+}
+
+void StateMesh::setUpperBound(Eigen::Index s, double U){
+    if (_L[s] < U) _U[s] = U;
+    else throw std::invalid_argument("ERROR: Lower bound must be strictly less than upper bound.");
+}
+
+void StateMesh::setUpperBound(const Eigen::VectorXd& U){
+    assert(U.size() == _U.size());
+    if ((_L.array() < U.array()).all()) _U = U;
+    else throw std::invalid_argument("ERROR: Lower bound must be strictly less than upper bound.");
 }
 
 std::map<std::string, double> StateMesh::stateMap(Eigen::Index i, Eigen::Index j, Eigen::Index k) const noexcept{

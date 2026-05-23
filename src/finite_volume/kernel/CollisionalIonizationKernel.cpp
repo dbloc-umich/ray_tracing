@@ -2,6 +2,7 @@
 #include "Constants.h"
 #include "ElectronTemperatureAux.h"
 #include "GaussLaguerre.h"
+#include "Material.h"
 #include "SpatialMesh.h"
 #include "StateMesh.h"
 
@@ -47,8 +48,8 @@ Eigen::MatrixXd CollisionalIonizationKernel::computeResidual(const StateMesh& u)
                 double Gamma_ci = S_ci*ne*n;
 
                 Eigen::Index ind = (i*Nx + j)*Ny + k;
-                q(0, ind) = -Gamma_ci * (_mat->computeProperty("molecular_mass") / pconst::N_A); // neutral mass density
-                q(1, ind) = -Gamma_ci*En; // neutral energy
+                q(0, ind) = 0.0; // -Gamma_ci * (_mat->computeProperty("molecular_mass") / pconst::N_A); // neutral mass density
+                q(1, ind) = 0.0; // -Gamma_ci*En; // neutral energy
                 q(2, ind) = Gamma_ci; // electron number density
                 q(3, ind) = -Gamma_ci*Eb; // electron energy
                 q(4, ind) = Gamma_ci; // ion number density

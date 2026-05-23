@@ -1,6 +1,7 @@
 #include "LaserSourceKernel.h"
 #include "Constants.h"
 #include "Ellipsoid.h"
+#include "Material.h"
 #include "SpatialMesh.h"
 #include "StateMesh.h"
 #include "Ray.h"
@@ -260,8 +261,8 @@ Eigen::MatrixXd LaserSourceKernel::computeResidual(const StateMesh& u) const{
             double phi = ray.intensity()/hnu * (1 - std::exp(-alpha*s))/(alpha*s);
             double nn = _mat->computeProperty("number_density", vars);
             double Gamma_pi = std::min(SN*std::pow(phi,N)*nn, qb/(N*hnu));
-            q(0, ind) = -Gamma_pi * (_mat->computeProperty("molecular_mass") / pconst::N_A); // neutral mass density
-            q(1, ind) = qb - N*hnu*Gamma_pi; // neutral energy
+            q(0, ind) = 0.0; // -Gamma_pi * (_mat->computeProperty("molecular_mass") / pconst::N_A); // neutral mass density
+            q(1, ind) = qb; // - N*hnu*Gamma_pi; // neutral energy
             q(2, ind) = Gamma_pi; // photoionization term
             q(3, ind) = (N*hnu-Eb)*Gamma_pi + qib; // electron energy
             q(4, ind) = Gamma_pi;
@@ -312,6 +313,7 @@ Eigen::MatrixXd LaserSourceKernel::computeResidual(const StateMesh& u) const{
             if (transmit){
                 ray.direction() = transmit;
 #ifdef MONITOR
+                std::cout << "Ray exitting the droplet with direction " << transmit << std::endl;
                 std::cout << std::endl;
 #endif
 #ifdef MONITOR2
@@ -335,11 +337,16 @@ Eigen::MatrixXd LaserSourceKernel::computeResidual(const StateMesh& u) const{
             else if (surfID == 4) k = k == 0 ? Nphi-1 : k-1;
             else k = k == Nphi-1 ? 0 : k+1;
 
-            u.updateStateMap(vars,i,j,k); // density corrected later
+            u.updateStateMap(vars,i,j,k);
             n2 = _mat->computeProperty("refractive_index", vars);
             UnitVector3d transmit = ray.direction().refract(normal, n1, n2);
-            if (transmit) ray.setDirection(ray.direction().refract(normal, n1, n2));
             /* Forced transmission if Snell's Law can't be solved for - i.e. zeroth-order approximation of the Eikonal equation */
+            if (transmit) ray.setDirection(ray.direction().refract(normal, n1, n2));
+#ifdef MONITOR
+            std::cout << "The next cell has an index of refraction of " << n2 << std::endl;
+            std::cout << "The refracted direction is " << transmit << std::endl;
+            if (!transmit) std::cout << "Failed to compute a refracted direction. Forcing the ray through with old direction " << ray.direction() << std::endl;
+#endif
             omega = ray.direction().value();
         }
 #ifdef MONITOR

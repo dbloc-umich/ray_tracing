@@ -8,6 +8,7 @@ class NewtonSolver : public NonlinearSolver<N, M>{
     public:
     using typename NonlinearSolver<N, M>::DomainType;
     using typename NonlinearSolver<N, M>::RangeType;
+    using typename NonlinearSolver<N, M>::BooleanType;
     using typename NonlinearSolver<N, M>::Function;
     using DerivativeType = std::conditional_t<M == 1, double, Eigen::Matrix<double, M, N>>;
     using DFunction = std::function<DerivativeType(const DomainType&)>;

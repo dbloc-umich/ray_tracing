@@ -1,0 +1,97 @@
+Transport of neutral particles are based on the assumption that the particles can freely move in all directions, so the heat flux is typically proportional to the temperature gradient. This is also true in the case
+of charged particles in the unmagnetized limits; i.e. there is no magnetic field strong enough to cause charges to spiral around it. The existence of a magnetic field gives rise to anisotropy in heat conduction.
+Transport in the parallel direction -- that is, parallel to the magnetic field lines -- experiences little changes from the the unmagnetized limits, as charges particles simply spiral along the lines unobstructed.
+On the other hand, motion across the field lines are strongly suppressed. The remaining orthogonal direction, which is perpendicular to both the temperature gradient and the magnetic field line and termed \textit{cross},
+direction in this document, is the result of the Righi–Leduc effect.
+
+\subsection{Heat flux}
+The electron heat flux has a conductive part in terms of the temperature gradient $\nabla T_e$ and a thermoelectric part in terms of the current density $\mathbf{j}$. Both $\nabla T_e$ and $\mathbf{j}$ are each broken
+down into three components, as followed:
+\begin{equation}
+    \mathbf{q}_e'' = -\kappa^e_\parallel \nabla_\parallel T_e - \kappa^e_\perp \nabla_\perp T_e - \kappa^e_\times \nabla_\times T_e - \frac{k_B T_e}{e} \left( \beta_\parallel \mathbf{j}_\parallel - \beta_\perp \mathbf{j}_\perp - \beta_\times \mathbf{j}_\times \right)
+    \label{eqn:electron_heat_flux}
+\end{equation}
+
+The three components of $\nabla T_e$ are
+\begin{subequations}
+    \begin{align}
+        \nabla_\parallel T_e &= (\mathbf{\hat{B}} \cdot \nabla T_e) \mathbf{\hat{B}} \\
+        \nabla_\perp T_e &= \nabla T_e - \nabla_\parallel T_e \\
+        \nabla_\times T_e &= \mathbf{\hat{B}} \times \nabla T_e,
+    \end{align}
+\end{subequations}
+and the corresponding components of $\mathbf{j}$ are defined similarly.
+
+Both the conductive and the thermoelectric contributions in Equation \ref{eqn:electron_heat_flux} can be rewritten compactly in terms of their respective original vectors, $\nabla T_e$ and $\mathbf{j}$. Take the
+conductive part, for example,
+\begin{subequations}
+    \label{eqn:electron_conduction_cartesian}
+    \begin{align}
+        \mathbf{q}_{\text{cond}}'' &= -\kappa^e_\parallel (\mathbf{\hat{B}} \cdot \nabla T_e) \mathbf{\hat{B}} - \kappa^e_\perp (\nabla T_e - (\mathbf{\hat{B}} \cdot \nabla T_e) \mathbf{\hat{B}}) - \kappa^e_\times \mathbf{\hat{B}} \times \nabla T_e \\
+        &= - \underbrace{\left( \kappa^e_\perp \mathbf{I} + (\kappa^e_\parallel - \kappa^e_\perp) \mathbf{\hat{B}}\mathbf{\hat{B}}^T + \kappa^e_\times \mathbf{\hat{B}}_\times \right)}_{\mathbf{K}_e} \nabla T_e,
+    \end{align}
+\end{subequations}
+where $\mathbf{\hat{B}}_\times$ is the antisymmetric matrix
+\begin{equation}
+    \mathbf{\hat{B}}_\times = \frac{1}{\lVert \mathbf{B} \rVert}
+    \begin{bmatrix}
+        0 & -B_z & B_y \\
+        B_z & 0 & -B_x \\
+        -B_y & B_x & 0
+    \end{bmatrix},
+\end{equation}
+which satisfies $\mathbf{\hat{B}}_\times \mathbf{v} = \mathbf{\hat{B}} \times \mathbf{v}$ for any vector $\mathbf{v}$.
+
+Similarly, the thermoelectric contribution of the electron heat flux can be written as
+\begin{equation}
+    \mathbf{q}_{\text{thermo}}'' = \underbrace{\frac{k_B T_e}{e} \left( \beta_\perp \mathbf{I} + (\beta_\parallel - \beta_\perp) \mathbf{\hat{B}}\mathbf{\hat{B}}^T + \beta_\times \mathbf{\hat{B}}_\times \right)}_{\mathbf{\Pi}} \mathbf{j},
+\end{equation}
+so that $\mathbf{q}_e'' = \mathbf{K}_e \nabla T_e + \mathbf{\Pi}\mathbf{j}$.
+
+The thermal conductivities are given in Epperlein and Haines (1986) as rational functions of $\chi$, and their polynomial coefficients are given in Table IV \cite{EpperleinHaines}:
+\begin{subequations}
+    \label{eqn:kappa_e}
+    \begin{align}
+        \kappa_\parallel^e &= \hat{\kappa}_e \frac{\gamma'_0}{c'_0}, \\
+        \kappa_\perp^e &= \hat{\kappa}_e \frac{\gamma'_1\chi + \gamma'_0}{\chi^3 + c'_2\chi^2 + c'_1\chi + c'_0}, \\
+        \kappa_\times^e &= \hat{\kappa}_e \frac{\chi(\gamma_1''\chi + \gamma_0'')}{\chi^3 + c_2''\chi^2 + c_1''\chi + c_0''},
+    \end{align}
+\end{subequations}
+with the leading prefractor $\hat{\kappa}_e$ defined as
+\begin{equation}
+    \hat{\kappa}_e \equiv \frac{n_e k_B T_e}{m_e \nu_{ei}^M}.
+    \label{eqn:kappa_hat_e}
+\end{equation}
+
+Also from Epperlein and Haines, the thermoelectric coefficients are given as the following rational functions, whose polynomial coefficients are given in Table III \cite{EpperleinHaines}:
+\begin{subequations}
+    \label{eqn:beta_e}
+    \begin{align}
+        \beta_\parallel &= \frac{\beta'_0}{(b'_0)^{8/9}}, \\
+        \beta_\perp &= \frac{\beta'_1\chi + \beta'_0}{(\chi^3 + b'_2\chi^2 + b'_1\chi + b'_0)^{8/9}}, \\
+        \beta_\times &= \frac{\chi(\beta_1'' \chi + \beta_0'')}{\chi^3 + b_2'' \chi^2 + b_1'' \chi + b_0'' }.
+    \end{align}
+\end{subequations}
+
+In the unmagnetized limit ($\chi \rightarrow 0$), $\kappa_\parallel^e = \kappa_\perp^e = \kappa_e$ and $\beta_\parallel = \beta_\perp = \beta$ while all cross terms vanish. The isotropic flux is recovered:
+\begin{equation}
+    \mathbf{q}_e'' = -\kappa_e \nabla T_e - \frac{\beta k_B T_e}{e} \mathbf{j}
+    \label{eqn:isotropic_electron_heat_flux}    
+\end{equation}
+
+Ion transport follows a simpler formulation where the thermoelectric contribution is neglected, leaving only the conduction term:
+\begin{equation}
+    \mathbf{q}_i'' = -\left( \kappa^i_\perp \mathbf{I} + (\kappa^i_\parallel - \kappa^i_\perp) \mathbf{\hat{B}}\mathbf{\hat{B}}^T + \kappa^i_\times \mathbf{\hat{B}}_\times \right) \nabla T_i.
+\end{equation}
+
+The ion conductivities follow the identical rational form as the electron counterparts in Equation \ref{eqn:kappa_e} but with a different prefactor
+\begin{equation}
+    \hat{\kappa}_i \equiv \frac{n_i k_B T_i}{m_e \nu_{ii}},
+    \label{eqn:kappa_hat_i}
+\end{equation}
+and the ion-ion collision prefrequency is defined as
+\begin{equation}
+    \nu_{ii} = ???.
+\end{equation}
+
+\subsection{Momentum flux}

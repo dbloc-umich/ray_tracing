@@ -1,4 +1,5 @@
 #include <chrono>
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <random>
@@ -25,6 +26,7 @@
 #include "PeriodicBC.h"
 #include "Ray.h"
 #include "RayTracing.h"
+#include "SecantSolver.h"
 #include "Simulation.h"
 #include "Sphere.h"
 #include "SphericalMesh.h"

@@ -1,6 +1,7 @@
 #include "DiffusionKernel.h"
 #include "AuxKernel.h"
 #include "BoundaryCondition.h"
+#include "Material.h"
 #include "SpatialMesh.h"
 #include "StateMesh.h"
 #include <iostream>

@@ -74,7 +74,6 @@ double Material::computeProperty(const std::string& name, const PropVars& vars) 
 // double Material::drho_dT(double P, double T) const noexcept{ return _eos->drho_dT(P,T); }
 // double Material::beta(double P, double T) const noexcept{ return _eos->beta(P,T); }
 // double Material::Cp(double P, double T) const noexcept{ return _eos->Cp(P,T); }
-// double Material::dCp_dT(double P, double T) const noexcept{ return _eos->dCp_dT(P,T); }
 // double Material::k(double P, double T) const noexcept{ return _eos->k(P,T); }
 // double Material::mu(double P, double T) const noexcept{ return _eos->mu(P,T); }
 // double Material::Pr(double P, double T) const noexcept{ return _eos->Pr(P,T); }

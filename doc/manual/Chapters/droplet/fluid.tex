@@ -1,70 +1,77 @@
-A plasma in itself is a collection of charges, each with its own trajectory. The most accurate plasma modelling approach is to track the position and velocity of all charged particles within the simulation domain;
-however, the expense associated with such a model would be prohibitive. A fluid model approximates individual particles of like charges as a single collective body, as well as neutral particles, with each species
-being described by a set of fluid equations. As a result, the electrons, ions, and neutral particles form three interpenetrating fluids. The fluids of charged particles are distinct from the neutral thanks to their
-interactions with the electromagnetic fields, as described in Section \ref{sect:plasma_em}.
-
-For the rest of this paper, the conservative and primitive variables carry the subscript $e$ for electrons and $i$ for ions. Neutral particles typically do not have a subscript; unless a particular term describes
-the interaction between a neutral and a charged particle (see Section \ref{sect:plasma_collision}), then it has a subscript $n$. The subscript $j$ is a placeholder for either $e$, $i$, sometimes $n$, or $\gamma$
-for photons (see Section \ref{sect:plasma_laser}).
-
 \subsection{Conservation equations}
-The neutral fluid is described as a compressible, viscous flow. Its conserved variables are described by the Navier-Stokes equations. Without external sources, these equations read
+The multiphase flow model is based on the Baer-Nunziato model of a liquid-vapor system not in equilibrium. The model allows for distinct velocities, temperatures, and pressures between the phases and
+employs relaxation terms to drive those quantities into equilibrium. To extend this model to include the plasma state, it is first assumed that charged particles will only occupy the gas phase and interact solely
+with the neutral gas particles. The gas phase then acts the intermediate phase between liquid and plasma, and its flow equations have to include interactions (phase change and relaxations) with both. The relaxation
+terms between fluids $j$ and $k$ in the volume fraction, momentum, and energy equations are denoted $\dot{\alpha}_{jk}$, $\mathbf{f}_{jk}$, $q'''_{jk}$, respectively.
+
+There are four fluids in this system, and the subscripts (and sometimes superscript) to identify them are $l$ for liquid, $g$ for neutral gas, $e$ for electrons, and $i$ for ions. One exception exists for particle mass
+$m$ (a single particle does not exhibit state behavior), in which case $m_e$ stands for electron mass and $m$ stands for the neutral particle or ion mass. For laser interaction term, $\gamma$ is also used to indicate
+photons (see Section \ref{sect:plasma_laser}). This convention is used for the rest of the document.
+
+The conservation equations for the liquid phase includes the mass, momentum, and energy equations on top of an additional equation for the liquid volume fraction, $\alpha_l$.
 \begin{subequations}
     \begin{align}
-        \frac{\partial \rho}{\partial t} + \nabla \cdot \rho \mathbf{u} &= 0 \\
-        \frac{\partial \rho\mathbf{u}}{\partial t} + \nabla \cdot \rho \mathbf{u} \otimes \mathbf{u} &= -\nabla p + \nabla \cdot \mathbf{T} + \rho\mathbf{g} \\
-        \frac{\partial \rho E}{\partial t} + \nabla \cdot \rho\mathbf{u} H &= -\nabla \cdot \mathbf{q}'' + \nabla \cdot \left[\mathbf{T} \cdot \mathbf{u} \right]
+        \frac{\partial \alpha_l}{\partial t} + \nabla \cdot \alpha_l \mathbf{u}_l &= \dot{\alpha}_{gl} \\
+        \frac{\partial \alpha_l\rho_l}{\partial t} + \nabla \cdot \alpha_l\rho_l \mathbf{u}_l &= 0 \\
+        \frac{\partial \alpha_l\rho_l\mathbf{u}_l}{\partial t} + \nabla \cdot \alpha_l\rho_l \mathbf{u}_l \otimes \mathbf{u}_l &= -\nabla p_l + \nabla \cdot \mathbf{T}_l + \mathbf{f}_{gl} \\
+        \frac{\partial \alpha_l\rho_l E_l}{\partial t} + \nabla \cdot \alpha_l\rho_l\mathbf{u}_l H_l &= -\nabla \cdot \mathbf{q}_l'' + \nabla \cdot \left[\mathbf{T}_l \cdot \mathbf{u}_l \right] + q'''_{gl}.
     \end{align}
 \end{subequations}
 
-The diffusive terms in the momentum and energy equations are $\nabla \cdot \mathbf{T}$ and $\nabla \cdot \mathbf{q}''$, respectively. The deviatoric stress tensor $\mathbf{T}$ is
+The neutral gas equations are written similarly, but the gas volume fraction $\alpha_g$ can be computed algebraically as $\alpha_g = 1 - \alpha_l$:
+\begin{subequations}
+    \begin{align}
+        \frac{\partial \alpha_g\rho_g}{\partial t} + \nabla \cdot \alpha_g\rho_g \mathbf{u}_g &= 0 \\
+        \frac{\partial \alpha_g\rho_g\mathbf{u}_g}{\partial t} + \nabla \cdot \alpha_g\rho_g \mathbf{u}_g \otimes \mathbf{u}_g &= -\nabla p_g + \nabla \cdot \mathbf{T}_g + \sum_{j}^{l,e,i} \mathbf{f}_{jg} \\
+        \frac{\partial \alpha_g\rho_g E_g}{\partial t} + \nabla \cdot \alpha_g\rho_g\mathbf{u}_g H_g &= -\nabla \cdot \mathbf{q}_g'' + \nabla \cdot \left[\mathbf{T}_g \cdot \mathbf{u}_g \right] + \sum_{j}^{l,e,i} q'''_{jg}.
+    \end{align}
+\end{subequations}
+
+For charge particles, formulae relating physical quantities are more conveniently expressed using number rather than mass density $\rho$, as many electromagnetic quantities and plasma properties are calculated
+using number density $n$ and charge density $en$. As a result, momentum density is written as $m_j n_j \mathbf{u}_j$, and energy density as $n_j \mathcal{E}_j$. The electron conservation equations are
+\begin{subequations}
+    \begin{align}
+        \frac{\partial \alpha_g n_e}{\partial t} + \nabla \cdot \alpha_g n_e \mathbf{u}_e &= 0 \\
+        m_e \left[ \frac{\partial \alpha_g n_e \mathbf{u}_e}{\partial t} + \nabla \cdot \alpha_g n_e \mathbf{u}_e \otimes \mathbf{u}_e \right] &= -\nabla p_e + \nabla \cdot \mathbf{T}_e + \sum_{j}^{g,i} \mathbf{f}_{je} \\
+        \frac{\partial \alpha_g n_e \mathcal{E}_e}{\partial t} + \nabla \cdot \alpha_g \rho_e \mathbf{u}_e \mathcal{H}_e &= -\nabla \cdot \mathbf{q}_e'' + \nabla \cdot \left[\mathbf{T}_e \cdot \mathbf{u}_e \right] + \sum_{j}^{g,i} q'''_{je}.
+    \end{align}    
+\end{subequations}
+
+Finally, the ion conservation equations are
+\begin{subequations}
+    \begin{align}
+        \frac{\partial \alpha_g n_i}{\partial t} + \nabla \cdot \alpha_g n_i \mathbf{u}_i &= 0 \\
+        m \left[ \frac{\partial \alpha_g n_i \mathbf{u}_i}{\partial t} + \nabla \cdot \alpha_g n_i \mathbf{u}_i \otimes \mathbf{u}_i \right] &= -\nabla p_i + \nabla \cdot \mathbf{T}_i + \sum_{j}^{g,e} \mathbf{f}_{ji} \\
+        \frac{\partial \alpha_g n_i \mathcal{E}_i}{\partial t} + \nabla \cdot \alpha_g \rho_i \mathbf{u}_i \mathcal{H}_i &= -\nabla \cdot \mathbf{q}_i'' + \nabla \cdot \left[\mathbf{T}_i \cdot \mathbf{u}_i \right] + \sum_{j}^{g,e} q'''_{ji}.
+    \end{align}    
+\end{subequations}
+
+\subsection{Relaxation terms}
+This section details the relaxation processes between the liquid and gas phases. For details about relaxations of charge particles, see Section \ref{sect:relaxations}.
+
+\subsection{Reaction terms}
+Reaction and phase change are used interchangeably in this document, since the same chemical species of different states are treated as different fluids. A reaction rate density $\Gamma_r^j$ describes how many
+reactions occurs per unit volume per unit time. The subscript $r$ indicates the reaction type and the superscript $j$ indicates the phase of interest that is involved in said reaction. The term is negative for
+reactants and positive for products. In a binary reaction -- for example, boiling -- the sum of the two $\Gamma$ terms is 0; therefore, $\Gamma_{\text{boil}}^l = -\Gamma_{\text{boil}}^g$. Ternary reactions such as
+ionization and recombination will see an imbalance of particles following a reaction. Section \ref{sect:reactions} describes the most commonly found ionization reactions encountered in the system.
+
+Reaction also transfer a portion of the reactant's momentum and energy into the product pool, and the particle momentum $m_j \mathbf{u}_j$ and energy $\mathcal{E}_j$ being transferred are those of the reactants.
+When expressing this transfer under a summation operator, e.g., $\displaystyle \sum_{r} \Sigma_r^j \mathcal{E}_r$, $\Sigma_r^j$ indicates all reactions $r$ that produce particle $j$, and $\mathcal{E}_r$ means the
+energy of the reactant in each reaction. Note that this only applies readily for heavy particles; electrons typically involve reaction-specific transfer terms that are described in Section \ref{sect:reactions}.
+
+If it is convenient to express reaction rate density in mass-based units, the conversion factor is the mass of the particle of interest, $m$.
+
+\subsection{Transport terms}
+The diffusive terms in the momentum and energy equations are $\nabla \cdot \mathbf{T}$ and $\nabla \cdot \mathbf{q}''$, respectively. For neutral particles, the deviatoric stress tensor $\mathbf{T}$ is
 \begin{equation}
     \mathbf{T} = \mu \left[ \nabla\mathbf{u} + \nabla\mathbf{u}^T - \frac{2}{3} (\nabla\cdot\mathbf{u})\mathbf{I} \right],
 \end{equation}
-and the heat flux vector $\mathbf{q}''$ is
+and the isotropic heat flux vector $\mathbf{q}''$ is
 \begin{equation}
-    \mathbf{q}'' = -k\nabla T.
+    \mathbf{q}'' = -\kappa\nabla T.
 \end{equation}
-
-Properties related to charged particles tend to be formulated in terms of their number density, so it will served the conserved variable instead of mass density. The conversion between the two densities are
-\begin{equation}
-    \rho_j = \frac{M_j}{N_A} n_j.
-\end{equation}
-
-Similarly, a different set of conservation equations can be written for charged particles. It is more common to describe a quantity of charges using number density as opposed to mass density, and therefore the
-equations read:
-\begin{subequations}
-    \begin{align}
-        \frac{\partial n_j}{\partial t} + \nabla \cdot n_j \mathbf{u}_j &= 0 \\
-        \frac{\partial n_j\mathbf{u}_j}{\partial t} + \nabla \cdot n_j \mathbf{u}_j \otimes \mathbf{u}_j &= \frac{-\nabla p_j + \nabla \cdot \mathbf{T}_j}{m_j} + n_j \mathbf{g} \\
-        \frac{\partial n_j \mathcal{E}_j}{\partial t} + \nabla \cdot n_j \mathbf{u}_j \mathcal{H}_j &= -\nabla \cdot \mathbf{q}_j'' + \nabla \cdot \left[\mathbf{T}_j \cdot \mathbf{u}_j \right]
-    \end{align}
-\end{subequations}
-Here, the average energy and enthalpy per particle, $\mathcal{E}$ and $\mathcal{H}$, are used in order to ensure energy density is in the correct units.
+The viscosity $\mu$ and thermal conductivity $\kappa$ are given by a material property library. Transport properties of charged particles are described in Section \ref{sect:plasma_transport}.
 
 \subsection{Closure relations}
-For each set of conservation equations, a closer relation is required to close the system. It usually takes form of an equation of state and relates a conserved variable to a set of primitive variables.
-For neutral particle, the required equations are that of density and energy as functions of pressure and temperature.
-\begin{subequations}
-    \begin{align}
-        \rho &= \rho(p, T) \\
-        \rho E &= \rho(p, T) H(p, T) - p
-    \end{align}
-\end{subequations}
-
-For charged particles following a Maxwellian distribution of velocities, the average energy per particle is related to its temperature by the simple relation
-\begin{equation}
-    \mathcal{E}_j = \frac{3}{2} k_B T_j.
-\end{equation}
-
-Pressure is related to number density by
-\begin{subequations}
-    \begin{equation}
-        \frac{\nabla p_j}{p_j} = \gamma \frac{\nabla n_j}{n_j},
-    \end{equation}
-    or
-    \begin{equation}
-        p_j = C_j n_j^\gamma,
-    \end{equation}
-\end{subequations}
-where the constant $C_j$ is given by a thermodynamic equation of state.
+For each set of conservation equations, a closer relation is required to close the system. It usually takes form of an equation of state and relates a conserved variable to a set of primitive variables. Species in
+the gas phase, neutral or charged, follow an ideal gas assumption.

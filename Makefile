@@ -24,8 +24,15 @@ TEST_OBJ := $(TEST_SRC:$(TEST_DIR)/%.cpp=$(OBJ_DIR)/$(TEST_DIR)/%.o)
 TEST_DEP := $(TEST_SRC:$(TEST_DIR)/%.cpp=$(DEP_DIR)/$(TEST_DIR)/%.d)
 
 INC = $(addprefix -I,$(INC_SUBDIRS))
+EXT_DIR = ../external
+EXT_INC_DIRS = $(shell find $(EXT_DIR) -type d -name include)
+EXT_INC = $(addprefix -I,$(EXT_INC_DIRS))
+
 CXX = g++
-CXXFLAGS = -Wall -O2 -MMD -MP -std=c++17 $(INC) -I../external # directory to external codes, add more if needed
+CXXFLAGS = -Wall -O2 -MMD -MP -std=c++17 $(INC) $(EXT_INC) -I$(EXT_DIR)
+COOLPROP_LIB = ../external/CoolProp/build/libCoolProp.a
+LDFLAGS = 
+LDLIBS  = $(COOLPROP_LIB)
 
 .PHONY: all clean test
 
@@ -34,7 +41,7 @@ all: $(TARGET)
 
 $(TARGET): $(OBJ)
 	@mkdir -p $(BIN_DIR)
-	@$(CXX) $(CXXFLAGS) $^ -o $@
+	@$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS) $(LDLIBS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@) $(DEP_DIR)/$(dir $*)
@@ -48,7 +55,7 @@ test: $(TEST_TARGET)
 
 $(TEST_TARGET): $(TEST_OBJ) $(LIB_OBJ)
 	@mkdir -p $(BIN_DIR)
-	@$(CXX) $(CXXFLAGS) -o $@ $^
+	@$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 
 $(OBJ_DIR)/$(TEST_DIR)/%.o: $(TEST_DIR)/%.cpp
 	@mkdir -p $(dir $@) $(DEP_DIR)/$(TEST_DIR)

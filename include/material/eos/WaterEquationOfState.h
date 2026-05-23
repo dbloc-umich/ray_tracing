@@ -5,18 +5,35 @@
 
 class WaterEquationOfState: public EquationOfState{
     public:
-    double M() const noexcept override{ return 0.018; } // molecular mass
-    double rho(double P, double T) const noexcept override; // density
-    double drho_dP(double P, double T) const noexcept override; // pressure-derivative of density
-    double drho_dT(double P, double T) const noexcept override; // temperature-derivative of density
-    double Cp(double P, double T) const noexcept override{ return 4184; } // specific heat capacity at constant pressure
-    double dCp_dT(double P, double T) const noexcept override{ return 0.0; } // temperature-derivative of heat capacity
-    double k(double P, double T) const noexcept override{ return 0.6065; } // thermal conductivity
-    double mu(double P, double T) const noexcept override{ return 8.90e-4; } // dynamic viscosity
-    double H(double P, double T) const noexcept override{ return 4184*(T - 273.15); } // specific enthalpy
-    double dH_dP(double P, double T) const noexcept override{ return 0.0; }
-    double Pref() const noexcept override{ return 101325; } // reference pressure
-    double Tref() const noexcept override{ return 273.15; } // reference temperature
+    // Mass density
+    double M() const override{ return 0.018; }; // molecular mass
+    double rho(double P, double T) const override; // density
+    double drho_dP(double P, double T) const override; // pressure-derivative of density
+    double drho_dT(double P, double T) const override; // temperature-derivative of density
+
+    // Specific internal energy
+    double E(double P, double T) const override; // specific internal energy
+    double dE_dP(double P, double T) const override;
+    double dE_dT(double P, double T) const override;
+    double Cv(double P, double T) const override; // specific heat capacity at constant volume
+
+    // Specific enthalpy
+    double H(double P, double T) const override; // specific enthalpy
+    double dH_dP(double P, double T) const override;
+    double Cp(double P, double T) const override; // specific heat capacity at constant pressure
+
+    // Transport properties
+    double k(double P, double T) const override; // thermal conductivity
+    double mu(double P, double T) const override; // dynamic viscosity
+
+    // Reference states
+    double Pref() const override{ return 101325.0; }; // reference pressure
+    double Tref() const override{ return 273.15; }; // reference temperature
+
+    // EOS inversion -- if P and T can be solved easily from rho and E
+    bool isInvertible() const override{ return true; }; // if the inversion can be called directly from P() and T()
+    double P(double rho, double E) const override; // only safe to call if isInvertible() == true
+    double T(double rho, double E) const override; // only safe to call if isInvertible() == true
 };
 
 #endif

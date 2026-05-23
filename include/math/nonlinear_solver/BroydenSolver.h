@@ -5,10 +5,11 @@
 
 template<int N>
 class BroydenSolver : public NonlinearSolver<N, N>{
-    static_assert(N == Eigen::Dynamic || N > 0, "Invalid problem size.");
+    static_assert(N == Eigen::Dynamic || N > 1, "For multivariate problems only. Use SecantSolver for single-variable problems.");
     public:
     using typename NonlinearSolver<N, N>::DomainType;
     using typename NonlinearSolver<N, N>::RangeType;
+    using typename NonlinearSolver<N, N>::BooleanType;
     using typename NonlinearSolver<N, N>::Function;
     using DerivativeType = Eigen::Matrix<double, N, N>;
     using DFunction = std::function<DerivativeType(const DomainType&)>;

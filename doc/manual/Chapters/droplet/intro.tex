@@ -1,8 +1,11 @@
 % should this be in this section or the intro
 
-Modeling even a single droplet that interacts with a laser beam is more complicated than a typical thermal-hydraulic simulation. Even as the laser cross section is pretty small compared to the droplet surface area,
-the migration of free charged particles necesitates treating the entire droplet as a plasma. Modeling of plasmas, especially weakly-ionized ones, typically enforces strong coupling between the conservation equations
-and Maxwell's equations. 
+Modeling the interaction between a laser beam and droplet combines the approaches of multiphase flow and magnetohydrodynamics (MHD). The former is simply due to the existence of the two immiscible liquid and gas phases,
+and the latter is especially necessary if the laser intensity is strong enough to ionize. In this paper, the term gas phase includes both neutral and charged particles, as both are governed by the ideal gas equation of
+state.
+
+In order to accurately capture the behavior of the liquid-gas-plasma, a four-fluid model is used to describe the constituent fluids -- namely, liquid, gas, electrons and ions -- that interact with one another. The charged
+particles also exhibit electromagnetic effects. The governing equations are therefore derived from the three conservation laws and Maxwell's equations.
 
 Chemically speaking, the laser can depart enough energies to not only remove bound electrons from their orbits but also break molecular bonds and alter the chemical composition of the fluid. In fact, free radicals and
 light molecular ions are frequently encountered in plasmas if the laser is not strong enough to completely disintegrate molecules into monoatomic ions. However, for simplicity, all ions are assumed to have resulted

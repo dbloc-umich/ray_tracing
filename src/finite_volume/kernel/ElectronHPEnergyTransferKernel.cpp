@@ -1,6 +1,7 @@
 #include "ElectronHPEnergyTransferKernel.h"
 #include "Constants.h"
 #include "EquationOfState.h"
+#include "Material.h"
 #include "SpatialMesh.h"
 #include "StateMesh.h"
 #include "TemperatureFromEnergyAux.h"
@@ -19,7 +20,6 @@ Eigen::MatrixXd ElectronHPEnergyTransferKernel::computeResidual(const StateMesh&
     Eigen::Index Nz = mesh->axisSize(2)-1; // number of cells on the phi axis
     Eigen::MatrixXd q(2, Nx*Ny*Nz);
 
-    TemperatureFromEnergyAux ThAux(_mat->eos());
     for (Eigen::Index i = 0; i < Nx; i++){
         for (Eigen::Index j = 0; j < Ny; j++){
             for (Eigen::Index k = 0; k < Nz; k++){
@@ -29,7 +29,15 @@ Eigen::MatrixXd ElectronHPEnergyTransferKernel::computeResidual(const StateMesh&
                 double f = 2.0*_eMat->computeProperty("molecular_mass", vars)/_mat->computeProperty("molecular_mass", vars); // conversion factor from momentum to energy relaxation frequency
                 double nu_ei = _eMat->computeProperty("electron_ion_collision_frequency", vars)*f;
                 double nu_en = _eMat->computeProperty("electron_neutral_collision_frequency", vars)*f;
-                double Th = ThAux.computeValue(vars);
+                double Th;
+                if (_mat->eos().isInvertible()) {
+                    double rho = vars.at("density");
+                    double E = vars.at("energy")/rho;
+                    Th = _mat->eos().T(rho, E);
+                } else{
+                    TemperatureFromEnergyAux ThAux(_mat->eos());
+                    Th = ThAux.computeValue(vars);
+                }
                 double C = 1.5*ne*pconst::k_B;
                 double qeh = (nu_ei+nu_en)*(Ee-C*Th);
                 // std::cout << "Ee = " << Ee << ", T = " << Th << ", E = " << C*Th << std::endl;

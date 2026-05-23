@@ -33,7 +33,7 @@ void Simulation::solve(StateMesh& u, double ti, double tf, double dt) const{
                 for (Eigen::Index i = 0; i < indices.size(); i++){
                     int ind = indices[i];
                     R.row(ind) += residual.row(i);
-                    // if (count == 1 && ind == 3) std::cout << "Electron energy contribution: " << residual.row(i) << std::endl;
+                    // std::cout << "Residual contribution: " << residual.transpose() << std::endl;
                 }
             }
             count++;
@@ -48,6 +48,7 @@ void Simulation::solve(StateMesh& u, double ti, double tf, double dt) const{
         while (true){
             if (count % _saveEveryNIterations == 0) _results[ti] = u.matrix();
             double step = std::min(tf-ti, dt);
+            // std::cout << "t = " << ti << ", u = " << u.matrix().transpose() << std::endl;
             
             auto status = _integrator->integrate(func, u0, ti, step);
             u.flattened() = u0;

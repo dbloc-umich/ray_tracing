@@ -7,11 +7,11 @@
 #define STATE_MESH_H
 
 #include "Eigen/Dense"
-#include "Material.h"
+#include "Constants.h"
+#include <map>
 
 class BoundaryCondition;
 class SpatialMesh;
-class Variable;
 
 using Cell = Eigen::MatrixXd::ColXpr;
 using ConstCell = Eigen::MatrixXd::ConstColXpr;
@@ -60,18 +60,31 @@ class StateMesh{
     // Pointer to the underlying spatial mesh
     const std::shared_ptr<SpatialMesh> mesh() const noexcept{ return _spatialMesh; }
 
+    // Add variables
+    void addVariable(std::string name, double u0, double L=-mconst::infty, double U=mconst::infty);
+
     // Get variable name or index
+    std::size_t stateID(const std::string& stateName) const noexcept;
     std::string& stateName(Eigen::Index s) noexcept{ return _stateName[s]; }
     const std::string& stateName(Eigen::Index s) const noexcept{ return _stateName[s]; }
-    std::size_t stateID(const std::string& stateName) const noexcept;
-    const std::vector<std::string>& stateName() const noexcept{ return _stateName; }
+    const auto& stateName() const noexcept{ return _stateName; }
     void setStateName(const std::vector<std::string>& name);
     void setStateName(Eigen::Index s, std::string name);
-    void addVariable(std::string name, double u0);
 
     // Boundary conditions
     std::shared_ptr<BoundaryCondition> bc(Eigen::Index varID, Eigen::Index surfID) const noexcept{ return _bc(varID, surfID); }
     void setBC(Eigen::Index varID, Eigen::Index surfID, std::shared_ptr<BoundaryCondition> bc) noexcept{ _bc(varID, surfID) = bc; }
+
+    // Lower and upper bounds
+    double lowerBound(Eigen::Index s) const noexcept{ return _L[s]; }
+    const Eigen::VectorXd& lowerBound() const noexcept{ return _L; }
+    void setLowerBound(Eigen::Index s, double L);
+    void setLowerBound(const Eigen::VectorXd&);
+
+    double upperBound(Eigen::Index s) const noexcept{ return _U[s]; }
+    const Eigen::VectorXd& upperBound() const noexcept{ return _U; }
+    void setUpperBound(Eigen::Index s, double L);
+    void setUpperBound(const Eigen::VectorXd&);    
 
     // Get a map of material property variables
     std::map<std::string, double> stateMap(Eigen::Index i, Eigen::Index j, Eigen::Index k) const noexcept;
@@ -85,6 +98,8 @@ class StateMesh{
     std::vector<std::string> _stateName;
     Eigen::MatrixXd _stateMesh;
     Eigen::Array<std::shared_ptr<BoundaryCondition>, Eigen::Dynamic, 6> _bc;
+    Eigen::VectorXd _L; // lower bound
+    Eigen::VectorXd _U; // upper bound
 };
 
 #endif

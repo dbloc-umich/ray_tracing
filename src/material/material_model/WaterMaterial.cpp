@@ -1,7 +1,7 @@
 #include "WaterMaterial.h"
 #include "Constants.h"
-#include "PrimitiveVariablesFromEosAux.h"
 #include "WaterEquationOfState.h"
+#include <iostream>
 
 const WaterEquationOfState WaterMaterial::_eos = WaterEquationOfState();
 WaterMaterial::WaterMaterial():
@@ -18,7 +18,6 @@ WaterMaterial::WaterMaterial():
     addProperty("enthalpy");
     addProperty("extinction_coefficient");
     addProperty("heat_capacity");
-    addProperty("heat_capacity_temperature_derivative");
     addProperty("molecular_mass");
     addProperty("number_density");
     addProperty("quantum_yield");
@@ -30,16 +29,17 @@ WaterMaterial::WaterMaterial():
 
 double WaterMaterial::computeProperty(const std::string& name, const PropVars& vars) const{
     double lambda = vars.count("wavelength") == 0 ? 589e-9 : vars.at("wavelength");
-    double rho = vars.count("density") == 0 ? _eos.rho(_eos.Pref(), _eos.Tref()) : vars.at("density");
-    double P, T;
-    if (vars.count("energy") == 0){
-        T = vars.count("temperature") == 0 ? _eos.Tref() : vars.at("temperature");
-        P = vars.count("pressure") == 0 ? _eos.Pref() : vars.at("pressure");        
+    double rho, E, P, T;
+    if (vars.count("density") == 0 || vars.count("energy") == 0){
+        P = _eos.Pref();
+        T = _eos.Tref();
+        rho = _eos.rho(P, T);
+        E = _eos.E(P, T);
     } else{
-        PrimitiveVariablesFromEosAux aux(_eos);
-        auto PT = aux.computeValue(vars);
-        P = PT[0];
-        T = PT[1];
+        rho = vars.at("density");
+        E = vars.at("energy")/rho;
+        P = _eos.P(rho, E);
+        T = _eos.T(rho, E);
     }
 
     if (name == "2-photon_ionization_rate_coefficient") return 1.0e-52 * 1.0e-8;  // lit data = 1.0e-52 cm4 s, convert to m4 s
@@ -55,14 +55,13 @@ double WaterMaterial::computeProperty(const std::string& name, const PropVars& v
     if (name == "density_temperature_derivative") return _eos.drho_dT(P,T);
     if (name == "enthalpy") return _eos.H(P,T);
     if (name == "extinction_coefficient"){
-        double rho_bar = _eos.rho(P,T) / _eos.rho(101325, 293.15); 
+        double rho_bar = rho / 1000; 
         if (lambda <= _lambda[0]) return _kappa[0]*rho_bar;
         if (lambda >= _lambda[_lambda.size()-1]) return _kappa[_kappa.size()-1]*rho_bar;
         std::size_t ind = std::upper_bound(_lambda.cbegin(), _lambda.cend(), lambda) - _lambda.cbegin();
         return (_kappa[ind] - (_kappa[ind]-_kappa[ind-1])/(_lambda[ind]-_lambda[ind-1]) * (_lambda[ind]-lambda))*rho_bar;
     }
     if (name == "heat_capacity") return _eos.Cp(P,T);
-    if (name == "heat_capacity_temperature_derivative") return _eos.dCp_dT(P,T);
     if (name == "molecular_mass") return _eos.M();
     if (name == "number_density") return _eos.rho(P,T) / _eos.M() * pconst::N_A;
     if (name == "orbital_kinetic_energy") return pconst::Ry; // assumed to just be hydrogen for now
@@ -70,7 +69,7 @@ double WaterMaterial::computeProperty(const std::string& name, const PropVars& v
     if (name == "quantum_yield") return 0.9;
     if (name == "refractive_index"){
         double T_bar = T/273.15;
-        double rho_bar = _eos.rho(P,T) / 1000;
+        double rho_bar = rho / 1000;
         double lam_bar = lambda/589e-9;
         double rhs = 0.244257733;
         rhs += 0.00974634476*rho_bar;

@@ -1,33 +1,35 @@
-The system of equations have a total of 21 nonlinear variables, organized into four categories. The fluid equations for neutral particles are
-\begin{align*}
-    \frac{\partial \rho}{\partial t} + \nabla \cdot \rho \mathbf{u} &= -\frac{M}{N_A} \sum_{r} \Gamma_r \numberthis \\
-    \frac{\partial \rho\mathbf{u}}{\partial t} + \nabla \cdot \rho \mathbf{u} \otimes \mathbf{u} &= -\nabla p + \nabla \cdot \mathbf{T} + \rho\mathbf{g} \\
-    &+ \sum_j^{e,i} \mathbf{f}_{jn} - \frac{M}{N_A} \sum_r \Gamma_r \mathbf{u}_r \numberthis \\
-    \frac{\partial \rho E}{\partial t} + \nabla \cdot \rho\mathbf{u} H &= -\nabla \cdot \mathbf{q}'' + \nabla \cdot \left[\mathbf{T} \cdot \mathbf{u} \right] \\
-    &+ \sum_j^{e,i,\gamma} q'''_{jn} - \frac{M}{N_A} \sum_r \Gamma_r E_r. \numberthis
-\end{align*}
+The system of equations have a total of 27 scalar variables, organized into five categories. The liquid phase equations are
+\begin{align}
+    \frac{\partial \alpha_l}{\partial t} + \nabla \cdot \alpha_l \mathbf{u}_l &= \mathcal{P}_{gl} \\
+    \frac{\partial \alpha_l \rho_l}{\partial t} + \nabla \cdot \alpha_l\rho_l \mathbf{u}_l &= -\Sigma_{\text{evap}} \\
+    \frac{\partial \alpha_l \rho_l\mathbf{u}_l}{\partial t} + \nabla \cdot \alpha_l \rho_l \mathbf{u}_l \otimes \mathbf{u}_l &= -\nabla p_l + \nabla \cdot \mathbf{T}_l + \rho_l\mathbf{g} + \mathbf{f}_{gl} \\
+    \frac{\partial \alpha_l \rho_l E_l}{\partial t} + \nabla \cdot \alpha_l \rho_l \mathbf{u}_l H_l &= -\nabla \cdot \mathbf{q}_l'' + \nabla \cdot \left[\mathbf{T}_l \cdot \mathbf{u}_l \right] + \sum_{j}^{g,\gamma} q'''_{jl} 
+\end{align}
 
-The fluid equations for electrons are
-\begin{align*}
-    \frac{\partial n_e}{\partial t} + \nabla \cdot n_e \mathbf{u}_e &= \sum_{r} \Gamma_r \numberthis \\
-    \frac{\partial n_e\mathbf{u}_e}{\partial t} + \nabla \cdot n_e \mathbf{u}_e \otimes \mathbf{u}_e &= \frac{-\nabla p_e - en_e (\mathbf{E} + \mathbf{u}_e \times \mathbf{B})}{m_e} \\
-    &+ \frac{1}{m_e}\sum_j^{i,n} \mathbf{f}_{je} \numberthis \\
-    \frac{\partial n_e \mathcal{E}_e}{\partial t} + \nabla \cdot n_e \mathbf{u}_e \mathcal{H}_e &= - en_e\mathbf{u}_e \cdot \mathbf{E} \\
-    &+ \sum_j^{i,n,\gamma} q'''_{je} + q'''_{\text{pi}}. \numberthis
-\end{align*}
+The gas phase equations are
+\begin{align}
+    \frac{\partial \alpha_g \rho_g}{\partial t} + \nabla \cdot \rho_g \mathbf{u}_g &= \frac{M}{N_A} \sum_{r} \Gamma_r^g \\
+    \frac{\partial \alpha_g \rho_g \mathbf{u}_g}{\partial t} + \nabla \cdot \alpha_g \rho_g \mathbf{u}_g \otimes \mathbf{u}_g &= -\nabla p_g + \nabla \cdot \mathbf{T}_g + \rho_g\mathbf{g} + \sum_j^{l,e,i} \mathbf{f}_{jg} + \frac{M}{N_A} \sum_r \Gamma_r^g \mathbf{u}_r \\
+    \frac{\partial \alpha_g \rho_g E_g}{\partial t} + \nabla \cdot \alpha_g \rho_g \mathbf{u}_g H_g &= -\nabla \cdot \mathbf{q}_g'' + \nabla \cdot \left[\mathbf{T}_g \cdot \mathbf{u}_g \right] + \sum_j^{l,e,i,\gamma} q'''_{jg} + \frac{M}{N_A} \sum_r \Gamma_r^g E_r
+\end{align}
 
-The fluid equations for ions are
-\begin{align*}
-    \frac{\partial n_i}{\partial t} + \nabla \cdot n_i \mathbf{u}_i &= \sum_{r} \Gamma_r \numberthis \\
-    \frac{\partial n_i\mathbf{u}_i}{\partial t} + \nabla \cdot n_i \mathbf{u}_i \otimes \mathbf{u}_i &= \frac{-\nabla p_i + en_i (\mathbf{E} + \mathbf{u}_i \times \mathbf{B})}{m_i} \\
-    &+ \frac{1}{m_i}\sum_j^{e,n} \mathbf{f}_{ji} + \sum_r \Gamma_r \mathbf{u}_r \numberthis \\
-    \frac{\partial n_i \mathcal{E}_i}{\partial t} + \nabla \cdot n_i \mathbf{u}_i \mathcal{H}_i &= en_i\mathbf{u}_i \cdot \mathbf{E} \\
-    &+ \sum_j^{e,n} q'''_{ji} + \sum_r \Gamma_r \mathcal{E}_r. \numberthis
-\end{align*}
+The electron equations are
+\begin{align}
+    \frac{\partial \alpha_g n_e}{\partial t} + \nabla \cdot \alpha_g n_e \mathbf{u}_e &= \sum_{r} \Gamma_r^e \\
+    m_e \left(\frac{\partial \alpha_g n_e \mathbf{u}_e}{\partial t} + \nabla \cdot \alpha_g n_e \mathbf{u}_e \otimes \mathbf{u}_e \right) &= -\nabla p_e - e \alpha_g n_e (\mathbf{E} + \mathbf{u}_e \times \mathbf{B}) + \sum_j^{g,i} \mathbf{f}_{je} \\
+    \frac{\partial \alpha_g n_e \mathcal{E}_e}{\partial t} + \nabla \cdot \alpha_g n_e \mathbf{u}_e \mathcal{H}_e &= -e \alpha_g n_e\mathbf{u}_e \cdot \mathbf{E} + \sum_j^{g,i,\gamma} q'''_{je} + \sum_{r} \Gamma_r^e (\mathcal{E}_r - \mathcal{E}_b)
+\end{align}
+
+The ion equations are
+\begin{align}
+    \frac{\partial \alpha_g n_i}{\partial t} + \nabla \cdot \alpha_g n_i \mathbf{u}_i &= \sum_{r} \Gamma_r^i \\
+    m_i \left(\frac{\partial \alpha_g n_i \mathbf{u}_i}{\partial t} + \nabla \cdot \alpha_g n_i \mathbf{u}_i \otimes \mathbf{u}_i \right) &= -\nabla p_i + e \alpha_g n_i (\mathbf{E} + \mathbf{u}_i \times \mathbf{B}) + \sum_j^{g,e} \mathbf{f}_{ji} + m_i\sum_r \Gamma_r^i \mathbf{u}_r \\
+    \frac{\partial \alpha_g n_i \mathcal{E}_i}{\partial t} + \nabla \cdot \alpha_g n_i \mathbf{u}_i \mathcal{H}_i &= e \alpha_g n_i\mathbf{u}_i \cdot \mathbf{E} + \sum_j^{g,e} q'''_{ji} + \sum_r \Gamma_r^i \mathcal{E}_r
+\end{align}
 
 Finally, Maxwell's Equations are needed to model the electric and magnetic fields.
 \begin{align}
-    \varepsilon_r \varepsilon_0\frac{\partial \mathbf{E}}{\partial t} &= \frac{1}{\mu_0} \nabla \times \mathbf{B} - e(n_i\mathbf{u}_i - n_e\mathbf{u}_e) \\
+    \varepsilon_r \varepsilon_0\frac{\partial \mathbf{E}}{\partial t} &= \frac{1}{\mu_0} \nabla \times \mathbf{B} - e\alpha_g(n_i\mathbf{u}_i - n_e\mathbf{u}_e) \\
     \frac{\partial \mathbf{B}}{\partial t} &= -\nabla \times \mathbf{E}
 \end{align}
 

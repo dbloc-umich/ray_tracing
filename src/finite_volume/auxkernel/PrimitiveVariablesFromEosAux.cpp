@@ -55,11 +55,13 @@ Eigen::Vector2d PrimitiveVariablesFromEosAux::computeValue(const std::map<std::s
 
     Eigen::Vector2d PThat{_eos.Pref()*_pScale, _eos.Tref()*_tScale};
     NewtonSolver<2> newton(func, jac);
+    // newton.setLowerBound({0.0, 0.0});
     auto status = newton.solve(PThat);
     switch (status){
         case (NLStatus::Success):
             PThat[0] /= _pScale;
             PThat[1] /= _tScale;
+            // std::cout << "rho = " << u.at(_densityVar) << ", rhoE = " << u.at(_energyVar) << ", P = " << PThat[0] << ", T = " << PThat[1] << std::endl;
             return PThat;
         case (NLStatus::SingularityError):
             throw std::runtime_error("ERROR: In PrimitiveVariablesFromEosAux - Singular Jacobian found.");
