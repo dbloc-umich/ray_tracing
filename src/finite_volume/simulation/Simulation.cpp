@@ -28,12 +28,17 @@ void Simulation::solve(StateMesh& u, double ti, double tf, double dt) const{
         int count = 0;
         for (auto& kernel: _kernels){
             if (kernel){
-                auto residual = kernel->computeResidual(u);
-                auto indices = kernel->stateID(u);
-                for (Eigen::Index i = 0; i < indices.size(); i++){
-                    int ind = indices[i];
-                    R.row(ind) += residual.row(i);
-                    // std::cout << "Residual contribution: " << residual.transpose() << std::endl;
+                try{
+                    auto residual = kernel->computeResidual(u);
+                    auto indices = kernel->stateID(u);
+                    for (Eigen::Index i = 0; i < indices.size(); i++){
+                        int ind = indices[i];
+                        R.row(ind) += residual.row(i);
+                        // std::cout << "Residual contribution: " << residual.transpose() << std::endl;
+                    }
+                } catch (const std::exception& ex){
+                    std::string errMsg = "ERROR: Failure to evaluate function with error message:\n" + std::string(ex.what());
+                    throw std::runtime_error(errMsg);
                 }
             }
             count++;
@@ -48,12 +53,17 @@ void Simulation::solve(StateMesh& u, double ti, double tf, double dt) const{
         while (true){
             if (count % _saveEveryNIterations == 0) _results[ti] = u.matrix();
             double step = std::min(tf-ti, dt);
-            // std::cout << "t = " << ti << ", u = " << u.matrix().transpose() << std::endl;
+            // std::cout << "t = " << ti << ", u = " << std::endl << u.matrix() << std::endl;
             
-            auto status = _integrator->integrate(func, u0, ti, step);
-            u.flattened() = u0;
-            if (status != IVPStatus::Success){
-                std::cerr << "ERROR: Time integration failed." << std::endl;
+            try{
+                auto status = _integrator->integrate(func, u0, ti, step);
+                u.flattened() = u0;
+                if (status != IVPStatus::Success){
+                    std::cerr << "ERROR: Time integration failed." << std::endl;
+                    break;
+                }
+            } catch (const std::runtime_error& ex){
+                std::cerr << ex.what() << std::endl;
                 break;
             }
 

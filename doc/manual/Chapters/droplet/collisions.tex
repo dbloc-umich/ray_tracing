@@ -100,13 +100,13 @@ similar formulation as Equation \ref{eqn:momentum_relaxation_jn}, the force exer
 \end{equation}
 and the electron-ion momentum-transfer collision frequency $\nu^M_{ei}$ is
 \begin{equation}
-    \nu^M_{ei} = C \frac{n_i Z e^4}{(4\pi\varepsilon_0)^2 \sqrt{m_e (k_B T_e)^3}} \ln\Lambda,
+    \nu^M_{ei} = C \frac{n_i Z^2 e^4}{(4\pi\varepsilon_0)^2 \sqrt{m_e (k_B T_e)^3}} \ln\Lambda_e,
     \label{eqn:nu_ei_momentum}
 \end{equation}
-where $C$ is a prefactor on the order of $\mathcal{O}(1)$ that differs depending on the text. Chen gives $C = \pi$, while the FLASH code uses $C = \frac{4}{3} \sqrt{2\pi}$ \cite{Chen}\cite{FLASH}. $C = \pi$ will be
+where $C$ is a prefactor on the order of $\mathcal{O}(1)$ that differs depending on the text. Chen gives $C = \pi$, while the FLASH code uses $C = \frac{4}{3} \sqrt{2\pi}$ \cite{Chen}\cite{FLASH}. The latter will be
 used in this model. The Coulomb logarithm $\ln\Lambda$ is a correction factor that accounts for the cumulative effect of many small-angle deflections in a collision and is given by
 \begin{equation}
-    \ln\Lambda \equiv \ln \left[ \frac{4\pi (\varepsilon_0 k_B T_e)^{3/2}}{Ze^3 \sqrt{n_e}} \right].
+    \ln\Lambda_e \equiv \ln \left[ \frac{4\pi (\varepsilon_0 k_B T_e)^{3/2}}{Ze^3 \sqrt{n_e}} \right].
     \label{eqn:ln_lambda}
 \end{equation}
 In both Equations \ref{eqn:nu_ei_momentum} and \ref{eqn:ln_lambda}, the average ionization number $Z$ can be assumed to be 1.

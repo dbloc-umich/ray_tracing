@@ -22,7 +22,7 @@ ElectronMaterial::ElectronMaterial(const EquationOfState& nEOS):
     addProperty("inverse_bremsstrahlung_frequency");
     addProperty("molecular_mass");
     addProperty("plasma_electron_frequency");
-    addProperty("thermal_conductivity");
+    addProperty("parallel_thermal_conductivity");
     addProperty("thermal_expansion_coefficient");
     addProperty("viscosity");
 }
@@ -52,7 +52,8 @@ double ElectronMaterial::computeProperty(const std::string& name, const PropVars
         double e = pconst::e;
         double k = 1.0 / (4 * mconst::pi * pconst::epsilon_0);
         double kT = pconst::k_B*T;
-        return (mconst::pi * ni*Z*e*e*e*e*lnLambda * k*k) / std::sqrt(pconst::m_e * (kT*kT*kT));
+        double C = 4.0/3 * std::sqrt(2*mconst::pi);
+        return (C * ni*Z*Z*e*e*e*e*lnLambda * k*k) / std::sqrt(pconst::m_e * (kT*kT*kT));
     }
     if (name == "electron_neutral_collision_frequency"){
         double nn = vars.at("density") / (_nEOS.M() / pconst::N_A);
@@ -71,10 +72,11 @@ double ElectronMaterial::computeProperty(const std::string& name, const PropVars
     }
     if (name == "molecular_mass") return _eos.M();
     if (name == "plasma_electron_frequency") return pconst::e * std::sqrt(ne / (pconst::epsilon_0*pconst::m_e)); // angular frequency in rad/s
-    if (name == "thermal_conductivity"){
-        double nu = computeProperty("electron_ion_collision_frequency", vars) + computeProperty("electron_neutral_collision_frequency", vars);
-        double kB = pconst::k_B;
-        return 2.5*(ne*kB*kB*T)/(pconst::m_e*nu);
+    if (name == "parallel_thermal_conductivity"){
+        double nu = computeProperty("electron_ion_collision_frequency", vars);
+        double kkT = pconst::k_B*pconst::k_B*T;
+        double C = 6.18/1.93;
+        return C*(ne*kkT)/(pconst::m_e*nu);
     }
     if (name == "thermal_expansion_coefficient") return _eos.beta(P,T);
     if (name == "viscosity") return _eos.mu(P,T);

@@ -23,6 +23,7 @@ Eigen::MatrixXd CollisionalIonizationKernel::computeResidual(const StateMesh& u)
                 double r = pconst::Ry / Eb;
                 double uu = _mat->computeProperty("orbital_kinetic_energy", vars) / Eb;
                 double kT = pconst::k_B*ElectronTemperatureAux().computeValue(vars);
+                if (kT <= 0.0) throw std::invalid_argument("ERROR: Non-positive electron temperature encountered.");
 
                 auto xsBEB = [&](const double& E){
                     double t = E/Eb;

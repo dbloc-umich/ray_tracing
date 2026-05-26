@@ -1,23 +1,39 @@
-Transport of neutral particles are based on the assumption that the particles can freely move in all directions, so the heat flux is typically proportional to the temperature gradient. This is also true in the case
-of charged particles in the unmagnetized limits; i.e. there is no magnetic field strong enough to cause charges to spiral around it. The existence of a magnetic field gives rise to anisotropy in heat conduction.
-Transport in the parallel direction -- that is, parallel to the magnetic field lines -- experiences little changes from the the unmagnetized limits, as charges particles simply spiral along the lines unobstructed.
-On the other hand, motion across the field lines are strongly suppressed. The remaining orthogonal direction, which is perpendicular to both the temperature gradient and the magnetic field line and termed \textit{cross},
-direction in this document, is the result of the Righi–Leduc effect.
+Transport of neutral particles are caused by the ``random walk'' movement of the particles, and because there is no inherent preference for a particular direction, the transported quantity -- being momentum or energy
+-- is eventually equilibrated. This is also true in the case of charged particles in the \textit{unmagnetized} limits; that is when $\lVert \mathbf{B} \rVert = 0$. The existence of a magnetic field gives rise to
+anisotropy in heat conduction, since the particles are forced to spiral along the magnetic field lines, so the rate of transport is the highest in the direction parallel to the magnetic field lines, i.e.
+$\displaystyle \mathbf{\hat{b}} = \frac{\mathbf{\hat{B}}}{\lVert \mathbf{B} \rVert}$. On the other hand, motion across the field lines (the perpendicular direction) are strongly suppressed, so there is little
+transport in that direction. The other direction, which is perpendicular to both $\mathbf{\hat{b}}$ and the gradient of the transported quantity and termed \textit{cross} direction in this document, is the result of
+the Righi–Leduc effect.
+
+Transport processes in plasmas are pioneered by Braginskii in his 1965 article \cite{Braginskii}, where the transport properties -- namely viscosity and thermal conductivity -- are given as function of magnetization
+$\chi$ (also called the Hall parameter). It is defined as
+\begin{equation}
+    \chi_j \equiv \frac{\omega_{\text{ce}, j}}{\nu_{ji}},\ j = e,i
+\end{equation}
+and the electron or ion gyrofrequency is
+\begin{equation}
+    \omega_{\text{ce}, j} \equiv \frac{eB}{m_j}.
+\end{equation}
+
+The electron-ion collision frequency is given in Equation \ref{eqn:nu_ei_momentum}, and the ion-ion collision frequency is
+\begin{equation}
+    \nu_{ii} = \frac{4}{3} \sqrt{\pi} \frac{n_i Z^4 e^4}{(4\pi\varepsilon_0)^2 \sqrt{m (k_B T_i)^3}} \ln\Lambda_i.
+\end{equation}
 
 \subsection{Heat flux}
 The electron heat flux has a conductive part in terms of the temperature gradient $\nabla T_e$ and a thermoelectric part in terms of the current density $\mathbf{j}$. Both $\nabla T_e$ and $\mathbf{j}$ are each broken
 down into three components, as followed:
 \begin{equation}
-    \mathbf{q}_e'' = -\kappa^e_\parallel \nabla_\parallel T_e - \kappa^e_\perp \nabla_\perp T_e - \kappa^e_\times \nabla_\times T_e - \frac{k_B T_e}{e} \left( \beta_\parallel \mathbf{j}_\parallel - \beta_\perp \mathbf{j}_\perp - \beta_\times \mathbf{j}_\times \right)
+    \mathbf{q}_e'' = -\kappa^e_\parallel \nabla_\parallel T_e - \kappa^e_\perp \nabla_\perp T_e - \kappa^e_\times \nabla_\times T_e - \frac{k_B T_e}{e} \left( \beta_\parallel \mathbf{j}_\parallel + \beta_\perp \mathbf{j}_\perp + \beta_\times \mathbf{j}_\times \right)
     \label{eqn:electron_heat_flux}
 \end{equation}
 
 The three components of $\nabla T_e$ are
 \begin{subequations}
     \begin{align}
-        \nabla_\parallel T_e &= (\mathbf{\hat{B}} \cdot \nabla T_e) \mathbf{\hat{B}} \\
+        \nabla_\parallel T_e &= (\mathbf{\hat{b}} \cdot \nabla T_e) \mathbf{\hat{b}} \\
         \nabla_\perp T_e &= \nabla T_e - \nabla_\parallel T_e \\
-        \nabla_\times T_e &= \mathbf{\hat{B}} \times \nabla T_e,
+        \nabla_\times T_e &= \mathbf{\hat{b}} \times \nabla T_e,
     \end{align}
 \end{subequations}
 and the corresponding components of $\mathbf{j}$ are defined similarly.
@@ -27,53 +43,54 @@ conductive part, for example,
 \begin{subequations}
     \label{eqn:electron_conduction_cartesian}
     \begin{align}
-        \mathbf{q}_{\text{cond}}'' &= -\kappa^e_\parallel (\mathbf{\hat{B}} \cdot \nabla T_e) \mathbf{\hat{B}} - \kappa^e_\perp (\nabla T_e - (\mathbf{\hat{B}} \cdot \nabla T_e) \mathbf{\hat{B}}) - \kappa^e_\times \mathbf{\hat{B}} \times \nabla T_e \\
-        &= - \underbrace{\left( \kappa^e_\perp \mathbf{I} + (\kappa^e_\parallel - \kappa^e_\perp) \mathbf{\hat{B}}\mathbf{\hat{B}}^T + \kappa^e_\times \mathbf{\hat{B}}_\times \right)}_{\mathbf{K}_e} \nabla T_e,
+        \mathbf{q}_{\text{cond}}'' &= -\kappa^e_\parallel (\mathbf{\hat{b}} \cdot \nabla T_e) \mathbf{\hat{b}} - \kappa^e_\perp (\nabla T_e - (\mathbf{\hat{b}} \cdot \nabla T_e) \mathbf{\hat{b}}) - \kappa^e_\times \mathbf{\hat{b}} \times \nabla T_e \\
+        &= - \underbrace{\left( \kappa^e_\perp \mathbf{I} + (\kappa^e_\parallel - \kappa^e_\perp) \mathbf{\hat{b}}\mathbf{\hat{b}}^T + \kappa^e_\times \mathbf{B}_\times \right)}_{\mathbf{K}_e} \nabla T_e,
     \end{align}
 \end{subequations}
-where $\mathbf{\hat{B}}_\times$ is the antisymmetric matrix
+where $\mathbf{B}_\times$ is the antisymmetric matrix
 \begin{equation}
-    \mathbf{\hat{B}}_\times = \frac{1}{\lVert \mathbf{B} \rVert}
+    \mathbf{B}_\times =
     \begin{bmatrix}
-        0 & -B_z & B_y \\
-        B_z & 0 & -B_x \\
-        -B_y & B_x & 0
+        0 & -b_z & b_y \\
+        b_z & 0 & -b_x \\
+        -b_y & b_x & 0
     \end{bmatrix},
 \end{equation}
-which satisfies $\mathbf{\hat{B}}_\times \mathbf{v} = \mathbf{\hat{B}} \times \mathbf{v}$ for any vector $\mathbf{v}$.
+that satisfies $\mathbf{B}_\times \mathbf{v} = \mathbf{\hat{b}} \times \mathbf{v}$ for any vector $\mathbf{v}$.
 
 Similarly, the thermoelectric contribution of the electron heat flux can be written as
 \begin{equation}
-    \mathbf{q}_{\text{thermo}}'' = \underbrace{\frac{k_B T_e}{e} \left( \beta_\perp \mathbf{I} + (\beta_\parallel - \beta_\perp) \mathbf{\hat{B}}\mathbf{\hat{B}}^T + \beta_\times \mathbf{\hat{B}}_\times \right)}_{\mathbf{\Pi}} \mathbf{j},
+    \mathbf{q}_{\text{thermo}}'' = -\underbrace{\frac{k_B T_e}{e} \left( \beta_\perp \mathbf{I} + (\beta_\parallel - \beta_\perp) \mathbf{\hat{b}}\mathbf{\hat{b}}^T + \beta_\times \mathbf{B}_\times \right)}_{\mathbf{\Pi}} \mathbf{j},
 \end{equation}
-so that $\mathbf{q}_e'' = \mathbf{K}_e \nabla T_e + \mathbf{\Pi}\mathbf{j}$.
+so that $\mathbf{q}_e'' = -\mathbf{K}_e \nabla T_e - \mathbf{\Pi}\mathbf{j}$.
 
-The thermal conductivities are given in Epperlein and Haines (1986) as rational functions of $\chi$, and their polynomial coefficients are given in Table IV \cite{EpperleinHaines}:
+The thermal conductivities are given in Epperlein and Haines (1986) (which are corrections of the Braginskii coefficients) as rational functions of $\chi_e$, and their polynomial coefficients are given in Table IV
+\cite{EpperleinHaines}:
 \begin{subequations}
     \label{eqn:kappa_e}
     \begin{align}
         \kappa_\parallel^e &= \hat{\kappa}_e \frac{\gamma'_0}{c'_0}, \\
-        \kappa_\perp^e &= \hat{\kappa}_e \frac{\gamma'_1\chi + \gamma'_0}{\chi^3 + c'_2\chi^2 + c'_1\chi + c'_0}, \\
-        \kappa_\times^e &= \hat{\kappa}_e \frac{\chi(\gamma_1''\chi + \gamma_0'')}{\chi^3 + c_2''\chi^2 + c_1''\chi + c_0''},
+        \kappa_\perp^e &= \hat{\kappa}_e \frac{\gamma'_1\chi_e + \gamma'_0}{\chi_e^3 + c'_2\chi_e^2 + c'_1\chi_e + c'_0}, \\
+        \kappa_\times^e &= \hat{\kappa}_e \frac{\chi_e(\gamma_1''\chi_e + \gamma_0'')}{\chi_e^3 + c_2''\chi_e^2 + c_1''\chi_e + c_0''},
     \end{align}
+    with the prefractor $\hat{\kappa}_e$ defined as
+    \begin{equation}
+        \hat{\kappa}_e \equiv \frac{n_e k_B T_e}{m_e \nu_{ei}^M}.
+        \label{eqn:kappa_hat_e}
+    \end{equation}
 \end{subequations}
-with the leading prefractor $\hat{\kappa}_e$ defined as
-\begin{equation}
-    \hat{\kappa}_e \equiv \frac{n_e k_B T_e}{m_e \nu_{ei}^M}.
-    \label{eqn:kappa_hat_e}
-\end{equation}
 
 Also from Epperlein and Haines, the thermoelectric coefficients are given as the following rational functions, whose polynomial coefficients are given in Table III \cite{EpperleinHaines}:
 \begin{subequations}
     \label{eqn:beta_e}
     \begin{align}
         \beta_\parallel &= \frac{\beta'_0}{(b'_0)^{8/9}}, \\
-        \beta_\perp &= \frac{\beta'_1\chi + \beta'_0}{(\chi^3 + b'_2\chi^2 + b'_1\chi + b'_0)^{8/9}}, \\
-        \beta_\times &= \frac{\chi(\beta_1'' \chi + \beta_0'')}{\chi^3 + b_2'' \chi^2 + b_1'' \chi + b_0'' }.
+        \beta_\perp &= \frac{\beta'_1\chi_e + \beta'_0}{(\chi_e^3 + b'_2\chi_e^2 + b'_1\chi_e + b'_0)^{8/9}}, \\
+        \beta_\times &= \frac{\chi_e(\beta_1'' \chi_e + \beta_0'')}{\chi_e^3 + b_2'' \chi_e^2 + b_1'' \chi_e + b_0'' }.
     \end{align}
 \end{subequations}
 
-In the unmagnetized limit ($\chi \rightarrow 0$), $\kappa_\parallel^e = \kappa_\perp^e = \kappa_e$ and $\beta_\parallel = \beta_\perp = \beta$ while all cross terms vanish. The isotropic flux is recovered:
+In the unmagnetized limit ($\chi_e \rightarrow 0$), $\kappa_\parallel^e = \kappa_\perp^e = \kappa_e$ and $\beta_\parallel = \beta_\perp = \beta$ while all cross terms vanish. The isotropic flux is recovered:
 \begin{equation}
     \mathbf{q}_e'' = -\kappa_e \nabla T_e - \frac{\beta k_B T_e}{e} \mathbf{j}
     \label{eqn:isotropic_electron_heat_flux}    
@@ -81,17 +98,58 @@ In the unmagnetized limit ($\chi \rightarrow 0$), $\kappa_\parallel^e = \kappa_\
 
 Ion transport follows a simpler formulation where the thermoelectric contribution is neglected, leaving only the conduction term:
 \begin{equation}
-    \mathbf{q}_i'' = -\left( \kappa^i_\perp \mathbf{I} + (\kappa^i_\parallel - \kappa^i_\perp) \mathbf{\hat{B}}\mathbf{\hat{B}}^T + \kappa^i_\times \mathbf{\hat{B}}_\times \right) \nabla T_i.
+    \mathbf{q}_i'' = -\left( \kappa^i_\perp \mathbf{I} + (\kappa^i_\parallel - \kappa^i_\perp) \mathbf{\hat{b}}\mathbf{\hat{b}}^T - \kappa^i_\times \mathbf{B}_\times \right) \nabla T_i.
 \end{equation}
 
-The ion conductivities follow the identical rational form as the electron counterparts in Equation \ref{eqn:kappa_e} but with a different prefactor
+The ion conductivities follow the identical rational form as the electron counterparts in Equation \ref{eqn:kappa_e}, but with $\chi_i$ being the magnetization and a different prefactor
 \begin{equation}
-    \hat{\kappa}_i \equiv \frac{n_i k_B T_i}{m_e \nu_{ii}},
+    \hat{\kappa}_i \equiv \frac{n_i k_B T_i}{m \nu_{ii}}.
     \label{eqn:kappa_hat_i}
 \end{equation}
-and the ion-ion collision prefrequency is defined as
-\begin{equation}
-    \nu_{ii} = ???.
-\end{equation}
+Ion thermal conductivity is expected to be much lower than that of electrons.
 
 \subsection{Momentum flux}
+Braginskii gives the total stress tensor as the sum of five component tensors:
+\begin{subequations}
+    \begin{align}
+        \mathbf{T} &= \sum_{n=0}^{4} \mathbf{T}_n \\
+        \mathbf{T}_0 &= 3\mu_0 \left(\mathbf{\hat{b}}\mathbf{\hat{b}}^T - \frac{1}{3}\mathbf{I} \right) (\mathbf{\hat{b}} \cdot \mathbf{W}\mathbf{\hat{b}}) \\ % \left(\mathbf{\hat{b}}\mathbf{\hat{b}}^T - \frac{1}{3}\mathbf{I} \right) : \nabla \mathbf{u} \\
+        \mathbf{T}_1 &= \mu_1 \left[\mathbf{P}\mathbf{W}\mathbf{P} + \frac{1}{2}\mathbf{P} (\mathbf{\hat{b}} \cdot \mathbf{W}\mathbf{\hat{b}}) \right] \\
+        \mathbf{T}_2 &= \mu_2 \left[\mathbf{P}\mathbf{W}\mathbf{\hat{b}}\mathbf{\hat{b}}^T + \mathbf{\hat{b}}\mathbf{\hat{b}}^T\mathbf{W}\mathbf{P} \right] \\
+        \mathbf{T}_3 &= -\frac{\mu_3}{2} \left[\mathbf{B}_\times\mathbf{W}\mathbf{P} - \mathbf{P}\mathbf{W}\mathbf{B}_\times \right] \\
+        \mathbf{T}_4 &= -\mu_4 \left[\mathbf{B}_\times\mathbf{W}\mathbf{\hat{b}}\mathbf{\hat{b}}^T - \mathbf{\hat{b}}\mathbf{\hat{b}}^T \mathbf{W}\mathbf{B}_\times \right],
+    \end{align}
+    where the projection matrix $\mathbf{P}$ is
+    \begin{equation}
+        \mathbf{P} \equiv \mathbf{I} - \mathbf{\hat{b}}\mathbf{\hat{b}}^T,
+    \end{equation}
+    and the rate-of-strain tensor $\mathbf{W}$ is
+    \begin{equation}
+        \mathbf{W} \equiv \left[\nabla\mathbf{u} + (\nabla\mathbf{u})^T\right] - \frac{2}{3}\mathbf{I}\nabla\cdot\mathbf{u}
+    \end{equation}    
+\end{subequations}
+
+The viscosities are rational functions of $\chi$, and their polynomial coefficients are given in Equations 4.44 through 4.45 of Braginskii \cite{Braginskii}:
+\begin{subequations}
+    \label{eqn:mu_j}
+    \begin{align}
+        \mu_0^j &= \hat{\mu}_j \frac{\alpha_0^{j'}}{a_0^j} \\
+        \mu_2^j &= \hat{\mu}_j \frac{\alpha_2^{j'} \chi_j^2 + \alpha_0^{j'}}{\chi_j^4 + a_2^j \chi_j^2 + a_0^j} \\
+        \mu_4^j &= \hat{\mu}_j \frac{\chi_j(\chi_j^2 + \alpha_0^{j''})}{\chi_j^4 + a_2^j \chi_j^2 + a_0^j} (\delta_{ji} - \delta_{je}) \\
+        \mu_1^j &= \mu_2^j (2\chi_j) \\
+        \mu_3^j &= \mu_4^j (2\chi_j),
+    \end{align}
+    with the leading prefractor $\hat{\mu}_j$ defined as
+    \begin{equation}
+        \hat{\mu}_j \equiv \frac{n_j k_B T_j}{\nu_{ji}^M}.
+        \label{eqn:mu_hat_e}
+    \end{equation}
+\end{subequations}
+
+As a note, the term $(\delta_{ji} - \delta_{je})$ evaluates to $1$ for ions and $-1$ for electrons.
+
+In the unmagnetized limit ($\chi_e \rightarrow 0$), the gyroviscous terms $\mathbf{T}_3$ and $\mathbf{T}_4$ vanish, while $\mu_0 = \mu_1 = \mu_2 = \mu$, and the stress tensor becomes
+\begin{equation}
+    \mathbf{T} = \mu \mathbf{W},
+\end{equation}
+which is identical to the conventional deviatoric stress tensor.
