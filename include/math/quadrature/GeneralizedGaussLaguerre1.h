@@ -1,7 +1,7 @@
 /**
  * Using generalized Gauss-Laguerre Quadrature to evaluate the integral of x*f(x)exp(-omega*x) over a semi-infinite domain [l, infty].
  * Only alpha = 1 and N = 1 (single integral) cases have been implemented
- * Attempting to use Gauss-Laguerre to integrate a general function g(x) by setting f(x) = x*g(x)exp(omega*x) may result in instabilities.
+ * Attempting to use Gauss-Laguerre to integrate a general function g(x) by setting f(x) = g(x)exp(omega*x)/x may result in instabilities.
 **/
 
 #ifndef GENERALIZED_GAUSS_LAGUERRE_H

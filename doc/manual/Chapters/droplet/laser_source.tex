@@ -56,75 +56,50 @@ and the critical density $n_c$ is defined in terms of $\omega$
 
 \subsection{Photoionization}
 \label{sect:photoionization}
-Photoionization can only occur if the photon energy, $h\nu$, exceeds the binding energy $\mathcal{E}_b$. This is simply the photoelectric effect, and it is typically caused by photons in the ultraviolet regime. For a quantum yield $\Phi \in [0, 1]$
-that accounts for the number of photoelectrons produced per incident photon, the photoionization rate density is
-\begin{equation}
-    \Gamma_{\text{pi}} = \Phi \frac{q'''_b}{h\nu},
-    \label{eqn:photoionization_rate_1}
-\end{equation}
-where $q'''_b$ is related to $q_b$ in Equation \ref{eqn:heat_bound_electrons} as
-\begin{equation}
-    \iiint q'''_b dV = q_b.
-\end{equation}
-
-A newly freed electron will carry an excess energy of $h\nu - \mathcal{E}_b$, which will be deposited towards the energy of all free electrons with a rate of
-\begin{equation}
-    q'''_{\text{pi}} = (h\nu - \mathcal{E}_b) \Gamma_{\text{pi}}.
-    \label{eqn:electron_energy_1}
-\end{equation}
-
-Any absorption that do not result in ionization will instead excite bound electrons and serve as a heat source for the neutral particles with a rate of
-\begin{equation}
-    q'''_{\gamma n} = (1 - \Phi) q'''_b = q'''_b - h\nu\Gamma_{\text{pi}}.
-    \label{eqn:excitation_energy_1}
-\end{equation}
-
-It is possible for a bound electron to simultaneously absorb multiple photons, a phenomenon known as multiphoton ionization \cite{Mainfray}. This instead becomes a strongly nonlinear process, and the probability of
-multiple photons being absorbed by the same electron increases strongly with laser intensity. The minimum number of photons needed to completely remove an electron from its orbit is
+A bound electron requires a binding energy, $\mathcal{E}_b$, to remove it from the orbit. When a laser beam deposits energy into an atom, each photon contributes an energy of $h\nu$. Therefore, the minimum number of
+photons needed to completely remove an electron from its orbit is
 \begin{equation}
     N \equiv \left\lceil \frac{\mathcal{E}_b}{h\nu} \right\rceil.
 \end{equation}
 
-The $N$-photon ionization rate is proportional to the $N$-th power of a particular measure of photon flux. In \cite{Mihelic}, that measure is the photon scalar flux, $\displaystyle \phi = \frac{I}{h\nu}$. However,
-since the laser intensity monotonic decreases with distance travelled, it is better to calculate the ionization rate using a path-averaged scalar flux:
+The $N$-photon ionization rate is proportional to the $N$-th power of a particular measure of photon flux. In Mihelic (2021), that measure is the photon scalar flux, $\displaystyle \phi = \frac{I}{h\nu}$ \cite{Mihelic}. However,
+since the laser intensity monotonic decreases with distance travelled, it is better to calculate the ionization rate using a path-averaged scalar flux within a computational cell $k$:
 \begin{subequations}
     \begin{align}
-        \overline{\phi} &= \frac{\overline{I}}{h\nu} \\
-        &= \frac{1}{h\nu s} \int_{0}^{s} I_0 e^{-\alpha s'} ds' \\
-        &= \frac{I_0}{h\nu} \frac{1 - e^{-\alpha s}}{\alpha s}
+        \overline{\phi}_k &= \frac{\overline{I}_k}{h\nu} \\
+        &= \frac{1}{h\nu s_k} \int_{0}^{s_k} I_0 e^{-\alpha_k s} ds \\
+        &= \frac{I_0}{h\nu} \frac{1 - e^{-\alpha_k s_k}}{\alpha_k s_k}
     \end{align}
 \end{subequations}
 
 The rate is then given by
 \begin{equation}
-    \Gamma_{\text{pi}} = \min\left( S_N \overline{\phi}^N n, \frac{q'''_b}{Nh\nu} \right)
-    \label{eqn:photoionization_rate_N}
+    \Gamma_{\text{pi}} = S_{\text{pi}}^{(N)} \overline{\phi}^N n_g
+    \label{eqn:photoionization_rate}
 \end{equation}
 
-Here, $S_N$ is the $N$-photon ionization rate coefficient and $n$ is the neutral particle number density. The $\min$ function is to ensure that the actual ionization rate does not exceed the photon deposition rate.
-In order for $\Gamma_{\text{pi}}$ to have the correct unit, the unit of $S_N$ is m$^{2N}$ s$^{N-1}$. If Equation \ref{eqn:photoionization_rate_N} were to be in terms of another unit (for example, laser intensity)
-instead, then the unit of $S_N$ must be changed accordingly. The term $N$-photon ionization cross section and the symbol $\sigma_N$ are often used in literature to describe this coefficient \cite{Mainfray}
-\cite{Mihelic}; this nomenclature is not adopted here in order to ensure that all cross sections have units of area.
+Here, $S_{\text{pi}}^{(N)}$ is the $N$-photon ionization rate coefficient and $n_g$ is the neutral particle number density in the gas phase. In order for $\Gamma_{\text{pi}}$ to have the correct unit, the unit of
+$S_{\text{pi}}^{(N)}$ is m$^{2N}$ s$^{N-1}$. If $N = 1$, then $S_{\text{pi}}^{(1)}$ has the expected units of cross section or area. For that reason, $S_{\text{pi}}^{(N)}$ is often referred to as a cross section
+in literature -- regardless of $N$ and how photon concentration is expressed (other than $\overline{\phi}$) -- despite the fact that it can assume different units. For consistency, the symbol $\sigma$ reserved for
+cross section is only used to denote quantities with units of area.
 
-The rate of energy deposited into the neutrals and electrons are
-\begin{subequations}
-    \begin{align}
-        q'''_{\text{pi}} &= (Nh\nu - \mathcal{E}_b) \Gamma_{\text{pi}} \label{eqn:electron_energy_N} \\
-        q'''_{\gamma n} &= q'''_b - Nh\nu \Gamma_{\text{pi}} \label{eqn:excitation_energy_N}.
-    \end{align}
-\end{subequations}
+In the case of single-photon ionization, $S_{\text{pi}}^{(1)}$ is related to the absorption coefficient $\alpha_b$ by
+\begin{equation}
+    S_{\text{pi}}^{(1)} = \Phi \frac{\alpha_b}{n_g},
+    \label{eqn:S_pi1}
+\end{equation}
+where $\Phi \in [0, 1]$ is the quantum efficiency, which denotes the fraction of absorbed photons that actually induce ionization. If $\Phi = 1$, then $\alpha_b$ is equivalent to a macroscopic cross section.
+
+Upon ionization, the electron fluid gains an amount of energy equivalent to
+\begin{equation}
+    q^e_{\text{pi}} = (Nh\nu - \mathcal{E}_b) \Gamma_{\text{pi}}
+    \label{eqn:electron_energy_N},
+\end{equation}
+while any energy from the initial laser beam not spent on ionizing will instead serve as a heat source for the neutral atoms:
+\begin{equation}
+    q'''_{\gamma n} = q'''_b - Nh\nu \Gamma_{\text{pi}}
+    \label{eqn:excitation_energy}.
+\end{equation}
 
 For simplicity, bound electrons are assumed to only absorb $N$ photons prior to removal from its parent nucleus. Above-threshold ionization, a phenomenon where an electron absorbs more than $N$ photons, is also possible,
 but will be neglected here.
-
-% \subsection{Refraction at cell interfaces}
-% \todo{Should this be in a numerical method section?}
-% The refractive index $\eta$ within a droplet is a scalar field that denotes how light is continuously bent.
-
-% The energy at which the laser exits cell $k$ is the entrance energy at cell $k'$. Assuming the index of refraction $n$ is uniform within a cell but differing from that of neighboring cells, refraction occurs at the
-% cell interface according to Snell's Law.
-% \begin{equation}
-%     \eta_k \bm{\hat{\upomega}}_k \times \mathbf{\hat{n}}_{k,k'} = \eta_{k'}  \bm{\hat{\upomega}}_{k'} \times \mathbf{\hat{n}}_{k,k'}
-% \end{equation} 
-
-% The routine terminates once the ray exits the droplet.

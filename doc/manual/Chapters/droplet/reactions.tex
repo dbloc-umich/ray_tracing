@@ -1,0 +1,146 @@
+The term reaction is used in this section to denote the collisions that result in the conversion between a neutral atom and an electron-ion pair. If the neutral atom is consumed, the reaction is ionization, and the
+inverse is called recombination. Reactions do not just alter the amount of each species in a plasma; it also transfer a portion of the reactant's momentum and energy directly into the product, assuming no enthalpy of
+reaction. These transfers are direct inverses in the case of ions and neutrals as followed
+\begin{subequations}
+    \begin{align}
+        \frac{\partial n_i}{\partial t} &= -\frac{\partial n_g}{\partial t} = \sum_r \Gamma_r^i \\
+        \frac{\partial n_i \mathbf{u}_i}{\partial t} &= -\frac{1}{m_i} \frac{\partial \rho_g \mathbf{u}_g}{\partial t} = \sum_r \Gamma_r^i \mathbf{u}_r \\
+        \frac{\partial n_i \mathcal{E}_i}{\partial t} &= -\frac{\partial \rho_g E_g}{\partial t} = \sum_r \Gamma_r^i \mathcal{E}_r,
+    \end{align}
+\end{subequations}
+where the subscript $r$ on $\mathbf{u}_r$ and $\mathcal{E}_r$ indicates that the respective variable belongs to the reactant species.
+
+For electrons, the momentum transfer can safely be approximated as that of ions scaled by the mass ratio of the two particles. The energy source term is more complex and cannot be approximated as such; it is typically
+denoted as $q^e_r$ for each reaction $r$. When an electron is liberated during ionization, it receives the energy of the source particle minus the binding energy required for removing the electron from its bound state.
+On the other hand, when an electron is captured by an ion, its energy tends to be transfered to a third particle. Each reaction will detail what its respective $q^e_r$ should be.
+\begin{subequations}
+    \begin{align}
+        \frac{\partial n_e}{\partial t} &= \sum_r \Gamma_r^e \\
+        \frac{\partial n_e \mathbf{u}_e}{\partial t} &= \sum_r \left(\frac{m_e}{m_r} \right) \Gamma_r^e \mathbf{u}_r \\
+        \frac{\partial n_e \mathcal{E}_e}{\partial t} &= \sum_r q^e_r
+    \end{align}
+\end{subequations}
+
+\subsection{Collisional ionization}
+\label{sect:ci}
+When a free electron collides with a bound electron and departs sufficient energy on it, the latter can be removed from its orbit. Known as collisional ionization, this process is responsible for rapid increase of
+the free electron population. Not all free electrons can cause collisional ionization; it must have a kinetic energy $\mathcal{E}_e$ that exceeds the binding energy $\mathcal{E}_b$ of the bound electron. Under the
+fluid model of plasma, electrons in any control volume is modeled as having a single particle-averaged energy. In this section, this averaged energy is denoted $\frac{3}{2} k_B T_e$ in this section as opposed to
+$\mathcal{E}_e$, which instead represents the energy of an individual electron. Collisional ionization still occurs in a volume where $\frac{3}{2} k_B T_e < \mathcal{E}_b$ since there exists a fraction of electron
+with a sufficient $\mathcal{E}_e$.
+
+Assuming a Maxwellian distribution of velocity, the probability density function (PDF) of electron speed $f(u_e)$ is \cite{Fitzpatrick}
+\begin{equation}
+    f(u_e) = \left( \frac{m_e}{2\pi k_B T_e} \right)^{3/2} 4\pi u_e^2 \exp{\frac{-\frac{1}{2}m_e u_e^2}{k_B T_e}}.
+    \label{eqn:maxwellian_velocity}
+\end{equation}
+
+To convert Equation \ref{eqn:maxwellian_velocity} into a PDF in kinetic energy, the following identity is employed
+\begin{equation}
+    f(\mathcal{E}_e) \left\lvert d\mathcal{E}_e \right\rvert = f(u_e) \left\lvert du_e \right\rvert.
+\end{equation}
+which requires the derivative
+\begin{subequations}
+    \begin{align}
+        \frac{d\mathcal{E}_e}{du_e} &= m_e u_e \\
+        \frac{du_e}{d\mathcal{E}_e} &= \frac{1}{m_e u_e} = \frac{1}{\sqrt{2m_e \mathcal{E}_e}}
+    \end{align}
+\end{subequations}
+
+The energy-PDF is therefore
+\begin{subequations}
+    \begin{align}
+        f(\mathcal{E}_e) &= f(u_e) \left\lvert \frac{du_e}{d\mathcal{E}_e} \right\rvert \\
+        &= \frac{2}{\sqrt{\pi}} \sqrt{\frac{\mathcal{E}_e}{(k_B T_e)^3}} \exp{\frac{-\mathcal{E}_e}{k_B T_e}}
+    \end{align}
+\end{subequations}
+
+The electron-impart ionization cross section is calculated using the Binary-Encounter-Bethe (BEB) model \cite{StoneKim}:
+\begin{subequations}
+    \begin{equation}
+        \sigma_{\text{BEB}} = \frac{4\pi a_0^2 r^2}{t+u+1} \left[\frac{\ln t}{2} \left(1 - \frac{1}{t^2} \right) + 1 - \frac{1}{t} - \frac{\ln t}{t + 1} \right],
+    \end{equation}
+    where the following dimensionless energies are used
+    \begin{align}
+        r &\equiv \frac{\mathcal{R}}{\mathcal{E}_b} \\
+        t &\equiv \frac{\mathcal{E}_e}{\mathcal{E}_b} \\
+        u &\equiv \frac{\mathcal{U}}{\mathcal{E}_b}
+    \end{align}
+\end{subequations}
+
+The reaction rate density is
+\begin{subequations}
+    \label{eqn:gamma_ci}
+    \begin{align}
+        \Gamma_{\text{ci}} &= S_{\text{ci}} n_e n_g \\
+        S_{\text{ci}} &\equiv \int_{\mathcal{E}_b}^{\infty} \sigma_{\text{BEB}} v f(\mathcal{E}_e) d\mathcal{E}_e.
+    \end{align}    
+\end{subequations}
+The rate constant $S_{\text{ci}}$ has units of volumetric flow rate (m$^3$/s).
+
+Upon ionization, the high-energy tail is depleted to create colder electrons, leading to a loss of energy. The rate of energy loss by the electron is
+\begin{equation}
+    \label{eqn:qe_ci}
+    q^e_{\text{ci}} = -\Gamma_{\text{ci}} \mathcal{E}_b.
+\end{equation}
+
+\subsection{Recombination}
+When an electron and an ion combines to form a neutral atom, a third particle must be ejected in order to preserve momentum and energy. If that particle is a photon, that it is a \textit{radiative recombination} reaction,
+which is the inverse of photoionization. According to Milne relation,
+\begin{equation}
+    \sigma_{\text{rr}} = \frac{g_n}{g_i} \left(\frac{h\nu}{m_e c u_e} \right)^2 \sigma_{\text{pi}}^{(1)},
+    \label{eqn:milne}
+\end{equation}
+and the energy of the ejected photon must be
+\begin{equation}
+    h\nu = \mathcal{E}_b + \mathcal{E}_e.
+\end{equation}
+The (single-)photoionization cross section $\sigma_{\text{pi}}^{(1)}$ is given in Equation \ref{eqn:S_pi1}.
+
+Again, the rate coefficient needs to the distribution of electron energy, not just the average energy. Fortunately, recombination does not have an energy floor, so the lower bound of the energy integral is 0.
+The reaction rate density is
+\begin{subequations}
+    \label{eqn:Gamma_rr}
+    \begin{align}
+        \Gamma_{\text{rr}} &= S_{\text{rr}} n_e n_i \\
+        S_{\text{rr}} &\equiv \int_0^{\infty} \sigma_{\text{rr}} v f(\mathcal{E}_e) d\mathcal{E}_e.
+    \end{align}    
+\end{subequations}
+
+And the rate of electron energy loss is
+\begin{subequations}
+    \label{eqn:Qe_rr}
+    \begin{align}
+        q^e_{\text{rr}} &= -K_{\text{rr}} n_e n_i \\
+        K_{\text{rr}} &\equiv \int_0^{\infty} \mathcal{E}_e \sigma_{\text{rr}} v f(\mathcal{E}_e) d\mathcal{E}_e.
+    \end{align}    
+\end{subequations}
+
+The integrals in Equations \ref{eqn:Gamma_rr} and \ref{eqn:Qe_rr} assume a Maxwellian distribution of electron energy but the ions are monoenergetic, which should be sufficient unless $T_i$ is excessively large.
+
+On the other hand, if instead of a photon, a second electron carries away the excess energy and momentum, then the process is called \textit{three-body recombination}. The reaction rate density is
+\begin{equation}
+    \Gamma_{\text{3br}} = S_{\text{3br}} n_e^2 n_i
+    \label{eqn:Gamma_3br}
+\end{equation}
+
+Since this is the inverse process to collisional ionization, the rate coefficient $S_{\text{3br}}$ can be found by equating the two reaction rate densities at equilibrium:
+\begin{subequations}
+    \label{eqn:S_3br}
+    \begin{align}
+        S_{\text{ci}} \left[ n_e n_g \right]_{\text{eq}} &= S_{\text{3br}} \left[ n_e^2 n_i \right]_{\text{eq}} \\
+        S_{\text{3br}} &= S_{\text{ci}} \left[ \frac{n_g}{n_e n_i} \right]_{\text{eq}}.
+    \end{align}
+\end{subequations}
+
+The bracketed term in Equation \ref{eqn:S_3br} is just the equilibrium constant, which for a singly-charged ion is given by Saha relation:
+\begin{equation}
+    \label{eqn:saha}
+    \left[ \frac{n_e n_i}{n_g} \right]_{\text{eq}} = \frac{2g_i}{g_n} \left( \frac{2\pi m_e k_B T_e}{h^2} \right)^{3/2} \exp{\frac{-\mathcal{E}_b}{k_B T_e}}.
+\end{equation}
+
+Also as the opposite reaction of collisional ionization, energy is gained by the electron fluid, and the rate of energy gain is
+\begin{equation}
+    \label{eqn:qe_3br}
+    q^e_{\text{3br}} = \Gamma_{\text{3br}} \mathcal{E}_b.
+\end{equation}

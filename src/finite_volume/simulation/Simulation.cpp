@@ -22,7 +22,7 @@ void Simulation::solve(StateMesh& u, double ti, double tf, double dt) const{
     _results.clear();
     auto func = [&u, this](double, const Eigen::VectorXd& arr) -> Eigen::VectorXd {
         u.flattened() = std::move(arr);
-        // std::cout << "Initial matrix: " << std::endl << u.matrix() << std::endl;
+        std::cout << "Initial matrix: " << std::endl << u.matrix() << std::endl;
         Eigen::MatrixXd R = Eigen::MatrixXd::Zero(u.stateCount(), u.cellCount());
 
         int count = 0;
@@ -53,7 +53,7 @@ void Simulation::solve(StateMesh& u, double ti, double tf, double dt) const{
         while (true){
             if (count % _saveEveryNIterations == 0) _results[ti] = u.matrix();
             double step = std::min(tf-ti, dt);
-            // std::cout << "t = " << ti << ", u = " << std::endl << u.matrix() << std::endl;
+            // std::cout << "t = " << ti << ", u = " << u.matrix().transpose() << std::endl;
             
             try{
                 auto status = _integrator->integrate(func, u0, ti, step);

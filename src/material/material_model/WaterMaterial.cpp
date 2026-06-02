@@ -65,7 +65,20 @@ double WaterMaterial::computeProperty(const std::string& name, const PropVars& v
     if (name == "molecular_mass") return _eos.M();
     if (name == "number_density") return _eos.rho(P,T) / _eos.M() * pconst::N_A;
     if (name == "orbital_kinetic_energy") return pconst::Ry; // assumed to just be hydrogen for now
-    if (name == "photoionization_cross_section") return 6.30e+6; // in barns
+    if (name == "photoionization_cross_section"){
+        double kappa; // extinction coefficient at rho = 1000
+        if (lambda <= _lambda[0]) kappa = _kappa[0];
+        else if (lambda >= _lambda[_lambda.size()-1]) kappa = _kappa[_kappa.size()-1];
+        else{
+            std::size_t ind = std::upper_bound(_lambda.cbegin(), _lambda.cend(), lambda) - _lambda.cbegin();
+            kappa = (_kappa[ind] - (_kappa[ind]-_kappa[ind-1])/(_lambda[ind]-_lambda[ind-1]) * (_lambda[ind]-lambda));
+        }
+
+        double alpha = 4*mconst::pi*kappa/lambda;
+        double n0 = 1000 / _eos.M() * pconst::N_A;
+        double Phi = computeProperty("quantum_yield", vars);
+        return alpha/n0 * Phi;
+    }
     if (name == "quantum_yield") return 0.9;
     if (name == "refractive_index"){
         double T_bar = T/273.15;

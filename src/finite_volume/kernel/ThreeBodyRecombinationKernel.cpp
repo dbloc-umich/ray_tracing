@@ -1,4 +1,4 @@
-#include "CollisionalIonizationKernel.h"
+#include "ThreeBodyRecombinationKernel.h"
 #include "Constants.h"
 #include "ElectronTemperatureAux.h"
 #include "GaussLaguerre.h"
@@ -6,9 +6,7 @@
 #include "SpatialMesh.h"
 #include "StateMesh.h"
 
-// #define MONITOR
-
-Eigen::MatrixXd CollisionalIonizationKernel::computeResidual(const StateMesh& u) const{
+Eigen::MatrixXd ThreeBodyRecombinationKernel::computeResidual(const StateMesh& u) const{
     auto mesh = u.mesh();
     Eigen::Index Nx = mesh->axisSize(0)-1; // number of cells on the x axis
     Eigen::Index Ny = mesh->axisSize(1)-1; // number of cells on the y axis
@@ -16,6 +14,7 @@ Eigen::MatrixXd CollisionalIonizationKernel::computeResidual(const StateMesh& u)
     Eigen::MatrixXd q(6, Nx*Ny*Nz);
 
     const double v = std::sqrt(2/pconst::m_e);
+    double sahaFactor = 1.0; // // assuming g_bound / (2*g_ion) = 1.0 for now
     for (Eigen::Index i = 0; i < Nx; i++){
         for (Eigen::Index j = 0; j < Ny; j++){
             for (Eigen::Index k = 0; k < Nz; k++){
@@ -41,31 +40,29 @@ Eigen::MatrixXd CollisionalIonizationKernel::computeResidual(const StateMesh& u)
                 Quadrature<>::IntegrationDomain D{Eb, mconst::infty}; // lower bound is Eb since that's the threshold of ionization
                 double S_ci = quad.integrate(func, D);
 
+                double lambda_th = pconst::h / std::sqrt(2*mconst::pi * pconst::m_e * kT);
+                double K = 1.0/(lambda_th*lambda_th*lambda_th) * sahaFactor * std::exp(-Eb/kT);
+                double S_3br = S_ci/K;
+
                 double ne = vars.at("electron_number_density");
-                double n = _mat->computeProperty("number_density", vars);
-                double En = vars.at("energy")/n; // energy per neutral particle
-                double Gamma_ci = S_ci*ne*n;
+                double ni = vars.at("ion_number_density");
+                double Ei = vars.at("ion_energy")/ni;
+                double Gamma_3br = S_3br*ne*ne*ni;
 
                 Eigen::Index ind = (i*Nx + j)*Ny + k;
-                q(0, ind) = 0.0; // -Gamma_ci * (_mat->computeProperty("molecular_mass") / pconst::N_A); // neutral mass density
-                q(1, ind) = 0.0; // -Gamma_ci*En; // neutral energy
-                q(2, ind) = Gamma_ci; // electron number density
-                q(3, ind) = -Gamma_ci*Eb; // electron energy
-                q(4, ind) = Gamma_ci; // ion number density
-                q(5, ind) = Gamma_ci*En; // ion energy
-#ifdef MONITOR
-                double Ee = vars.at("electron_energy") / vars.at("electron_number_density");
-                // std::cout << "S_ci = " << S_ci << ", Ee = " << Ee << ", Te = " << kT/pconst::k_B << ", Gamma_ci = " << Gamma_ci << std::endl;
-                double tau = vars.at("electron_energy") / (Gamma_ci * (Eb + Ee));
-                std::cout << "Timescale: " << tau << std::endl;
-#endif
+                q(0, ind) = 0.0; // Gamma_3br * (_mat->computeProperty("molecular_mass") / pconst::N_A); // neutral mass density
+                q(1, ind) = 0.0; // Gamma_3br*Ei; // neutral energy
+                q(2, ind) = -Gamma_3br; // electron number density
+                q(3, ind) = Gamma_3br*Eb; // electron energy
+                q(4, ind) = -Gamma_3br; // ion number density
+                q(5, ind) = -Gamma_3br*Ei; // ion energy
             }
         }
     }
     return q;
 }
 
-Eigen::VectorXi CollisionalIonizationKernel::stateID(const StateMesh& u) const noexcept{
+Eigen::VectorXi ThreeBodyRecombinationKernel::stateID(const StateMesh& u) const noexcept{
     Eigen::VectorXi ind(6);
     ind(0) = u.stateID("density");
     ind(1) = u.stateID("energy");
